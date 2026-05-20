@@ -11,7 +11,8 @@ const required = (key: string): string => {
   return value;
 };
 
-const optional = (key: string, fallback: string): string => process.env[key]?.trim() || fallback;
+const optional = (key: string, fallback: string): string =>
+  process.env[key]?.trim() || fallback;
 
 export const env = {
   nodeEnv: optional('NODE_ENV', 'development'),
@@ -20,6 +21,7 @@ export const env = {
   supabaseServiceRoleKey: required('SUPABASE_SERVICE_ROLE_KEY'),
   jwtSecret: required('JWT_SECRET'),
   webUrl: required('WEB_URL'),
+  databaseUrl: required('DATABASE_URL'),
 } as const;
 
 export type Env = typeof env;
