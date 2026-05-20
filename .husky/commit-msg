@@ -1,6 +1,0 @@
-# Mac/Linux
-export PATH="$HOME/.bun/bin:$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
-# Windows (Git Bash)
-[ -d "$USERPROFILE/.bun/bin" ] && export PATH="$USERPROFILE/.bun/bin:$PATH"
-
-bunx --no-install commitlint --edit "$1"
