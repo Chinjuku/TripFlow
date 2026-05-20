@@ -1,0 +1,45 @@
+# Dependencies (containers reinstall)
+node_modules
+**/node_modules
+.pnp.*
+
+# Build outputs
+dist
+build
+**/dist
+**/build
+.next
+.turbo
+**/.turbo
+*.tsbuildinfo
+
+# Env (secrets must come from compose / runtime, not bake into image)
+.env
+.env.local
+.env.*.local
+
+# VCS
+.git
+.gitignore
+.gitattributes
+
+# Editor / OS
+.DS_Store
+.vscode
+.idea
+
+# Logs / coverage
+*.log
+coverage
+.nyc_output
+
+# Docs and meta (not needed at runtime)
+README.md
+AGENTS.md
+*.md
+!apps/*/README.md
+
+# Docker self
+Dockerfile
+docker-compose*.yml
+.dockerignore

@@ -1,0 +1,7 @@
+{
+  "extends": "@trip-flow/tsconfig/react-app.json",
+  "compilerOptions": {
+    "types": []
+  },
+  "include": ["src"]
+}

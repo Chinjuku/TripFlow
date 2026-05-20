@@ -1,0 +1,65 @@
+# Dev-mode compose: hot reload for both apps.
+#
+#   docker compose up           # api + web with bind-mounted source
+#   docker compose up api       # just the API
+#   docker compose down         # stop everything
+#
+# Supabase is intentionally NOT containerised — point .env at your cloud
+# project. Add a `supabase` service later if you need offline dev.
+
+name: trip-flow
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: development
+    container_name: trip-flow-api
+    env_file:
+      - .env
+    environment:
+      PORT: 4000
+    ports:
+      - "4000:4000"
+    volumes:
+      # Source code: edits on host reflect immediately in the container.
+      - ./apps/api:/repo/apps/api
+      - ./packages:/repo/packages
+      - ./tsconfig.json:/repo/tsconfig.json
+      # Anonymous volumes shadow host node_modules so the container keeps
+      # its Linux-native binaries instead of the host's darwin/arm64 ones.
+      - /repo/node_modules
+      - /repo/apps/api/node_modules
+      - /repo/packages/db/node_modules
+      - /repo/packages/ui/node_modules
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:4000/health/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: development
+    container_name: trip-flow-web
+    env_file:
+      - .env
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./apps/web:/repo/apps/web
+      - ./packages:/repo/packages
+      - ./tsconfig.json:/repo/tsconfig.json
+      - /repo/node_modules
+      - /repo/apps/web/node_modules
+      - /repo/packages/db/node_modules
+      - /repo/packages/ui/node_modules
+    depends_on:
+      api:
+        condition: service_started
+    restart: unless-stopped

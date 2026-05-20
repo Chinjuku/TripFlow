@@ -1,0 +1,4 @@
+{
+  "extends": "@trip-flow/tsconfig/bun-app.json",
+  "include": ["src"]
+}
