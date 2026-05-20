@@ -1,0 +1,2 @@
+export PATH="/Users/ujeen/.bun/bin:$PATH"
+bunx lint-staged

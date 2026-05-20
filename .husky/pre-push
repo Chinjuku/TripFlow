@@ -1,0 +1,9 @@
+export PATH="/Users/ujeen/.bun/bin:$PATH"
+branch=$(git rev-parse --abbrev-ref HEAD)
+pattern="^(main|develop|feature/.+|fix/.+|hotfix/.+|chore/.+|release/.+)$"
+
+if ! echo "$branch" | grep -Eq "$pattern"; then
+  echo "Branch name '$branch' does not match GitFlow convention."
+  echo "Use: feature/*, fix/*, hotfix/*, chore/*, release/*, main, develop"
+  exit 1
+fi
