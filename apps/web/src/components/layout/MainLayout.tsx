@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Outlet, NavLink, Link } from 'react-router-dom';
+import { Outlet, NavLink } from 'react-router-dom';
+import { useAuth } from '@/features/auth/useAuth';
 import { Button } from '@trip-flow/ui/components/button';
-import { Compass, Map, MessageSquare, Settings, Menu, X, User } from 'lucide-react';
+import { Compass, Map, Settings, Menu, X, LogOut } from 'lucide-react';
 
 export function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   const navigation = [
     { name: 'Dashboard', to: '/dashboard', icon: Compass },
@@ -52,19 +54,38 @@ export function MainLayout() {
               {item.name}
             </NavLink>
           ))}
-          <Link to="/new">
-            <button>Create New Trip</button>
-          </Link>
         </nav>
 
+        {/* User Info & Sign Out */}
         <div className="p-4 border-t border-slate-900 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 border border-slate-800">
-            <User className="h-5 w-5 text-slate-400" />
-          </div>
+          {user?.avatarUrl ? (
+            <img
+              src={user.avatarUrl}
+              alt={user.name}
+              className="h-10 w-10 rounded-full border border-slate-800 object-cover"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-sm font-bold">
+              {user?.name?.charAt(0)?.toUpperCase() ?? '?'}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-slate-200 truncate">Explorer Mode</p>
-            <p className="text-xs text-slate-500 truncate">active</p>
+            <p className="text-sm font-medium text-slate-200 truncate">
+              {user?.name ?? 'Traveller'}
+            </p>
+            <p className="text-xs text-slate-500 truncate">{user?.email ?? ''}</p>
           </div>
+          <Button
+            id="sign-out-button"
+            variant="ghost"
+            size="icon"
+            className="text-slate-500 hover:text-red-400 hover:bg-red-500/10 shrink-0"
+            onClick={() => void signOut()}
+            title="Sign out"
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
         </div>
       </aside>
 

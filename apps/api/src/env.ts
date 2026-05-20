@@ -18,6 +18,8 @@ export const env = {
   port: Number.parseInt(optional('PORT', '4000'), 10),
   supabaseUrl: required('SUPABASE_URL'),
   supabaseServiceRoleKey: required('SUPABASE_SERVICE_ROLE_KEY'),
+  jwtSecret: required('JWT_SECRET'),
+  webUrl: required('WEB_URL'),
 } as const;
 
 export type Env = typeof env;
