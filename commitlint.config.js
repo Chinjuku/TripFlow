@@ -1,26 +1,26 @@
 /** @type {import('@commitlint/types').UserConfig} */
 export default {
-  extends: ["@commitlint/config-conventional"],
+  extends: ['@commitlint/config-conventional'],
   rules: {
-    "type-enum": [
+    'type-enum': [
       2,
-      "always",
+      'always',
       [
-        "feat",
-        "fix",
-        "docs",
-        "style",
-        "refactor",
-        "perf",
-        "test",
-        "chore",
-        "revert",
-        "ci",
-        "build",
+        'feat',
+        'fix',
+        'docs',
+        'style',
+        'refactor',
+        'perf',
+        'test',
+        'chore',
+        'revert',
+        'ci',
+        'build',
       ],
     ],
-    "subject-case": [2, "always", "lower-case"],
-    "subject-max-length": [2, "always", 72],
-    "body-max-line-length": [2, "always", 100],
+    'subject-case': [2, 'always', 'lower-case'],
+    'subject-max-length': [2, 'always', 72],
+    'body-max-line-length': [2, 'always', 100],
   },
 };

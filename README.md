@@ -115,16 +115,16 @@ docker build -f apps/web/Dockerfile --target runtime \
 
 Root scripts fan out across the monorepo via Turbo:
 
-| Script              | What it does                                |
-| ------------------- | ------------------------------------------- |
-| `bun dev`           | Start every app in dev mode                 |
-| `bun run build`     | Production build of every app/package      |
-| `bun typecheck`     | `tsc --noEmit` everywhere                   |
-| `bun lint`          | Lint pipeline (currently typecheck)         |
-| `bun test`          | Test suites across every workspace          |
-| `bun run format`    | Prettier write                              |
-| `bun run format:check` | Prettier check (use in CI)               |
-| `bun run clean`     | Drop `dist/`, `.turbo/`, and `node_modules` |
+| Script                 | What it does                                |
+| ---------------------- | ------------------------------------------- |
+| `bun dev`              | Start every app in dev mode                 |
+| `bun run build`        | Production build of every app/package       |
+| `bun typecheck`        | `tsc --noEmit` everywhere                   |
+| `bun lint`             | Lint pipeline (currently typecheck)         |
+| `bun test`             | Test suites across every workspace          |
+| `bun run format`       | Prettier write                              |
+| `bun run format:check` | Prettier check (use in CI)                  |
+| `bun run clean`        | Drop `dist/`, `.turbo/`, and `node_modules` |
 
 ---
 

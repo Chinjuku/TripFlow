@@ -12,13 +12,18 @@
     "clean": "rm -rf .turbo dist"
   },
   "dependencies": {
+    "@elysiajs/eden": "^1.4.9",
+    "@generouted/react-router": "^1.20.2",
+    "@trip-flow/api": "workspace:*",
     "@trip-flow/db": "workspace:*",
     "@trip-flow/ui": "workspace:*",
+    "lucide-react": "^1.16.0",
     "react": "^18.3.1",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.3.1",
-    "react-js-cron": "^5.0.1"
+    "react-js-cron": "^5.0.1",
+    "react-router-dom": "^7.15.1"
   },
   "devDependencies": {
     "@trip-flow/tsconfig": "workspace:*",

@@ -11,18 +11,18 @@ treat the rules in this file as authoritative for the TripFlow monorepo.
 TripFlow is a collaborative trip planner. The product surface is a single
 web app backed by one HTTP API and a shared Supabase Postgres database.
 
-| Concern         | Choice                                   | Lives in              |
-| --------------- | ---------------------------------------- | --------------------- |
-| Monorepo        | Turborepo + Bun workspaces               | root                  |
-| Frontend        | Vite + React 18 + TypeScript + Tailwind  | `apps/web`            |
-| UI primitives   | shadcn/ui + Tailwind tokens              | `packages/ui`         |
-| Drag & drop     | `react-dnd`                              | `apps/web`            |
-| Cron picker UI  | `react-js-cron`                          | `apps/web`            |
-| Maps            | Google Maps URL deep-links (no API key)  | `apps/web/src/lib/maps.ts` |
-| Backend         | ElysiaJS on Bun                          | `apps/api`            |
-| Cron worker     | `@elysiajs/cron` (master polling)        | `apps/api/src/cron`   |
-| Database        | Supabase (Postgres + RLS + Realtime)     | `packages/db`         |
-| Shared TS config| `@trip-flow/tsconfig`                    | `packages/tsconfig`   |
+| Concern          | Choice                                  | Lives in                   |
+| ---------------- | --------------------------------------- | -------------------------- |
+| Monorepo         | Turborepo + Bun workspaces              | root                       |
+| Frontend         | Vite + React 18 + TypeScript + Tailwind | `apps/web`                 |
+| UI primitives    | shadcn/ui + Tailwind tokens             | `packages/ui`              |
+| Drag & drop      | `react-dnd`                             | `apps/web`                 |
+| Cron picker UI   | `react-js-cron`                         | `apps/web`                 |
+| Maps             | Google Maps URL deep-links (no API key) | `apps/web/src/lib/maps.ts` |
+| Backend          | ElysiaJS on Bun                         | `apps/api`                 |
+| Cron worker      | `@elysiajs/cron` (master polling)       | `apps/api/src/cron`        |
+| Database         | Supabase (Postgres + RLS + Realtime)    | `packages/db`              |
+| Shared TS config | `@trip-flow/tsconfig`                   | `packages/tsconfig`        |
 
 ### Workspace map
 
@@ -89,7 +89,7 @@ docker compose up
   the app folder. Workspace packages (`@trip-flow/db`, `@trip-flow/ui`,
   `@trip-flow/tsconfig`) must be in the build context.
 - Dockerfiles are multi-stage: `base → deps → development → builder →
-  runtime`. Compose targets `development`; CI/prod targets `runtime`.
+runtime`. Compose targets `development`; CI/prod targets `runtime`.
 - `VITE_*` env vars are baked into the web bundle at build time, so they
   are passed via `--build-arg`, not via `-e` at run time. Anything that
   must change without a rebuild belongs on the API.
@@ -133,42 +133,167 @@ If you add a new variable:
 
 ### React (apps/web)
 
-- Functional components only. Hooks at the top, no conditional hooks.
-- Co-locate component-specific styles, tests, and stories next to the
-  component (`Foo.tsx`, `Foo.test.tsx`).
-- Reach for shared primitives in `@trip-flow/ui` before redefining a
-  Button/Input/Dialog locally.
-- Data fetching: prefer Supabase client subscriptions for realtime data;
-  hit the Elysia API for anything that needs the service-role key.
-- Maps: never call the Google Maps **API** from the browser. Build a
-  Google Maps URL via `src/lib/maps.ts` and render it as an `<a>` — on
-  mobile this opens the native Google Maps app automatically.
+#### Directory Structure & Architecture
+
+Under `apps/web/src/`, we enforce a strict separation of concerns:
+
+- **`pages/`**: Page-level components corresponding directly to application routes. They handle page layouts, orchestrate feature blocks, and integrate with routing. They should contain minimal direct styling or local state, acting mainly as glue.
+- **`components/`**: Generic, atomic, highly reusable UI components (e.g., custom loaders, layout wrappers, formatting primitives) that have **zero** domain or business knowledge. Reach for packages/ui primitives before creating anything here.
+- **`features/`**: Domain-specific modules grouped by feature area (e.g., `features/trips`, `features/chat`, `features/collaboration`). Each feature directory contains its own components, custom hooks, and utility functions unique to that domain.
+- **`hooks/`**: Global, reusable non-domain React hooks (e.g., `useMediaQuery`, `useDebounce`). Domain-specific hooks must live inside their respective `features/` directory.
+- **`lib/`**: Configuration and initialization of libraries (e.g., Supabase client, query client, map utilities).
+- **`stores/`**: Global state stores (Zustand) that cross multiple feature boundaries.
+
+#### Calling Patterns & Dependency Rules
+
+- **Strict One-Way Dependency:**
+  ```
+  pages ──> features ──> components
+    │                       ▲
+    └───────────────────────┘
+  ```
+
+  - `pages` may import from `features` and `components`.
+  - `features` may import from `components` and other generic folders (`lib`, `stores`, `hooks`), but **never** from `pages`.
+  - `components` (shared/atomic primitives) **CANNOT** import from `features` or `pages`. They must remain completely generic and reusable.
+  - Cross-feature imports are discouraged. If `features/chat` needs logic from `features/trips`, abstract the shared logic into a common hook or global store, or limit dependencies to types.
+- **Naming Conventions:**
+  - React component files MUST use `PascalCase` (e.g., `TripCard.tsx`, `SidebarLayout.tsx`).
+  - Utility files, styles, hooks, and configuration files MUST use `kebab-case` or `camelCase` (e.g., `use-media-query.ts`, `maps.ts`).
+- **State Management Rules:**
+  - **Local State:** Use standard React `useState` / `useReducer` for UI-only transient states.
+  - **Global Client State:** Use Zustand for cross-component global state (e.g., user preferences, active planning modes). Minimize global state where possible.
+  - **Server State / Cache:** Use React Query (or SWR) for caching, prefetching, and mutating data retrieved from the Elysia API. For direct realtime updates from Supabase, use Supabase client subscriptions managed within React Query effects or dedicated custom hooks inside `features/`.
+
+#### Additional React Guidelines
+
+- **Props Typing:** All components must explicitly type their props using TypeScript interfaces or types. No inline type casting.
+- **Performance:** Avoid unnecessary heavy re-renders. Memoize expensive operations using `useMemo` and functions passed to children using `useCallback` where appropriate.
+- **No Direct DOM Manipulation:** Always utilize React refs (`useRef`) and state. Do not bypass React with raw `document.querySelector` operations.
+- **Maps:** Never call the Google Maps **API** from the browser. Build a Google Maps URL via `src/lib/maps.ts` and render it as an `<a>` — on mobile this opens the native Google Maps app automatically.
+
+#### Routing (Generouted)
+
+- **File-Based Routing:** We use `@generouted/react-router` for file-system based, type-safe routes. The route tree is automatically generated at build time from files under `apps/web/src/pages/`.
+- **Pages Conventions:**
+  - `src/pages/_app.tsx`: The root shell layout wrapping all routes. Put standard layouts (like `MainLayout`), React Query Providers, and globally required contexts here.
+  - `src/pages/index.tsx`: Corresponds to the home route `/` (usually redirects to `/dashboard`).
+  - `src/pages/dashboard.tsx`: Corresponds to `/dashboard`.
+  - `src/pages/trips/[id].tsx`: Corresponds to dynamic path `/trips/:id`.
+  - `src/pages/404.tsx`: Handles unmatched fallback paths automatically.
+- **No Manual Routes:** Do not construct manual `<Routes>` components in `main.tsx` or `app.tsx`. Use Generouted's exported `<Routes />` component at the root entry point.
+
+#### API Integration & E2E Type-Safety
+
+- **Elysia Eden Treaty:** For server-side business actions, reminders, cron controls, or transactions requiring `service_role` credentials, the frontend uses Elysia's Eden client (`@elysiajs/eden`).
+- **E2E Autocomplete:** Initialize the client in `apps/web/src/lib/api.ts` by importing `type App` from `@trip-flow/api`. This provides compile-time safety and autocompletion for all endpoints, payloads, and responses.
+- **Direct Database Queries:** Call Supabase directly via `apps/web/src/lib/supabase.ts` ONLY for simple, non-sensitive CRUD operations that respect active Row-Level Security (RLS) policies.
 
 ### Elysia (apps/api)
 
-- One file per route group under `src/routes/`. Export an `Elysia`
-  instance with a `prefix`.
-- Validate every `query` / `body` / `params` with `t.Object({...})`. No
-  unchecked input.
-- Centralised error handling lives in `src/index.ts` via `.onError(...)`.
-  Throw inside handlers; format there.
-- Background work goes through `@elysiajs/cron` in `src/cron/`. Workers
-  must be **idempotent** — assume your handler may fire twice.
+#### Directory Structure: Route-Controller-Service-Model (RCSM)
+
+To keep the backend structured, modular, and testable, all HTTP routes and business logic in `apps/api` must adhere to the RCSM pattern under `src/`:
+
+- **`src/routes/`**: Declarative HTTP routing definitions.
+  - _Responsibility_: Map HTTP methods and paths, apply route-specific middlewares (e.g., auth, parsing), and define/validate strict input schema shapes using Elysia's `t.Object()`.
+  - _Constraints_: **Zero complex business logic.** Route handlers must strictly delegate to Controllers.
+- **`src/controllers/`**: HTTP request-response adapters.
+  - _Responsibility_: Extract parameters, query strings, and body payloads from Elysia's Context; perform basic input validation/sanitization; invoke the appropriate Services; format and return standard HTTP responses.
+  - _Constraints_: Keep controllers slim. They must handle HTTP concerns (status codes, response serialization, cookies) but leave data calculations and queries to Services.
+- **`src/services/`**: Core domain business logic.
+  - _Responsibility_: Core business logic, data validation, calculations, transactions, and direct database queries/Supabase client operations.
+  - _Constraints_: **HTTP-agnostic.** Services must not accept or know about Elysia's `Context` or request objects directly. They receive raw TypeScript primitive data or structured typed payloads, making them fully testable in isolation.
+- **`src/models/`** (or **`src/schema/`**): Shared schemas, type definitions, and validator shapes.
+  - _Responsibility_: Reusable schema validators (`t.Object`), TypeScript interface/type definitions, and shared constant values.
+
+#### Calling Patterns & Error Handling
+
+- **Request Flow Rules:**
+  ```
+  HTTP Request ──> Route ──> Controller ──> Service ──> Supabase/Database
+  ```
+  This chain must not be bypassed (e.g., Routes must never call Services directly; Controllers must never call the Database directly).
+- **Error Handling & Propagation:**
+  - Services must explicitly throw structured, semantic domain/business errors (e.g., `NotFoundError`, `UnauthorizedError`, `ConflictError`).
+  - Do not catch database errors inside services unless translating them into readable domain errors.
+  - Controllers or Elysia's global error handler (in `src/index.ts` via `.onError(...)`) will intercept these thrown errors, map them to standard HTTP status codes (e.g., 404 for `NotFoundError`, 409 for `ConflictError`), and return a uniform JSON error payload.
+- **Service Idempotency & Transactions:**
+  - Services that perform write operations must check if the operation has already been executed or can be safely retried.
+  - Use database transaction blocks for multi-step database writes to ensure transactional integrity.
 
 ### Database (Supabase)
 
-- Schema changes ship as SQL migrations checked into `supabase/migrations/`
-  (create the folder when the first migration lands).
-- **RLS is on by default.** Every new table starts with `enable row level
-  security` plus explicit policies for `select`, `insert`, `update`,
-  `delete`.
-- Regenerate types after every schema change:
-  ```bash
-  bunx supabase gen types typescript --project-id <id> \
-    > packages/db/src/types.ts
+#### Naming Conventions
+
+- All database elements—including table names, columns, schemas, foreign keys, indexes, triggers, and custom functions—MUST use `snake_case` (e.g., `trip_items`, `created_at`, `fk_trip_user`).
+- Table names must be plural (e.g., `users`, `trips`, `trip_members`).
+
+#### Row Level Security (RLS) & Authorization
+
+- **RLS is mandatory and ON by default.** Every table migration MUST explicitly enable RLS:
+  ```sql
+  alter table table_name enable row level security;
   ```
-- Google Maps payloads belong in a `jsonb` column on `trip_items.place`,
-  not in a sprawl of denormalised columns.
+- Define clear, fine-grained policies for `select`, `insert`, `update`, and `delete`.
+- **Key Separation & Client Context:**
+  - The Supabase `anon` key (used directly in `apps/web`) has restricted capabilities and respects all RLS policies. It relies on the JWT of the logged-in user (`auth.uid()`) to authorize data operations.
+  - The Supabase `service_role` key (used strictly in `apps/api`) **bypasses all RLS policies**. Never expose this key in the frontend. All write/read operations that require administrative override or run background cron jobs must go through the API using the service role client.
+- **Policy Pattern:**
+  ```sql
+  create policy "Users can view their own trip items"
+  on trip_items for select
+  using (
+    exists (
+      select 1 from trip_members
+      where trip_members.trip_id = trip_items.trip_id
+      and trip_members.user_id = auth.uid()
+    )
+  );
+  ```
+
+#### Migrations & Deployment Rules
+
+- **Zero Manual Schema Edits:** Directly altering schemas, tables, columns, or triggers in the Supabase Dashboard UI is strictly prohibited in production and staging environments. All modifications must be written as declarative SQL scripts.
+- **Local Migrations:** Every schema update must land as a new migration file via the local CLI:
+  ```bash
+  supabase migration new <describe_change>
+  ```
+  This generates a timestamped file under `supabase/migrations/`.
+
+#### Database Functions, Triggers & Performance
+
+- **Postgres Functions & Triggers:** Custom PostgreSQL functions, automated audit triggers, or timestamp updates must be fully declared within your migration scripts.
+  - Always co-locate the trigger function and the trigger binding in the same migration file.
+  - Example trigger pattern for `updated_at`:
+
+    ```sql
+    create or replace function update_modified_column()
+    returns trigger as $$
+    begin
+        new.updated_at = now();
+        return new;
+    end;
+    $$ language plpgsql;
+
+    create trigger update_table_name_modtime
+    before update on table_name
+    for each row
+    execute function update_modified_column();
+    ```
+
+- **Performance & Indexes:**
+  - All foreign keys must have corresponding indexes created in the same migration file to prevent performance degradation on lookups.
+  - JSONB payloads belong in a `jsonb` column on `trip_items.place`, not in a sprawl of denormalised columns. Do not denormalize core relational schemas into JSONB.
+  - Always use `timestamptz` for date/time fields to preserve timezone information. Use UUIDs for primary keys.
+
+#### Type Syncing & Generation
+
+- Never edit `packages/db/src/types.ts` manually.
+- After any schema migration, regenerate TypeScript types to keep the database client fully typed:
+  ```bash
+  bunx supabase gen types typescript --project-id <id> > packages/db/src/types.ts
+  ```
 
 ### Formatting & lint
 
@@ -197,11 +322,11 @@ If you add a new variable:
 
 ## 6. Testing strategy
 
-| Layer            | Tooling                           | Lives in                    |
-| ---------------- | --------------------------------- | --------------------------- |
-| Unit (server)    | `bun test`                        | `apps/api/src/**/*.test.ts` |
-| Unit (frontend)  | `vitest` + `@testing-library/react` (to add) | `apps/web/src/**/*.test.tsx` |
-| E2E              | Playwright (to add)               | `apps/web/e2e/`             |
+| Layer           | Tooling                                      | Lives in                     |
+| --------------- | -------------------------------------------- | ---------------------------- |
+| Unit (server)   | `bun test`                                   | `apps/api/src/**/*.test.ts`  |
+| Unit (frontend) | `vitest` + `@testing-library/react` (to add) | `apps/web/src/**/*.test.tsx` |
+| E2E             | Playwright (to add)                          | `apps/web/e2e/`              |
 
 Rules of thumb:
 

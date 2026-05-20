@@ -4,12 +4,12 @@ Vite + React + Tailwind frontend for TripFlow.
 
 ## Scripts
 
-| Command           | Purpose                       |
-| ----------------- | ----------------------------- |
-| `bun dev`         | Vite dev server on `:5173`    |
+| Command           | Purpose                          |
+| ----------------- | -------------------------------- |
+| `bun dev`         | Vite dev server on `:5173`       |
 | `bun run build`   | Type-check then production build |
-| `bun run preview` | Serve the built bundle        |
-| `bun typecheck`   | `tsc --noEmit`                |
+| `bun run preview` | Serve the built bundle           |
+| `bun typecheck`   | `tsc --noEmit`                   |
 
 ## Conventions
 

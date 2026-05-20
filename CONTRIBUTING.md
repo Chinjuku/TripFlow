@@ -20,20 +20,20 @@
 
 ### Branch หลัก
 
-| Branch | หน้าที่ |
-|--------|---------|
-| `main` | โค้ด production — ห้ามแตะโดยตรง |
+| Branch    | หน้าที่                                          |
+| --------- | ------------------------------------------------ |
+| `main`    | โค้ด production — ห้ามแตะโดยตรง                  |
 | `develop` | โค้ดล่าสุดที่รอ release — merge feature มาที่นี่ |
 
 ### Branch สำหรับงาน
 
-| รูปแบบ | ใช้เมื่อ | ตัวอย่าง |
-|--------|---------|---------|
-| `feature/<ชื่อ>` | เพิ่ม feature ใหม่ | `feature/trip-board-drag-drop` |
-| `fix/<ชื่อ>` | แก้ bug ทั่วไป | `fix/map-marker-overlap` |
-| `hotfix/<ชื่อ>` | แก้ bug ด่วนบน production | `hotfix/payment-crash` |
-| `chore/<ชื่อ>` | งานที่ไม่ใช่ feature/bug (update dep, config) | `chore/update-dependencies` |
-| `release/<version>` | เตรียม release | `release/1.2.0` |
+| รูปแบบ              | ใช้เมื่อ                                      | ตัวอย่าง                       |
+| ------------------- | --------------------------------------------- | ------------------------------ |
+| `feature/<ชื่อ>`    | เพิ่ม feature ใหม่                            | `feature/trip-board-drag-drop` |
+| `fix/<ชื่อ>`        | แก้ bug ทั่วไป                                | `fix/map-marker-overlap`       |
+| `hotfix/<ชื่อ>`     | แก้ bug ด่วนบน production                     | `hotfix/payment-crash`         |
+| `chore/<ชื่อ>`      | งานที่ไม่ใช่ feature/bug (update dep, config) | `chore/update-dependencies`    |
+| `release/<version>` | เตรียม release                                | `release/1.2.0`                |
 
 > **ถ้าตั้งชื่อ branch ผิด** ระบบจะบล็อกไม่ให้ push โดยอัตโนมัติ
 
@@ -51,19 +51,19 @@
 
 ### Type ที่ใช้ได้
 
-| Type | ใช้เมื่อ |
-|------|---------|
-| `feat` | เพิ่ม feature ใหม่ |
-| `fix` | แก้ bug |
-| `docs` | แก้ไข documentation |
-| `style` | แก้ formatting, ไม่มีผลต่อ logic |
+| Type       | ใช้เมื่อ                                           |
+| ---------- | -------------------------------------------------- |
+| `feat`     | เพิ่ม feature ใหม่                                 |
+| `fix`      | แก้ bug                                            |
+| `docs`     | แก้ไข documentation                                |
+| `style`    | แก้ formatting, ไม่มีผลต่อ logic                   |
 | `refactor` | เปลี่ยนโครงสร้างโค้ด ไม่ใช่ feature ไม่ใช่ bug fix |
-| `perf` | ปรับให้ performance ดีขึ้น |
-| `test` | เพิ่ม/แก้ไข test |
-| `chore` | งานที่ไม่ใช่โค้ด production (config, build tool) |
-| `revert` | ยกเลิก commit ก่อนหน้า |
-| `ci` | แก้ CI/CD pipeline |
-| `build` | แก้ build system หรือ dependency |
+| `perf`     | ปรับให้ performance ดีขึ้น                         |
+| `test`     | เพิ่ม/แก้ไข test                                   |
+| `chore`    | งานที่ไม่ใช่โค้ด production (config, build tool)   |
+| `revert`   | ยกเลิก commit ก่อนหน้า                             |
+| `ci`       | แก้ CI/CD pipeline                                 |
+| `build`    | แก้ build system หรือ dependency                   |
 
 ### ตัวอย่างที่ถูก vs ผิด
 

@@ -19,8 +19,6 @@ export const app = new Elysia()
   .use(reminderCron)
   .listen(env.port);
 
-console.info(
-  `[api] TripFlow API listening on http://${app.server?.hostname}:${app.server?.port}`,
-);
+console.info(`[api] TripFlow API listening on http://${app.server?.hostname}:${app.server?.port}`);
 
 export type App = typeof app;

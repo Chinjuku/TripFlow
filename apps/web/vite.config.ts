@@ -2,12 +2,14 @@ import path from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import generouted from '@generouted/react-router/plugin';
 
 export default defineConfig({
   // Load .env files from the monorepo root so every app shares one source of truth.
   envDir: path.resolve(__dirname, '../..'),
   plugins: [
     react(),
+    generouted(),
     VitePWA({
       registerType: 'autoUpdate',
       manifest: false, // we ship our own /manifest.json from /public
