@@ -1,24 +1,57 @@
-import React from 'react';
-import { useAuth } from '@/features/auth/useAuth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@trip-flow/ui/components/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@trip-flow/ui/components/card';
 import { Input } from '@trip-flow/ui/components/input';
 import { Label } from '@trip-flow/ui/components/label';
-import { User, Mail, ShieldCheck } from 'lucide-react';
+import { Mail, Palette, ShieldCheck, User } from 'lucide-react';
+import { useAuth } from '@/features/auth/useAuth';
+import { ThemeToggle } from '@/features/theme';
 
 export default function SettingsPage() {
   const { user } = useAuth();
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
+    <div className="animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-3xl space-y-8 duration-500 ease-out">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-white">Settings</h1>
-        <p className="text-slate-400 mt-2">Manage your account settings and preferences.</p>
+        <h1 className="font-headline text-foreground text-3xl font-extrabold tracking-tight">
+          Settings
+        </h1>
+        <p className="text-muted-foreground mt-2">
+          Manage your account settings and preferences.
+        </p>
       </div>
 
-      <Card className="border-indigo-500/20 shadow-[0_0_40px_-15px_rgba(99,102,241,0.2)]">
+      {/* Appearance */}
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5 text-indigo-400" />
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <Palette className="text-primary h-5 w-5" strokeWidth={1.75} />
+            Appearance
+          </CardTitle>
+          <CardDescription>Choose how TripFlow looks.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-foreground text-sm font-medium">Theme</p>
+              <p className="text-muted-foreground text-xs">
+                Switches the entire app, including the login screen.
+              </p>
+            </div>
+            <ThemeToggle />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Profile */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <User className="text-primary h-5 w-5" strokeWidth={1.75} />
             Profile Information
           </CardTitle>
           <CardDescription>
@@ -26,10 +59,9 @@ export default function SettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Avatar Section */}
-          <div className="flex items-center gap-6 p-4 rounded-xl bg-slate-900/50 border border-slate-800/50">
+          <div className="bg-muted/50 border-border flex items-center gap-6 rounded-xl border p-4">
             {user?.avatarUrl ? (
-              <div className="relative h-20 w-20 rounded-full overflow-hidden border-2 border-indigo-500/30">
+              <div className="border-primary/40 relative h-20 w-20 overflow-hidden rounded-full border-2">
                 <img
                   src={user.avatarUrl}
                   alt={user.name}
@@ -38,35 +70,32 @@ export default function SettingsPage() {
                 />
               </div>
             ) : (
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-3xl font-bold shadow-inner">
+              <div className="bg-primary text-primary-foreground flex h-20 w-20 items-center justify-center rounded-full text-3xl font-bold shadow-inner">
                 {user?.name?.charAt(0)?.toUpperCase() ?? '?'}
               </div>
             )}
             <div className="space-y-1">
-              <h4 className="text-sm font-semibold text-slate-200">Profile Picture</h4>
-              <p className="text-xs text-slate-500">
+              <h4 className="text-foreground text-sm font-semibold">Profile Picture</h4>
+              <p className="text-muted-foreground text-xs">
                 Managed automatically by your connected Google account.
               </p>
             </div>
           </div>
 
-          {/* Form Fields (Read-Only) */}
           <div className="grid gap-6 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-slate-300">Display Name</Label>
+              <Label htmlFor="name">Display Name</Label>
               <div className="relative">
-                <Input
-                  id="name"
-                  value={user?.name ?? ''}
-                  disabled
-                  className="pl-10"
+                <Input id="name" value={user?.name ?? ''} disabled className="pl-10" />
+                <User
+                  className="text-muted-foreground absolute left-3 top-2.5 h-5 w-5"
+                  strokeWidth={1.75}
                 />
-                <User className="absolute left-3 top-2.5 h-5 w-5 text-slate-500" />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-300">Email Address</Label>
+              <Label htmlFor="email">Email Address</Label>
               <div className="relative">
                 <Input
                   id="email"
@@ -75,16 +104,19 @@ export default function SettingsPage() {
                   disabled
                   className="pl-10"
                 />
-                <Mail className="absolute left-3 top-2.5 h-5 w-5 text-slate-500" />
+                <Mail
+                  className="text-muted-foreground absolute left-3 top-2.5 h-5 w-5"
+                  strokeWidth={1.75}
+                />
               </div>
             </div>
           </div>
-          
-          <div className="flex items-center gap-3 p-4 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-200 text-sm mt-4">
-            <ShieldCheck className="h-5 w-5 text-indigo-400 shrink-0" />
+
+          <div className="bg-primary/10 border-primary/20 text-foreground mt-4 flex items-center gap-3 rounded-lg border p-4 text-sm">
+            <ShieldCheck className="text-primary h-5 w-5 shrink-0" strokeWidth={1.75} />
             <p>
-              Your account is currently managed via Google OAuth. To update your name or profile picture, 
-              please make the changes directly in your Google account settings.
+              Your account is currently managed via Google OAuth. To update your name or profile
+              picture, please make the changes directly in your Google account settings.
             </p>
           </div>
         </CardContent>

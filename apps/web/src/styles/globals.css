@@ -15,6 +15,13 @@
   * {
     @apply border-border;
   }
+  /* Disable every transition during theme swap so the change is instant. */
+  html.theme-switching,
+  html.theme-switching *,
+  html.theme-switching *::before,
+  html.theme-switching *::after {
+    transition: none !important;
+  }
   html {
     font-family: var(--font-body);
   }

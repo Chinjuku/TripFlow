@@ -13,6 +13,7 @@ import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { AuthProvider } from '@/features/auth/AuthProvider';
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute';
+import { ThemeProvider } from '@/features/theme';
 import { MainLayout } from '@/components/layout/MainLayout';
 
 const PUBLIC_PATHS = ['/login'] as const;
@@ -25,14 +26,16 @@ export default function App() {
   const { pathname } = useLocation();
 
   return (
-    <AuthProvider>
-      {isPublicPath(pathname) ? (
-        <Outlet />
-      ) : (
-        <ProtectedRoute>
-          <MainLayout />
-        </ProtectedRoute>
-      )}
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        {isPublicPath(pathname) ? (
+          <Outlet />
+        ) : (
+          <ProtectedRoute>
+            <MainLayout />
+          </ProtectedRoute>
+        )}
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
