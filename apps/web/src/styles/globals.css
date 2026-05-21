@@ -1,3 +1,10 @@
+/* Variable-axis web fonts — loaded once for the whole app. */
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/lexend';
+@import '@fontsource-variable/manrope';
+@import '@fontsource-variable/jetbrains-mono';
+
+/* Design tokens (Verdant Horizon). */
 @import '@trip-flow/ui/styles.css';
 
 @tailwind base;
@@ -8,10 +15,25 @@
   * {
     @apply border-border;
   }
+  html {
+    font-family: var(--font-body);
+  }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-body;
     font-feature-settings:
       'rlig' 1,
       'calt' 1;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-headline tracking-tight;
+  }
+  label,
+  .label {
+    @apply font-label;
   }
 }
