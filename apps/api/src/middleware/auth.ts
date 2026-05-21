@@ -11,12 +11,13 @@
  */
 
 import { Elysia } from 'elysia';
-import { verifyToken, type JwtPayload } from '../lib/jwt';
+import { verifyToken } from '../lib/jwt';
 import { SESSION_COOKIE } from '../lib/cookie';
 import { UnauthorizedError } from '../errors/domain';
 
 export const requireAuth = new Elysia({ name: 'middleware/auth' }).derive(
-  async ({ cookie }): Promise<{ user: JwtPayload }> => {
+  { as: 'global' },
+  async ({ cookie }) => {
     const token = cookie[SESSION_COOKIE]?.value as string | undefined;
 
     if (!token) {

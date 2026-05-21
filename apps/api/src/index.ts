@@ -5,6 +5,7 @@ import { env } from './env';
 import { DomainError, UnauthorizedError, ForbiddenError, NotFoundError } from './errors/domain';
 import { healthRoute } from './routes/health';
 import { authRoute } from './routes/auth';
+import { tripsRoute } from './routes/trips';
 
 export const app = new Elysia()
   .use(
@@ -39,6 +40,7 @@ export const app = new Elysia()
   })
   .use(healthRoute)
   .use(authRoute)
+  .use(tripsRoute)
   .use(reminderCron)
   .listen(env.port);
 

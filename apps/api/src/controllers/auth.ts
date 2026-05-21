@@ -64,7 +64,7 @@ export async function handleGoogleRedirect({
  * 3. Exchanges both for a Supabase session
  * 4. Signs our own JWT and sets it as a session cookie
  * 5. Clears the PKCE cookie
- * 6. Redirects the browser to the frontend dashboard
+ * 6. Redirects the browser to the frontend trips list
  */
 export async function handleCallback({ query, cookie, redirect }: Context): Promise<unknown> {
   const code = query['code'] as string | undefined;
@@ -86,7 +86,7 @@ export async function handleCallback({ query, cookie, redirect }: Context): Prom
   setCookie(cookie, SESSION_COOKIE, buildSessionCookie(token));
   setCookie(cookie, PKCE_COOKIE, buildClearCookie());
 
-  return redirect(`${env.webUrl}/dashboard`);
+  return redirect(`${env.webUrl}/trips`);
 }
 
 /**
