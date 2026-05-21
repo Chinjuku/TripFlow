@@ -21,11 +21,11 @@ export default function NotFoundPage() {
       </div>
 
       <Link
-        to="/dashboard"
-        className={`${buttonVariants({ variant: 'default' })} bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl gap-2 font-medium px-5 mt-2`}
+        to="/trips"
+        className={`${buttonVariants({ variant: 'default' })} gap-2 px-5`}
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to Dashboard
+        Back to Trips
       </Link>
     </div>
   );

@@ -5,7 +5,7 @@ import { useAuth } from '@/features/auth/useAuth';
 
 /**
  * Full-screen login page with Google OAuth.
- * Redirects authenticated users to /dashboard.
+ * Redirects authenticated users to /trips.
  */
 export default function LoginPage() {
   const { isAuthenticated, isLoading, signInWithGoogle } = useAuth();
@@ -19,7 +19,7 @@ export default function LoginPage() {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/trips" replace />;
   }
 
   return (
