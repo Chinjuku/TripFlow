@@ -20,6 +20,11 @@ export interface ModalProps {
 /**
  * Thin wrapper around the native <dialog> element so we get free focus
  * trapping, ESC-to-close, and inert backdrop without pulling in Radix.
+ *
+ * Responsive: bottom sheet on mobile (anchored to the viewport bottom
+ * with a drag handle), centered card on `sm:` and up. The two layouts
+ * share the same underlying <dialog> — we just shift the margin/radius
+ * to switch between them.
  */
 export function Modal({
   open,
@@ -48,34 +53,55 @@ export function Modal({
         if (e.target === ref.current) onOpenChange(false);
       }}
       className={cn(
-        'bg-card text-card-foreground border-border w-full max-w-md rounded-2xl border p-0 shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm',
-        'open:animate-in open:fade-in-0 open:zoom-in-95',
+        'bg-card text-card-foreground p-0 shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm',
+        // Mobile bottom sheet: full width, anchored to viewport bottom,
+        // rounded only on top. `mt-auto mb-0` overrides <dialog>'s default
+        // centering and pushes it to the bottom edge.
+        'mx-0 mb-0 mt-auto w-full max-w-none rounded-b-none rounded-t-2xl',
+        'max-h-[90dvh] overflow-hidden',
+        // Desktop centered card: restore margin auto + full rounding.
+        'sm:border-border sm:mx-auto sm:my-auto sm:w-[calc(100vw-1.5rem)] sm:max-w-md sm:rounded-2xl sm:border sm:max-h-[calc(100dvh-3rem)]',
+        'open:animate-in open:fade-in-0 open:slide-in-from-bottom-4 sm:open:slide-in-from-bottom-0 sm:open:zoom-in-95',
         className,
       )}
     >
-      {hideHeader ? (
-        <h2 id="modal-title" className="sr-only">
-          {title}
-        </h2>
-      ) : (
-        <div className="flex items-start justify-between gap-4 px-6 pt-6">
-          <div className="space-y-1">
-            <h2 id="modal-title" className="font-headline text-foreground text-xl font-bold">
-              {title}
-            </h2>
-            {description && <p className="text-muted-foreground text-sm">{description}</p>}
-          </div>
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            aria-label="Close"
-            className="text-muted-foreground hover:text-foreground -mr-2 -mt-2 rounded-md p-2"
-          >
-            <CloseGlyph />
-          </button>
+      <div className="flex max-h-[90dvh] flex-col sm:max-h-[calc(100dvh-3rem)]">
+        {/* Drag handle — visual affordance for mobile bottom sheet, hidden on desktop. */}
+        <div className="flex justify-center pt-2 sm:hidden" aria-hidden>
+          <span className="bg-muted-foreground/30 h-1 w-10 rounded-full" />
         </div>
-      )}
-      <div className={cn(hideHeader ? '' : 'px-6 pb-6 pt-4')}>{children}</div>
+
+        {hideHeader ? (
+          <h2 id="modal-title" className="sr-only">
+            {title}
+          </h2>
+        ) : (
+          <div className="flex items-start justify-between gap-4 px-5 pt-4 sm:px-6 sm:pt-6">
+            <div className="space-y-1">
+              <h2 id="modal-title" className="font-headline text-primary text-lg font-bold sm:text-xl">
+                {title}
+              </h2>
+              {description && <p className="text-muted-foreground text-sm">{description}</p>}
+            </div>
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              aria-label="Close"
+              className="text-muted-foreground hover:text-foreground -mr-1.5 -mt-1.5 rounded-md p-2 sm:-mr-2 sm:-mt-2"
+            >
+              <CloseGlyph />
+            </button>
+          </div>
+        )}
+        <div
+          className={cn(
+            'overflow-y-auto',
+            hideHeader ? '' : 'px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:px-6 sm:pb-6',
+          )}
+        >
+          {children}
+        </div>
+      </div>
     </dialog>
   );
 }
