@@ -17,15 +17,12 @@
     "typecheck": "turbo run typecheck",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
-    "clean": "turbo run clean && rm -rf node_modules .turbo",
-    "prepare": "husky"
+    "clean": "turbo run clean && rm -rf node_modules .turbo"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.0.1",
     "@commitlint/config-conventional": "^21.0.1",
     "@types/bun": "^1.1.13",
-    "husky": "^9.1.7",
-    "lint-staged": "^17.0.5",
     "prettier": "^3.4.2",
     "turbo": "^2.3.3",
     "typescript": "^5.7.2"
@@ -37,10 +34,5 @@
   "trustedDependencies": [
     "@biomejs/biome",
     "esbuild"
-  ],
-  "lint-staged": {
-    "**/*.{ts,tsx}": "prettier --check",
-    "apps/web/**/*.{ts,tsx}": "bash -c 'cd apps/web && bun run typecheck'",
-    "apps/api/**/*.{ts,tsx}": "bash -c 'cd apps/api && bun run typecheck'"
-  }
+  ]
 }

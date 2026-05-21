@@ -23,3 +23,6 @@ export function createServerSupabaseClient(config: ServerClientConfig): Supabase
     },
   });
 }
+
+export * from './drizzle';
+export * from './schema';

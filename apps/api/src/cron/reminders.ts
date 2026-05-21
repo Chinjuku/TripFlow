@@ -1,6 +1,7 @@
 import { cron, Patterns } from '@elysiajs/cron';
 import { Elysia } from 'elysia';
-import { supabase } from '../lib/supabase';
+import { db, reminders } from '@trip-flow/db/server';
+import { eq, or, isNull, lt } from 'drizzle-orm';
 
 /**
  * Master polling worker.
@@ -15,21 +16,27 @@ export const reminderCron = new Elysia({ name: 'cron/reminders' }).use(
     async run() {
       const now = new Date().toISOString();
 
-      const { data, error } = await supabase
-        .from('reminders')
-        .select('id, trip_id, channel, payload')
-        .eq('enabled', true)
-        .or(`last_run_at.is.null,last_run_at.lt.${now}`)
-        .limit(50);
+      try {
+        const dueReminders = await db
+          .select({
+            id: reminders.id,
+            trip_id: reminders.trip_id,
+            channel: reminders.channel,
+            payload: reminders.payload,
+          })
+          .from(reminders)
+          .where(
+            eq(reminders.enabled, true),
+          )
+          .limit(50);
 
-      if (error) {
+        if (dueReminders.length === 0) return;
+
+        // TODO: hand off to channel dispatchers (email/push/webhook).
+        console.info(`[cron] dispatching ${dueReminders.length} reminder(s)`);
+      } catch (error) {
         console.error('[cron] reminders poll failed', error);
-        return;
       }
-      if (!data || data.length === 0) return;
-
-      // TODO: hand off to channel dispatchers (email/push/webhook).
-      console.info(`[cron] dispatching ${data.length} reminder(s)`);
     },
   }),
 );

@@ -15,7 +15,6 @@
     "@elysiajs/eden": "^1.4.9",
     "@generouted/react-router": "^1.20.2",
     "@trip-flow/api": "workspace:*",
-    "@trip-flow/db": "workspace:*",
     "@trip-flow/ui": "workspace:*",
     "lucide-react": "^1.16.0",
     "react": "^18.3.1",

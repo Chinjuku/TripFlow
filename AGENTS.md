@@ -147,6 +147,7 @@ Under `apps/web/src/`, we enforce a strict separation of concerns:
 #### Calling Patterns & Dependency Rules
 
 - **Strict One-Way Dependency:**
+
   ```
   pages ──> features ──> components
     │                       ▲
@@ -157,6 +158,7 @@ Under `apps/web/src/`, we enforce a strict separation of concerns:
   - `features` may import from `components` and other generic folders (`lib`, `stores`, `hooks`), but **never** from `pages`.
   - `components` (shared/atomic primitives) **CANNOT** import from `features` or `pages`. They must remain completely generic and reusable.
   - Cross-feature imports are discouraged. If `features/chat` needs logic from `features/trips`, abstract the shared logic into a common hook or global store, or limit dependencies to types.
+
 - **Naming Conventions:**
   - React component files MUST use `PascalCase` (e.g., `TripCard.tsx`, `SidebarLayout.tsx`).
   - Utility files, styles, hooks, and configuration files MUST use `kebab-case` or `camelCase` (e.g., `use-media-query.ts`, `maps.ts`).
