@@ -24,16 +24,6 @@ export interface CreateTripPayload {
   endsOn: string;
 }
 
-export interface TripItem {
-  id: string;
-  dayIndex: number;
-  position: number;
-  place: unknown;
-  notes: string | null;
-  createdAt: string;
-}
-
 export interface TripDetail extends TripSummary {
   ownerId: string;
-  items: TripItem[];
 }

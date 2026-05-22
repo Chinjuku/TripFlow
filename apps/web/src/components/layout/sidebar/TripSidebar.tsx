@@ -52,7 +52,8 @@ export function TripSidebar({ tripId, open, onOpenChange }: TripSidebarProps) {
   const close = () => onOpenChange(false);
 
   const navItems: NavItem[] = [
-    { name: 'Plan', to: `/trips/${tripId}`, icon: Map },
+    { name: 'Overview', to: `/trips/${tripId}`, icon: Compass },
+    { name: 'Plan', to: `/trips/${tripId}/plan`, icon: Map },
     { name: 'Schedule', to: `/trips/${tripId}/schedule`, icon: Calendar },
     { name: 'Voting', to: `/trips/${tripId}/voting`, icon: ThumbsUp },
     { name: 'Finances', to: `/trips/${tripId}/finances`, icon: Wallet },
