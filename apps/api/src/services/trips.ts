@@ -5,8 +5,8 @@
  * errors. The controller layer adapts these to HTTP responses.
  */
 
-import { db, trips, tripMembers, tripItems, type Trip } from '@trip-flow/db/server';
-import { and, asc, desc, eq, inArray } from 'drizzle-orm';
+import { db, trips, tripMembers, type Trip } from '@trip-flow/db/server';
+import { and, desc, eq, inArray } from 'drizzle-orm';
 import { ConflictError, ForbiddenError, NotFoundError } from '../errors/domain';
 import { generateInviteCode, normaliseInviteCode } from '../lib/invite-code';
 import { getUserById } from './auth';
@@ -28,15 +28,6 @@ export interface TripSummary {
   members: TripMemberProfile[];
 }
 
-export interface TripItem {
-  id: string;
-  dayIndex: number;
-  position: number;
-  place: unknown;
-  notes: string | null;
-  createdAt: string;
-}
-
 export interface TripMemberProfile {
   userId: string;
   role: 'owner' | 'member';
@@ -48,7 +39,6 @@ export interface TripMemberProfile {
 
 export interface TripDetail extends TripSummary {
   ownerId: string;
-  items: TripItem[];
 }
 
 function toSummary(
@@ -235,27 +225,11 @@ export async function getTripDetail(userId: string, tripId: string): Promise<Tri
   }
 
   const { trip, role } = membership;
-
-  const [itemRows, members] = await Promise.all([
-    db
-      .select()
-      .from(tripItems)
-      .where(eq(tripItems.trip_id, tripId))
-      .orderBy(asc(tripItems.day_index), asc(tripItems.position)),
-    loadTripMembers(tripId),
-  ]);
+  const members = await loadTripMembers(tripId);
 
   return {
     ...toSummary(trip, role, members),
     ownerId: trip.owner_id,
-    items: itemRows.map((row) => ({
-      id: row.id,
-      dayIndex: row.day_index,
-      position: row.position,
-      place: row.place,
-      notes: row.notes,
-      createdAt: row.created_at,
-    })),
   };
 }
 

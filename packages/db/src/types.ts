@@ -29,50 +29,6 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['trips']['Insert']>;
         Relationships: [];
       };
-      trip_items: {
-        Row: {
-          id: string;
-          trip_id: string;
-          day_index: number;
-          position: number;
-          place: Json;
-          notes: string | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          trip_id: string;
-          day_index: number;
-          position: number;
-          place: Json;
-          notes?: string | null;
-          created_at?: string;
-        };
-        Update: Partial<Database['public']['Tables']['trip_items']['Insert']>;
-        Relationships: [];
-      };
-      reminders: {
-        Row: {
-          id: string;
-          trip_id: string;
-          cron_expression: string;
-          channel: 'email' | 'push' | 'webhook';
-          payload: Json;
-          enabled: boolean;
-          last_run_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          trip_id: string;
-          cron_expression: string;
-          channel: 'email' | 'push' | 'webhook';
-          payload: Json;
-          enabled?: boolean;
-          last_run_at?: string | null;
-        };
-        Update: Partial<Database['public']['Tables']['reminders']['Insert']>;
-        Relationships: [];
-      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

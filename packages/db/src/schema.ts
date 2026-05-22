@@ -1,10 +1,9 @@
 import {
+  doublePrecision,
   pgTable,
   text,
   timestamp,
-  boolean,
   integer,
-  jsonb,
   uuid,
   primaryKey,
   uniqueIndex,
@@ -60,33 +59,72 @@ export const tripMembers = pgTable(
   }),
 );
 
-export const tripItems = pgTable('trip_items', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  trip_id: uuid('trip_id')
-    .notNull()
-    .references(() => trips.id, { onDelete: 'cascade' }),
-  day_index: integer('day_index').notNull(),
-  position: integer('position').notNull(),
-  place: jsonb('place').notNull(),
-  notes: text('notes'),
-  created_at: timestamp('created_at', { withTimezone: true, mode: 'string' })
-    .notNull()
-    .default(sql`now()`),
-});
+/**
+ * Candidate places picked for a trip during the suggestions + voting stage.
+ *
+ * `external_id` is the Google Places place_id — the unique index keeps a
+ * single place from being added twice to the same trip.
+ */
+export const tripPlaces = pgTable(
+  'trip_places',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    trip_id: uuid('trip_id')
+      .notNull()
+      .references(() => trips.id, { onDelete: 'cascade' }),
+    external_id: text('external_id').notNull(),
+    name: text('name').notNull(),
+    address: text('address'),
+    category: text('category'),
+    lat: doublePrecision('lat'),
+    lng: doublePrecision('lng'),
+    photo_url: text('photo_url'),
+    /** Google rating snapshot at the time the place was added (0–5). */
+    rating: doublePrecision('rating'),
+    /** Human-readable hours snapshot from Google, e.g. "Open until 6:00 PM". */
+    opening_hours_text: text('opening_hours_text'),
+    /** How long the group plans to stay, set by the adder. */
+    stay_minutes: integer('stay_minutes'),
+    added_by_user_id: uuid('added_by_user_id').notNull(),
+    created_at: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .notNull()
+      .default(sql`now()`),
+  },
+  (table) => ({
+    tripExternalUq: uniqueIndex('trip_places_trip_external_uq').on(
+      table.trip_id,
+      table.external_id,
+    ),
+    tripIdx: index('trip_places_trip_idx').on(table.trip_id),
+  }),
+);
 
-export const reminders = pgTable('reminders', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  trip_id: uuid('trip_id')
-    .notNull()
-    .references(() => trips.id, { onDelete: 'cascade' }),
-  cron_expression: text('cron_expression').notNull(),
-  channel: text('channel', { enum: ['email', 'push', 'webhook'] }).notNull(),
-  payload: jsonb('payload').notNull(),
-  enabled: boolean('enabled').notNull().default(true),
-  last_run_at: timestamp('last_run_at', { withTimezone: true, mode: 'string' }),
-});
+/**
+ * One like per user per place. Presence of the row = liked; absence = not.
+ * The composite primary key enforces "one like per user per place" without
+ * needing a separate unique constraint.
+ */
+export const tripPlaceVotes = pgTable(
+  'trip_place_votes',
+  {
+    trip_place_id: uuid('trip_place_id')
+      .notNull()
+      .references(() => tripPlaces.id, { onDelete: 'cascade' }),
+    user_id: uuid('user_id').notNull(),
+    created_at: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .notNull()
+      .default(sql`now()`),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.trip_place_id, table.user_id] }),
+  }),
+);
 
 export type Trip = typeof trips.$inferSelect;
 export type NewTrip = typeof trips.$inferInsert;
 export type TripMember = typeof tripMembers.$inferSelect;
 export type NewTripMember = typeof tripMembers.$inferInsert;
+export type TripPlace = typeof tripPlaces.$inferSelect;
+export type NewTripPlace = typeof tripPlaces.$inferInsert;
+export type TripPlaceVote = typeof tripPlaceVotes.$inferSelect;
+export type NewTripPlaceVote = typeof tripPlaceVotes.$inferInsert;
