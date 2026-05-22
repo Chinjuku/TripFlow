@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   DndContext,
@@ -11,7 +11,7 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from '@dnd-kit/core';
-import { ArrowLeft, ArrowUp, Clock, MapPin, Trash2 } from 'lucide-react';
+import { ArrowLeft, ArrowUp, ChevronLeft, ChevronRight, Clock, MapPin, Trash2 } from 'lucide-react';
 import { Skeleton } from '@trip-flow/ui/components/skeleton';
 import { cn } from '@trip-flow/ui/lib/cn';
 import { useTrip } from '@/features/trips';
@@ -249,25 +249,7 @@ export default function TripSchedulePage() {
         </div>
 
         {/* Day tabs */}
-        <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-1">
-          {days.map((d) => (
-            <button
-              key={d.index}
-              type="button"
-              onClick={() => setActiveDay(d.index)}
-              className={cn(
-                'inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors',
-                d.index === activeDay
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-card text-foreground border-border hover:bg-muted',
-              )}
-            >
-              <span>{d.subLabel}</span>
-              <span className="opacity-60">•</span>
-              <span>{d.label}</span>
-            </button>
-          ))}
-        </div>
+        <DayTabsScroller days={days} activeDay={activeDay} onSelect={setActiveDay} />
 
         {error && (
           <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border p-4 text-sm">
@@ -356,6 +338,119 @@ type DragPayload =
 /* ------------------------------------------------------------------------ */
 /*  Timeline (droppable + event blocks)                                     */
 /* ------------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------------ */
+/*  Day tabs scroller                                                       */
+/* ------------------------------------------------------------------------ */
+
+interface DayTabsScrollerProps {
+  days: DayInfo[];
+  activeDay: number;
+  onSelect: (index: number) => void;
+}
+
+/**
+ * Horizontally scrolling day tab list with sticky prev/next chevrons.
+ *
+ * Long trips can have 20+ days — wrapping into a multi-line grid wastes
+ * vertical space and forces the eye to ping-pong. Instead the list is a
+ * single scrollable row; chevrons appear only when there's overflow on
+ * that side, and the active tab auto-scrolls into view (centered) when it
+ * changes.
+ */
+function DayTabsScroller({ days, activeDay, onSelect }: DayTabsScrollerProps) {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  function recompute() {
+    const el = scrollerRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 4);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  }
+
+  // Recompute on mount + whenever the list resizes (window resize, font load).
+  useLayoutEffect(() => {
+    recompute();
+    const el = scrollerRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(recompute);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [days.length]);
+
+  // Scroll the active tab into the center of the viewport on change.
+  useEffect(() => {
+    const node = tabRefs.current[activeDay];
+    if (!node) return;
+    node.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }, [activeDay]);
+
+  function nudge(direction: 'left' | 'right') {
+    const el = scrollerRef.current;
+    if (!el) return;
+    // Scroll by ~80% of the viewport so users see fresh tabs but keep some overlap.
+    const delta = el.clientWidth * 0.8 * (direction === 'left' ? -1 : 1);
+    el.scrollBy({ left: delta, behavior: 'smooth' });
+  }
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => nudge('left')}
+        aria-label="Scroll days left"
+        className={cn(
+          'bg-card border-border absolute left-0 top-1/2 z-10 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border shadow-md transition-opacity',
+          canScrollLeft ? 'opacity-100' : 'pointer-events-none opacity-0',
+        )}
+      >
+        <ChevronLeft className="h-4 w-4" strokeWidth={2.5} />
+      </button>
+
+      <div
+        ref={scrollerRef}
+        onScroll={recompute}
+        className="scrollbar-none flex items-center gap-2 overflow-x-auto scroll-smooth px-8 pb-1"
+      >
+        {days.map((d, idx) => (
+          <button
+            key={d.index}
+            ref={(node) => {
+              tabRefs.current[idx] = node;
+            }}
+            type="button"
+            onClick={() => onSelect(d.index)}
+            className={cn(
+              'inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors',
+              d.index === activeDay
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-card text-foreground border-border hover:bg-muted',
+            )}
+          >
+            <span>{d.subLabel}</span>
+            <span className="opacity-60">•</span>
+            <span>{d.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        onClick={() => nudge('right')}
+        aria-label="Scroll days right"
+        className={cn(
+          'bg-card border-border absolute right-0 top-1/2 z-10 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border shadow-md transition-opacity',
+          canScrollRight ? 'opacity-100' : 'pointer-events-none opacity-0',
+        )}
+      >
+        <ChevronRight className="h-4 w-4" strokeWidth={2.5} />
+      </button>
+    </div>
+  );
+}
 
 interface TimelineProps {
   items: ScheduleItem[];
