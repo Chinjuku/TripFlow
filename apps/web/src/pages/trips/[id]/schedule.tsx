@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   DndContext,
@@ -15,8 +15,6 @@ import {
 import {
   ArrowLeft,
   ArrowUp,
-  ChevronLeft,
-  ChevronRight,
   Clock,
   Coffee,
   Flag,
@@ -33,6 +31,8 @@ import {
   Utensils,
   Wine,
 } from 'lucide-react';
+import { Button } from '@trip-flow/ui/components/button';
+import { Modal } from '@trip-flow/ui/components/modal';
 import { Skeleton } from '@trip-flow/ui/components/skeleton';
 import { cn } from '@trip-flow/ui/lib/cn';
 import { useTrip } from '@/features/trips';
@@ -220,6 +220,31 @@ export default function TripSchedulePage() {
   // Ref so `handleDragMove` can read the timeline DOM rect without re-creating
   // the callback on every render. Set by the Timeline component via callback.
   const timelineElRef = useRef<HTMLDivElement | null>(null);
+  /**
+   * Schedule rows with an in-flight resize PATCH. While a row is pending we
+   * disable its draggable: if the user grabbed and moved the event before
+   * the resize round-trip finished, a subsequent move PATCH would race the
+   * resize PATCH and the rollback path would corrupt local state.
+   */
+  const [pendingResizeIds, setPendingResizeIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  /**
+   * When true, the Top Voted sidebar keeps showing a place even after it's
+   * been scheduled on another day — useful for repeat stops (e.g. the same
+   * café every morning). When false (the default), each place gets used
+   * once across the whole trip so the sidebar shrinks as planning advances.
+   */
+  const [allowDuplicates, setAllowDuplicates] = useState(false);
+  /**
+   * Set of schedule rows the user is about to delete via the
+   * "switch to No repeats" confirmation flow. Null when the dialog is
+   * closed. We keep the resolved ids in state so the modal can show a
+   * count + names and the confirm handler doesn't need to recompute.
+   */
+  const [pendingDedupe, setPendingDedupe] = useState<ScheduleItem[] | null>(
+    null,
+  );
 
   const placesById = useMemo(() => {
     const map = new Map<string, TripPlace>();
@@ -236,21 +261,27 @@ export default function TripSchedulePage() {
     [schedule, activeDay],
   );
 
-  // Sidebar list: candidate places that haven't been scheduled on this day yet,
-  // sorted by vote count (matches the Top Voted ref).
+  // Sidebar candidate list, sorted by vote count.
+  //
+  // Hiding rules depend on [[allowDuplicates]]:
+  //   - false (strict): hide places that already appear ANYWHERE in the
+  //     trip's schedule — each place is used at most once across all days.
+  //   - true (loose):   hide places already scheduled on the active day,
+  //     but keep them available for other days (e.g. the same café across
+  //     multiple mornings).
   const topVotedForDay = useMemo(() => {
-    const scheduledIdsForDay = new Set(
+    const usedIds = new Set(
       (schedule ?? [])
-        .filter((s) => s.dayIndex === activeDay)
+        .filter((s) => (allowDuplicates ? s.dayIndex === activeDay : true))
         .map((s) => s.tripPlaceId),
     );
     return (places ?? [])
-      .filter((p) => !scheduledIdsForDay.has(p.id))
+      .filter((p) => !usedIds.has(p.id))
       .sort((a, b) => {
         if (b.voteCount !== a.voteCount) return b.voteCount - a.voteCount;
         return a.createdAt.localeCompare(b.createdAt);
       });
-  }, [places, schedule, activeDay]);
+  }, [places, schedule, activeDay, allowDuplicates]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
@@ -281,18 +312,27 @@ export default function TripSchedulePage() {
     const yWithinTimeline = activeRect.top - timelineRect.top;
     const startMinute = pxToMinute(yWithinTimeline);
 
-    // For existing events keep the original duration so the ghost matches the
-    // block being moved; for new places the placeholder uses the default.
-    const durationMinutes =
-      data.kind === 'existing'
-        ? (schedule ?? []).find((s) => s.id === data.scheduleId)?.durationMinutes ??
-          DEFAULT_DURATION
-        : DEFAULT_DURATION;
+    // For existing events keep the original duration so the ghost matches
+    // the block being moved. For new places, mirror the create-flow rule:
+    // use the place's stayMinutes when available, else the default. Keeping
+    // the two paths in sync means the ghost size is what actually lands.
+    let durationMinutes: number;
+    if (data.kind === 'existing') {
+      durationMinutes =
+        (schedule ?? []).find((s) => s.id === data.scheduleId)?.durationMinutes ??
+        DEFAULT_DURATION;
+    } else {
+      const place = placesById.get(data.tripPlaceId);
+      durationMinutes = place?.stayMinutes || DEFAULT_DURATION;
+    }
 
-    // Overlap detection — interval is [start, start + duration). When moving
-    // an existing event we exclude its own row from the check so the user
-    // can drop it back where it already is without "self-conflict".
-    const endMinute = startMinute + durationMinutes;
+    // Overlap detection — interval is [start, start + duration). The drop
+    // always commits onto `activeDay` (see handleDragEnd), so we restrict
+    // the check to that day's items. When moving an existing event we also
+    // exclude its own row so dropping back where it already is doesn't
+    // self-conflict. Guarded against zero/negative durations to avoid the
+    // degenerate "every other event conflicts" case.
+    const endMinute = startMinute + Math.max(1, durationMinutes);
     const selfId = data.kind === 'existing' ? data.scheduleId : null;
     const conflict = (schedule ?? []).some((s) => {
       if (s.dayIndex !== activeDay) return false;
@@ -302,31 +342,11 @@ export default function TripSchedulePage() {
     });
 
     setDragPreview({ startMinute, durationMinutes, conflict });
-
-    // Auto-scroll near the viewport edges. We use `window.scrollBy` because
-    // the page's scroll container is the document (the TripLayout `<main>`
-    // also scrolls, but document-level scrolling is what users actually feel
-    // when dragging near the screen edges).
-    const EDGE = 80; // px from edge where auto-scroll kicks in
-    const MAX_SPEED = 18; // px per move event
-    const cursorY = activeRect.top + activeRect.height / 2;
-    const viewportH = window.innerHeight;
-    let delta = 0;
-    if (cursorY < EDGE) {
-      delta = -Math.ceil(((EDGE - cursorY) / EDGE) * MAX_SPEED);
-    } else if (cursorY > viewportH - EDGE) {
-      delta = Math.ceil(((cursorY - (viewportH - EDGE)) / EDGE) * MAX_SPEED);
-    }
-    if (delta !== 0) {
-      // Try the document first, then fall back to the layout's <main> if the
-      // page doesn't scroll at the document level.
-      const main = document.querySelector('main');
-      if (main && main.scrollHeight > main.clientHeight) {
-        main.scrollBy({ top: delta });
-      } else {
-        window.scrollBy({ top: delta });
-      }
-    }
+    // Auto-scroll is delegated to dnd-kit's built-in autoScroll (configured
+    // on DndContext below). Doing it ourselves caused a ghost-drift bug: the
+    // scroll moved the page but the pointer's clientY stayed put, so
+    // `activeRect.top` reported the same y until the user nudged the mouse —
+    // making the ghost block look frozen mid-scroll.
   }
 
   async function handleDragEnd(e: DragEndEvent) {
@@ -352,13 +372,40 @@ export default function TripSchedulePage() {
     const yWithinTimeline = activeRect.top - overRect.top;
     const startMinute = pxToMinute(yWithinTimeline);
 
+    // Resolve duration the same way the ghost did — keeps create and preview
+    // perfectly aligned. Existing events keep their current duration; new
+    // places use the curated stayMinutes when present.
+    let durationMinutes: number;
+    if (data.kind === 'new') {
+      const place = placesById.get(data.tripPlaceId);
+      durationMinutes = place?.stayMinutes || DEFAULT_DURATION;
+    } else {
+      durationMinutes =
+        (schedule ?? []).find((s) => s.id === data.scheduleId)?.durationMinutes ??
+        DEFAULT_DURATION;
+    }
+
+    // Belt-and-braces conflict recheck against the freshest schedule. The
+    // ghost's `wasConflicting` flag was derived from the last DragMove fire,
+    // but if a fast release happens between two move events (or another
+    // user added an event mid-drag) the snapshot can be stale.
+    const endMinute = startMinute + Math.max(1, durationMinutes);
+    const selfId = data.kind === 'existing' ? data.scheduleId : null;
+    const conflictNow = (schedule ?? []).some((s) => {
+      if (s.dayIndex !== activeDay) return false;
+      if (s.id === selfId) return false;
+      const sEnd = s.startMinute + s.durationMinutes;
+      return startMinute < sEnd && endMinute > s.startMinute;
+    });
+    if (conflictNow) return;
+
     try {
       if (data.kind === 'new') {
         const created = await addSchedule(id, {
           tripPlaceId: data.tripPlaceId,
           dayIndex: activeDay,
           startMinute,
-          durationMinutes: DEFAULT_DURATION,
+          durationMinutes,
         });
         mutate((prev) => [...(prev ?? []), created]);
       } else {
@@ -386,9 +433,73 @@ export default function TripSchedulePage() {
   }
 
   /**
+   * Intercepts the duplicate-mode toggle. Switching FROM "Allow repeats"
+   * INTO "No repeats" while duplicates already exist would leave the
+   * sidebar in a state that violates its own rule, so we surface a
+   * confirmation that lets the user either drop the extras or stay in the
+   * looser mode.
+   *
+   * Dedupe rule: for each place that appears more than once on the
+   * schedule, keep the OLDEST row (by createdAt) and queue the rest for
+   * deletion. Older entries are usually the "real" plan; later repeats
+   * were added under "allow repeats".
+   */
+  function handleModeChange(nextAllow: boolean) {
+    if (nextAllow) {
+      setAllowDuplicates(true);
+      return;
+    }
+    // Switching to strict — find duplicates first.
+    const byPlace = new Map<string, ScheduleItem[]>();
+    for (const s of schedule ?? []) {
+      const list = byPlace.get(s.tripPlaceId) ?? [];
+      list.push(s);
+      byPlace.set(s.tripPlaceId, list);
+    }
+    const extras: ScheduleItem[] = [];
+    for (const rows of byPlace.values()) {
+      if (rows.length <= 1) continue;
+      const sorted = [...rows].sort((a, b) =>
+        a.createdAt.localeCompare(b.createdAt),
+      );
+      // Drop everything past the oldest.
+      extras.push(...sorted.slice(1));
+    }
+    if (extras.length === 0) {
+      setAllowDuplicates(false);
+      return;
+    }
+    setPendingDedupe(extras);
+  }
+
+  /**
+   * Confirm path of the dedupe modal. Deletes each extra row sequentially —
+   * keeps the optimistic cache in sync row-by-row so a partial failure
+   * still leaves the UI consistent with the server. Any error is logged
+   * and the mode flip is skipped so the user can retry.
+   */
+  async function confirmDedupe() {
+    if (!id || !pendingDedupe) return;
+    const toRemove = pendingDedupe;
+    setPendingDedupe(null);
+    try {
+      for (const row of toRemove) {
+        await removeSchedule(id, row.id);
+        mutate((prev) => (prev ?? []).filter((s) => s.id !== row.id));
+      }
+      setAllowDuplicates(false);
+    } catch (err) {
+      console.error('[schedule] dedupe failed', err);
+    }
+  }
+
+  /**
    * Commits a resized event back to the server. We optimistically update the
    * local cache first so the timeline doesn't snap back during the request;
    * if the PATCH fails we restore the previous value and log it.
+   *
+   * Locks the row's draggable while the PATCH is in flight so a follow-up
+   * move can't race the resize round-trip.
    */
   async function handleResize(scheduleId: string, durationMinutes: number) {
     if (!id) return;
@@ -400,6 +511,11 @@ export default function TripSchedulePage() {
         s.id === scheduleId ? { ...s, durationMinutes } : s,
       ),
     );
+    setPendingResizeIds((curr) => {
+      const next = new Set(curr);
+      next.add(scheduleId);
+      return next;
+    });
 
     try {
       const updated = await updateSchedule(id, scheduleId, { durationMinutes });
@@ -412,6 +528,13 @@ export default function TripSchedulePage() {
       mutate((curr) =>
         (curr ?? []).map((s) => (s.id === scheduleId ? prev : s)),
       );
+    } finally {
+      setPendingResizeIds((curr) => {
+        if (!curr.has(scheduleId)) return curr;
+        const next = new Set(curr);
+        next.delete(scheduleId);
+        return next;
+      });
     }
   }
 
@@ -428,6 +551,13 @@ export default function TripSchedulePage() {
       onDragCancel={() => {
         setDragging(null);
         setDragPreview(null);
+      }}
+      autoScroll={{
+        // Tuned for a 24-hour timeline: scroll kicks in within the outer
+        // 20% of the viewport, with a relatively gentle acceleration so
+        // users can still hover near the edge without launching the page.
+        threshold: { x: 0, y: 0.2 },
+        acceleration: 12,
       }}
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
@@ -478,6 +608,7 @@ export default function TripSchedulePage() {
                 onResize={handleResize}
                 ghost={dragging?.kind === 'new' ? dragging : null}
                 dragPreview={dragging ? dragPreview : null}
+                pendingResizeIds={pendingResizeIds}
                 timelineRef={(el) => {
                   timelineElRef.current = el;
                 }}
@@ -499,8 +630,20 @@ export default function TripSchedulePage() {
                 {topVotedForDay.length === 1 ? ' item' : ' items'}
               </span>
             </div>
-            <p className="text-muted-foreground mb-4 text-sm">
-              Drag items to the schedule to plan your day.
+
+            {/* Mode toggle — flips the candidate list between "each place
+                once per trip" (strict) and "each place once per day"
+                (allow). Segmented control gives both options equal
+                visibility so the rule is obvious at a glance. */}
+            <DuplicateModeToggle
+              value={allowDuplicates}
+              onChange={handleModeChange}
+            />
+
+            <p className="text-muted-foreground mb-4 mt-3 text-xs">
+              {allowDuplicates
+                ? 'A place can repeat across days — handy for daily stops.'
+                : 'Each place appears once across the whole trip.'}
             </p>
 
             {topVotedForDay.length === 0 ? (
@@ -528,6 +671,15 @@ export default function TripSchedulePage() {
           </div>
         ) : null}
       </DragOverlay>
+
+      {/* Confirmation when the user flips into "No repeats" with duplicates
+          already on the schedule. We list every row about to be removed so
+          the action is reviewable, not a silent purge. */}
+      <DedupeConfirmModal
+        rows={pendingDedupe}
+        onCancel={() => setPendingDedupe(null)}
+        onConfirm={confirmDedupe}
+      />
     </DndContext>
   );
 }
@@ -555,70 +707,40 @@ interface DayTabsScrollerProps {
 }
 
 /**
- * Horizontally scrolling day tab list with sticky prev/next chevrons.
+ * Horizontally scrolling day tab list with a dot indicator row.
  *
  * Long trips can have 20+ days — wrapping into a multi-line grid wastes
  * vertical space and forces the eye to ping-pong. Instead the list is a
- * single scrollable row; chevrons appear only when there's overflow on
- * that side, and the active tab auto-scrolls into view (centered) when it
- * changes.
+ * single scrollable row; the active tab auto-scrolls into view (centered)
+ * when it changes, and a dot row underneath gives an at-a-glance position
+ * within the trip (which day, how many total). Dots are clickable shortcuts
+ * for very long trips where scrolling the tab strip is tedious.
  */
 function DayTabsScroller({ days, activeDay, onSelect }: DayTabsScrollerProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
+  const dotRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
-  function recompute() {
-    const el = scrollerRef.current;
-    if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 4);
-    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
-  }
-
-  // Recompute on mount + whenever the list resizes (window resize, font load).
-  useLayoutEffect(() => {
-    recompute();
-    const el = scrollerRef.current;
-    if (!el || typeof ResizeObserver === 'undefined') return;
-    const ro = new ResizeObserver(recompute);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [days.length]);
-
-  // Scroll the active tab into the center of the viewport on change.
+  // Scroll the active tab + active dot into view on change. Tabs centre
+  // horizontally; dots only need `nearest` since the strip is narrower.
   useEffect(() => {
-    const node = tabRefs.current[activeDay];
-    if (!node) return;
-    node.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    tabRefs.current[activeDay]?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'center',
+    });
+    dotRefs.current[activeDay]?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'center',
+    });
   }, [activeDay]);
 
-  function nudge(direction: 'left' | 'right') {
-    const el = scrollerRef.current;
-    if (!el) return;
-    // Scroll by ~80% of the viewport so users see fresh tabs but keep some overlap.
-    const delta = el.clientWidth * 0.8 * (direction === 'left' ? -1 : 1);
-    el.scrollBy({ left: delta, behavior: 'smooth' });
-  }
-
   return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => nudge('left')}
-        aria-label="Scroll days left"
-        className={cn(
-          'bg-card border-border absolute left-0 top-1/2 z-10 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border shadow-md transition-opacity',
-          canScrollLeft ? 'opacity-100' : 'pointer-events-none opacity-0',
-        )}
-      >
-        <ChevronLeft className="h-4 w-4" strokeWidth={2.5} />
-      </button>
-
+    <div className="flex flex-col gap-2">
       <div
         ref={scrollerRef}
-        onScroll={recompute}
-        className="scrollbar-none flex items-center gap-2 overflow-x-auto scroll-smooth px-8 pb-1"
+        className="scrollbar-none flex items-center gap-2 overflow-x-auto scroll-smooth pb-1"
       >
         {days.map((d, idx) => (
           <button
@@ -642,17 +764,39 @@ function DayTabsScroller({ days, activeDay, onSelect }: DayTabsScrollerProps) {
         ))}
       </div>
 
-      <button
-        type="button"
-        onClick={() => nudge('right')}
-        aria-label="Scroll days right"
-        className={cn(
-          'bg-card border-border absolute right-0 top-1/2 z-10 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border shadow-md transition-opacity',
-          canScrollRight ? 'opacity-100' : 'pointer-events-none opacity-0',
-        )}
-      >
-        <ChevronRight className="h-4 w-4" strokeWidth={2.5} />
-      </button>
+      {/* Dot indicator row — one dot per day. Doubles as a quick-jump nav for
+          trips long enough that scrubbing the tab strip is slow. Hidden for
+          1-day trips where it would be redundant. */}
+      {days.length > 1 && (
+        <div
+          role="tablist"
+          aria-label="Day navigator"
+          className="scrollbar-none flex items-center justify-center gap-1.5 overflow-x-auto"
+        >
+          {days.map((d, idx) => {
+            const active = d.index === activeDay;
+            return (
+              <button
+                key={d.index}
+                ref={(node) => {
+                  dotRefs.current[idx] = node;
+                }}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                aria-label={`${d.label} (${d.subLabel})`}
+                onClick={() => onSelect(d.index)}
+                className={cn(
+                  'shrink-0 rounded-full transition-all',
+                  active
+                    ? 'bg-primary h-1.5 w-4'
+                    : 'bg-muted-foreground/30 hover:bg-muted-foreground/60 h-1.5 w-1.5',
+                )}
+              />
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -666,6 +810,8 @@ interface TimelineProps {
   dragPreview:
     | { startMinute: number; durationMinutes: number; conflict: boolean }
     | null;
+  /** Schedule ids whose resize PATCH is in flight — their draggables stay locked. */
+  pendingResizeIds: Set<string>;
   /** Receives the timeline DOM node so the page can measure it during drag. */
   timelineRef: (el: HTMLDivElement | null) => void;
 }
@@ -675,6 +821,7 @@ function Timeline({
   onRemove,
   onResize,
   dragPreview,
+  pendingResizeIds,
   timelineRef,
 }: TimelineProps) {
   const { setNodeRef, isOver } = useDroppable({ id: 'timeline' });
@@ -720,6 +867,7 @@ function Timeline({
             next={next}
             onRemove={() => onRemove(item.id)}
             onResize={(duration) => onResize(item.id, duration)}
+            dragLocked={pendingResizeIds.has(item.id)}
           />
         );
       })}
@@ -812,6 +960,8 @@ interface EventBlockProps {
   next: ScheduleItem | undefined;
   onRemove: () => void;
   onResize: (durationMinutes: number) => void;
+  /** True while a resize PATCH is in flight — block drag-to-move to avoid a race. */
+  dragLocked: boolean;
 }
 
 /** Minimum slot a user can shrink an event down to (in minutes). */
@@ -819,7 +969,7 @@ const MIN_DURATION_MINUTES = 15;
 /** Resize snap step — matches the drop snap so create + resize feel uniform. */
 const RESIZE_STEP_MINUTES = 15;
 
-function EventBlock({ item, next, onRemove, onResize }: EventBlockProps) {
+function EventBlock({ item, next, onRemove, onResize, dragLocked }: EventBlockProps) {
   const top = minuteToPx(item.startMinute);
   const tone = toneFor(item.id);
 
@@ -835,7 +985,10 @@ function EventBlock({ item, next, onRemove, onResize }: EventBlockProps) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: `event-${item.id}`,
     data: { kind: 'existing', scheduleId: item.id } satisfies DragPayload,
-    disabled: isResizing,
+    // Locked while: (a) the user is actively resizing this block, or
+    // (b) a previous resize PATCH is still in flight — see [[pendingResizeIds]]
+    // in TripSchedulePage. Either case would race a move PATCH on the same row.
+    disabled: isResizing || dragLocked,
   });
 
   // dnd-kit's transform is applied to the dragged element directly so it
@@ -854,12 +1007,19 @@ function EventBlock({ item, next, onRemove, onResize }: EventBlockProps) {
    * the user can drag fast past the timeline edge without losing the event
    * stream. Snap math mirrors the create-flow (`snapMinute`) so a 1h block
    * resized to "about 90m" lands exactly on 90m.
+   *
+   * Three end paths are wired up so we never leak listeners / state:
+   *   - pointerup    → commit (apply the latest snapped duration)
+   *   - pointercancel→ abort (touch cancel, browser stole the gesture)
+   *   - window blur / tab hidden → abort (user tabbed away mid-drag, the OS
+   *     stops sending pointer events so without this the resize sticks)
    */
   function handleResizePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     e.stopPropagation();
     e.preventDefault();
     const handle = e.currentTarget;
-    handle.setPointerCapture(e.pointerId);
+    const pointerId = e.pointerId;
+    handle.setPointerCapture(pointerId);
 
     const startY = e.clientY;
     const startDuration = item.durationMinutes;
@@ -888,17 +1048,41 @@ function EventBlock({ item, next, onRemove, onResize }: EventBlockProps) {
       setDraftDuration(nextDuration);
     };
 
-    const onUp = () => {
+    function cleanup() {
       handle.removeEventListener('pointermove', onMove);
-      handle.removeEventListener('pointerup', onUp);
-      handle.removeEventListener('pointercancel', onUp);
+      handle.removeEventListener('pointerup', onCommit);
+      handle.removeEventListener('pointercancel', onCancel);
+      window.removeEventListener('blur', onCancel);
+      document.removeEventListener('visibilitychange', onVisibility);
+      if (handle.hasPointerCapture(pointerId)) {
+        handle.releasePointerCapture(pointerId);
+      }
+    }
+
+    const onCommit = () => {
+      cleanup();
       setDraftDuration(null);
       if (latest !== startDuration) onResize(latest);
     };
 
+    const onCancel = () => {
+      cleanup();
+      // Abort silently — discard the draft, keep the server value.
+      setDraftDuration(null);
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') onCancel();
+    };
+
     handle.addEventListener('pointermove', onMove);
-    handle.addEventListener('pointerup', onUp);
-    handle.addEventListener('pointercancel', onUp);
+    handle.addEventListener('pointerup', onCommit);
+    handle.addEventListener('pointercancel', onCancel);
+    // Window-level safety nets — pointer events don't fire while the tab is
+    // backgrounded, so without these the block would stay in "resizing" mode
+    // until the user returned to the tab and clicked again.
+    window.addEventListener('blur', onCancel);
+    document.addEventListener('visibilitychange', onVisibility);
   }
 
   return (
@@ -909,11 +1093,13 @@ function EventBlock({ item, next, onRemove, onResize }: EventBlockProps) {
         {...attributes}
         style={style}
         className={cn(
-          'absolute left-2 right-2 cursor-grab overflow-hidden rounded-lg border px-3 py-2',
+          'absolute left-2 right-2 overflow-hidden rounded-lg border px-3 py-2',
           'flex items-start gap-2 shadow-sm',
           tone.bg,
           tone.border,
-          'active:cursor-grabbing',
+          // Cursor depends on lock state: grab when movable, wait when a
+          // resize PATCH is still settling on the server.
+          dragLocked ? 'cursor-wait' : 'cursor-grab active:cursor-grabbing',
           isResizing && 'ring-primary/60 ring-2',
         )}
       >
@@ -995,6 +1181,123 @@ function TravelGap({ startPx, endPx, gapMinutes }: TravelGapProps) {
         {formatDuration(gapMinutes)} gap
       </span>
     </div>
+  );
+}
+
+/* ------------------------------------------------------------------------ */
+/*  Sidebar mode toggle                                                     */
+/* ------------------------------------------------------------------------ */
+
+/**
+ * Segmented control for the sidebar's duplicate-handling mode. Two pills:
+ * "No repeats" (default, strict) and "Allow repeats". Built inline rather
+ * than as a shared component because no other surface needs this control.
+ */
+function DuplicateModeToggle({
+  value,
+  onChange,
+}: {
+  value: boolean;
+  onChange: (next: boolean) => void;
+}) {
+  return (
+    <div
+      role="radiogroup"
+      aria-label="Place duplicate handling"
+      className="bg-muted/60 flex w-full gap-1 rounded-full p-0.5"
+    >
+      <button
+        type="button"
+        role="radio"
+        aria-checked={!value}
+        onClick={() => onChange(false)}
+        className={cn(
+          'flex-1 rounded-full px-3 py-1 text-[0.7rem] font-semibold transition-colors',
+          !value
+            ? 'bg-primary text-primary-foreground shadow-sm'
+            : 'text-muted-foreground hover:text-foreground',
+        )}
+      >
+        No repeats
+      </button>
+      <button
+        type="button"
+        role="radio"
+        aria-checked={value}
+        onClick={() => onChange(true)}
+        className={cn(
+          'flex-1 rounded-full px-3 py-1 text-[0.7rem] font-semibold transition-colors',
+          value
+            ? 'bg-primary text-primary-foreground shadow-sm'
+            : 'text-muted-foreground hover:text-foreground',
+        )}
+      >
+        Allow repeats
+      </button>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------------ */
+/*  Dedupe confirmation                                                     */
+/* ------------------------------------------------------------------------ */
+
+/**
+ * Confirmation dialog shown when flipping into "No repeats" while the
+ * schedule still contains duplicate places. Lists the rows that will be
+ * deleted (the LATER copies — we keep the oldest entry) and lets the user
+ * back out without changing modes.
+ */
+function DedupeConfirmModal({
+  rows,
+  onCancel,
+  onConfirm,
+}: {
+  rows: ScheduleItem[] | null;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const open = rows !== null && rows.length > 0;
+  const count = rows?.length ?? 0;
+
+  return (
+    <Modal
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onCancel();
+      }}
+      title="Switch to “No repeats”?"
+      description={`This will remove ${count} duplicate ${count === 1 ? 'entry' : 'entries'} from your schedule. The oldest copy of each place is kept.`}
+    >
+      <div className="space-y-4">
+        {rows && rows.length > 0 && (
+          <ul className="border-border bg-muted/30 max-h-56 space-y-1.5 overflow-y-auto rounded-lg border p-3">
+            {rows.map((r) => (
+              <li
+                key={r.id}
+                className="flex items-center justify-between gap-3 text-sm"
+              >
+                <span className="text-foreground truncate font-medium">
+                  {r.place.name}
+                </span>
+                <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
+                  Day {r.dayIndex + 1} · {String(Math.floor(r.startMinute / 60)).padStart(2, '0')}
+                  :{String(r.startMinute % 60).padStart(2, '0')}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button variant="destructive" onClick={onConfirm}>
+            Remove duplicates
+          </Button>
+        </div>
+      </div>
+    </Modal>
   );
 }
 
@@ -1144,35 +1447,53 @@ function RouteFlowCard({ items }: { items: ScheduleItem[] }) {
  * the user can see what the card will look like once they drop stops in.
  */
 function RouteFlowEmpty() {
+  // Six steps on desktop hint at a denser day; mobile gets just three so
+  // the ghost row doesn't overflow / scroll horizontally on narrow phones.
+  const letters = ['A', 'B', 'C', 'D', 'E', 'F'] as const;
+  const visibleOn = ['', '', '', 'hidden sm:flex', 'hidden sm:flex', 'hidden sm:flex'];
   return (
     <div className="border-border bg-card rounded-2xl border border-dashed p-5">
       <div className="text-muted-foreground mb-3 text-center text-xs">
         Your route flow will appear here once you schedule stops for the day.
       </div>
       <div className="flex items-center justify-center gap-2 opacity-50">
-        {['A', 'B', 'C'].map((letter, idx) => (
-          <div key={letter} className="flex items-center gap-2">
-            <div className="border-border bg-muted/40 flex h-10 w-20 items-center gap-1.5 rounded-lg border px-2">
-              <span className="bg-muted text-muted-foreground inline-flex h-5 w-5 items-center justify-center rounded-full text-[0.65rem] font-bold">
-                {letter}
-              </span>
-              <div className="bg-muted h-1.5 flex-1 rounded-full" />
+        {letters.map((letter, idx) => {
+          // The trailing arrow after the last visible card must be hidden,
+          // which depends on the breakpoint: hide arrow after C on mobile
+          // and after F on desktop.
+          const isLast = idx === letters.length - 1;
+          const isMobileLast = idx === 2; // 'C' — last visible on mobile
+          return (
+            <div
+              key={letter}
+              className={cn('flex shrink-0 items-center gap-2', visibleOn[idx])}
+            >
+              <div className="border-border bg-muted/40 flex h-10 w-20 items-center gap-1.5 rounded-lg border px-2">
+                <span className="bg-muted text-muted-foreground inline-flex h-5 w-5 items-center justify-center rounded-full text-[0.65rem] font-bold">
+                  {letter}
+                </span>
+                <div className="bg-muted h-1.5 flex-1 rounded-full" />
+              </div>
+              {!isLast && (
+                <svg
+                  viewBox="0 0 32 8"
+                  className={cn(
+                    'text-muted-foreground h-2 w-6',
+                    // Hide the arrow that would dangle past C on mobile.
+                    isMobileLast && 'sm:inline hidden',
+                  )}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  aria-hidden
+                >
+                  <path d="M2 4 H 30" strokeDasharray="3 3" />
+                </svg>
+              )}
             </div>
-            {idx < 2 && (
-              <svg
-                viewBox="0 0 32 8"
-                className="text-muted-foreground h-2 w-6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                aria-hidden
-              >
-                <path d="M2 4 H 30" strokeDasharray="3 3" />
-              </svg>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
