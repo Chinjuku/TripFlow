@@ -1,22 +1,4 @@
-import type { TripItem, TripSummary } from './types';
-
-interface PlaceShape {
-  name?: string;
-  description?: string;
-  address?: string;
-}
-
-/** Trip items store the place as JSON — pull the human label out safely. */
-export function getPlaceName(item: TripItem): string {
-  const place = item.place as PlaceShape | null;
-  return place?.name ?? `Stop ${item.position + 1}`;
-}
-
-/** Prefer the user's note over the structured description/address fallback. */
-export function getPlaceDescription(item: TripItem): string | null {
-  const place = item.place as PlaceShape | null;
-  return item.notes ?? place?.description ?? place?.address ?? null;
-}
+import type { TripSummary } from './types';
 
 /** Up to 2 uppercase initials, or '?' if the name has no letters. */
 export function getInitials(name: string): string {

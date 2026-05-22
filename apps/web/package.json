@@ -20,6 +20,7 @@
     "@generouted/react-router": "^1.20.2",
     "@trip-flow/api": "workspace:*",
     "@trip-flow/ui": "workspace:*",
+    "@vis.gl/react-google-maps": "^1.8.3",
     "lucide-react": "^1.16.0",
     "react": "^18.3.1",
     "react-dnd": "^16.0.1",
@@ -30,6 +31,7 @@
   },
   "devDependencies": {
     "@trip-flow/tsconfig": "workspace:*",
+    "@types/google.maps": "^3.64.1",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
