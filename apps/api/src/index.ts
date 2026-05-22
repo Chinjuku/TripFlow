@@ -7,6 +7,7 @@ import { authRoute } from './routes/auth';
 import { placesRoute } from './routes/places';
 import { scheduleRoute } from './routes/schedule';
 import { tripsRoute } from './routes/trips';
+import { financesRoute } from './routes/finances';
 
 export const app = new Elysia()
   .use(
@@ -44,6 +45,7 @@ export const app = new Elysia()
   .use(tripsRoute)
   .use(placesRoute)
   .use(scheduleRoute)
+  .use(financesRoute)
   .listen(env.port);
 
 console.info(`[api] TripFlow API listening on http://${app.server?.hostname}:${app.server?.port}`);

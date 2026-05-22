@@ -53,14 +53,14 @@ export function Modal({
         if (e.target === ref.current) onOpenChange(false);
       }}
       className={cn(
-        'bg-card text-card-foreground p-0 shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm',
+        'bg-card text-card-foreground p-0 shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm border-none outline-none',
         // Mobile bottom sheet: full width, anchored to viewport bottom,
-        // rounded only on top. `mt-auto mb-0` overrides <dialog>'s default
-        // centering and pushes it to the bottom edge.
-        'mx-0 mb-0 mt-auto w-full max-w-none rounded-b-none rounded-t-2xl',
+        // rounded only on top. `fixed bottom-0 inset-x-0 m-0` ensures it is
+        // perfectly flush with the bottom screen edge with no gaps.
+        'max-sm:fixed max-sm:bottom-0 max-sm:inset-x-0 max-sm:m-0 max-sm:w-full max-sm:max-w-none max-sm:rounded-b-none max-sm:rounded-t-2xl',
         'max-h-[90dvh] overflow-hidden',
-        // Desktop centered card: restore margin auto + full rounding.
-        'sm:border-border sm:mx-auto sm:my-auto sm:w-[calc(100vw-1.5rem)] sm:max-w-md sm:rounded-2xl sm:border sm:max-h-[calc(100dvh-3rem)]',
+        // Desktop centered card: restore centering + max width.
+        'sm:my-auto sm:mx-auto sm:w-[calc(100vw-1.5rem)] sm:max-w-md sm:rounded-2xl sm:border sm:border-border sm:max-h-[calc(100dvh-3rem)]',
         'open:animate-in open:fade-in-0 open:slide-in-from-bottom-4 sm:open:slide-in-from-bottom-0 sm:open:zoom-in-95',
         className,
       )}

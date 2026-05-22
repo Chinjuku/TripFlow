@@ -20,16 +20,21 @@
     "@fontsource-variable/lexend": "^5.2.11",
     "@fontsource-variable/manrope": "^5.2.8",
     "@generouted/react-router": "^1.20.2",
+    "@hookform/resolvers": "^5.4.0",
     "@trip-flow/api": "workspace:*",
     "@trip-flow/ui": "workspace:*",
     "@vis.gl/react-google-maps": "^1.8.3",
+    "jsqr": "^1.4.0",
     "lucide-react": "^1.16.0",
+    "promptparse": "^1.6.0",
     "react": "^18.3.1",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.3.1",
+    "react-hook-form": "^7.76.0",
     "react-js-cron": "^5.0.1",
-    "react-router-dom": "^7.15.1"
+    "react-router-dom": "^7.15.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@trip-flow/tsconfig": "workspace:*",
