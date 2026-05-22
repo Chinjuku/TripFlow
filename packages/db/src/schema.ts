@@ -154,6 +154,130 @@ export const tripScheduleItems = pgTable(
   }),
 );
 
+// ==========================================
+// Expenses & Finance Tables
+// ==========================================
+
+export const expenses = pgTable(
+  'expenses',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    trip_id: uuid('trip_id')
+      .notNull()
+      .references(() => trips.id, { onDelete: 'cascade' }),
+    description: text('description').notNull(), // Merchant or description
+    amount: doublePrecision('amount').notNull(),
+    paid_by_id: uuid('paid_by_id').notNull(), // Mirrors auth.users.id (Supabase Auth)
+    category: text('category', { enum: ['food', 'transport', 'activity', 'lodging', 'other'] })
+      .notNull()
+      .default('other'),
+    split_method: text('split_method', { enum: ['equally', 'exact_amount'] })
+      .notNull()
+      .default('equally'), // Added to support showing split type in UI (Equally vs Exact Amount)
+    receipt_url: text('receipt_url'),
+    expense_date: timestamp('expense_date', { withTimezone: true, mode: 'string' })
+      .notNull()
+      .default(sql`now()`),
+    created_at: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .notNull()
+      .default(sql`now()`),
+  },
+  (table) => ({
+    tripIdx: index('expenses_trip_idx').on(table.trip_id),
+    paidByIdx: index('expenses_paid_by_idx').on(table.paid_by_id),
+  }),
+);
+
+export const expenseSplits = pgTable(
+  'expense_splits',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    expense_id: uuid('expense_id')
+      .notNull()
+      .references(() => expenses.id, { onDelete: 'cascade' }),
+    user_id: uuid('user_id').notNull(), // Mirrors auth.users.id (Supabase Auth)
+    amount: doublePrecision('amount').notNull(),
+    item_paid: text('item_paid'), // Optional: name of the specific item/menu ordered (e.g., "Pad Thai")
+    created_at: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .notNull()
+      .default(sql`now()`),
+  },
+  (table) => ({
+    expenseIdx: index('expense_splits_expense_idx').on(table.expense_id),
+    userIdx: index('expense_splits_user_idx').on(table.user_id),
+  }),
+);
+
+export const settlements = pgTable(
+  'settlements',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    trip_id: uuid('trip_id')
+      .notNull()
+      .references(() => trips.id, { onDelete: 'cascade' }),
+    payer_id: uuid('payer_id').notNull(), // Mirrors auth.users.id (Supabase Auth)
+    payee_id: uuid('payee_id').notNull(), // Mirrors auth.users.id (Supabase Auth)
+    amount: doublePrecision('amount').notNull(),
+    status: text('status', { enum: ['pending', 'completed'] })
+      .notNull()
+      .default('pending'),
+    created_at: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .notNull()
+      .default(sql`now()`),
+    updated_at: timestamp('updated_at', { withTimezone: true, mode: 'string' })
+      .notNull()
+      .default(sql`now()`),
+  },
+  (table) => ({
+    tripIdx: index('settlements_trip_idx').on(table.trip_id),
+    payerIdx: index('settlements_payer_idx').on(table.payer_id),
+    payeeIdx: index('settlements_payee_idx').on(table.payee_id),
+  }),
+);
+
+export const tripBudgets = pgTable(
+  'trip_budgets',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    trip_id: uuid('trip_id')
+      .notNull()
+      .references(() => trips.id, { onDelete: 'cascade' }),
+    amount: doublePrecision('amount').notNull(), // Total budget amount, e.g., 6500.00
+    category: text('category'), // Null for global trip budget, or set (e.g. 'food') for category budgets
+    created_at: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .notNull()
+      .default(sql`now()`),
+    updated_at: timestamp('updated_at', { withTimezone: true, mode: 'string' })
+      .notNull()
+      .default(sql`now()`),
+  },
+  (table) => ({
+    tripIdx: index('trip_budgets_trip_idx').on(table.trip_id),
+  }),
+);
+
+export const userPaymentDetails = pgTable(
+  'user_payment_details',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    user_id: uuid('user_id').notNull(), // Mirrors auth.users.id (Supabase Auth)
+    promptpay_id: text('promptpay_id'), // Phone number or National ID for dynamic PromptPay QR generation
+    qr_code_url: text('qr_code_url'), // Static PromptPay QR Code picture URL
+    bank_name: text('bank_name'), // Optional e.g. KBANK, SCB
+    bank_account_number: text('bank_account_number'),
+    bank_account_name: text('bank_account_name'),
+    created_at: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .notNull()
+      .default(sql`now()`),
+    updated_at: timestamp('updated_at', { withTimezone: true, mode: 'string' })
+      .notNull()
+      .default(sql`now()`),
+  },
+  (table) => ({
+    userIdx: index('user_payment_details_user_idx').on(table.user_id),
+  }),
+);
+
 export type Trip = typeof trips.$inferSelect;
 export type NewTrip = typeof trips.$inferInsert;
 export type TripMember = typeof tripMembers.$inferSelect;
@@ -164,3 +288,14 @@ export type TripPlaceVote = typeof tripPlaceVotes.$inferSelect;
 export type NewTripPlaceVote = typeof tripPlaceVotes.$inferInsert;
 export type TripScheduleItem = typeof tripScheduleItems.$inferSelect;
 export type NewTripScheduleItem = typeof tripScheduleItems.$inferInsert;
+export type Expense = typeof expenses.$inferSelect;
+export type NewExpense = typeof expenses.$inferInsert;
+export type ExpenseSplit = typeof expenseSplits.$inferSelect;
+export type NewExpenseSplit = typeof expenseSplits.$inferInsert;
+export type Settlement = typeof settlements.$inferSelect;
+export type NewSettlement = typeof settlements.$inferInsert;
+export type TripBudget = typeof tripBudgets.$inferSelect;
+export type NewTripBudget = typeof tripBudgets.$inferInsert;
+export type UserPaymentDetail = typeof userPaymentDetails.$inferSelect;
+export type NewUserPaymentDetail = typeof userPaymentDetails.$inferInsert;
+
