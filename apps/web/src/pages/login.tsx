@@ -1,11 +1,46 @@
+import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { MapPin, Users, Zap, Globe } from 'lucide-react';
+import { Lock, MapPin, ShieldCheck, Users, Zap } from 'lucide-react';
 import { Button } from '@trip-flow/ui/components/button';
 import { useAuth } from '@/features/auth/useAuth';
 import { SpinningCompass } from '@/components/SpinningCompass';
 
+/**
+ * Returns a time-of-day greeting in the user's locale tz. Pure function so
+ * it stays cheap to call inline — invoked once per render, no need to memo.
+ *
+ * Buckets are intentionally generous (4 not 6) so the copy doesn't feel
+ * algorithmic; the late-night line is deliberately playful.
+ */
+function getGreeting(now: Date = new Date()): string {
+  const h = now.getHours();
+  if (h >= 5 && h < 12) return 'Good morning';
+  if (h >= 12 && h < 17) return 'Good afternoon';
+  if (h >= 17 && h < 22) return 'Good evening';
+  return 'Late-night travel planning?';
+}
+
 export default function LoginPage() {
   const { isAuthenticated, isLoading, signInWithGoogle } = useAuth();
+  // Local "submitting" flag — we flip it on click and never flip back, since
+  // a successful sign-in unmounts this page (Navigate fires once
+  // `isAuthenticated` is true). If sign-in errors the page stays mounted
+  // but the user can retry by reloading.
+  const [signingIn, setSigningIn] = useState(false);
+
+  function handleSignIn() {
+    if (signingIn) return;
+    setSigningIn(true);
+    // signInWithGoogle triggers a full-page OAuth redirect — control leaves
+    // this component before the next paint, so we don't need a finally to
+    // flip the flag back. The compass spins until the redirect happens.
+    try {
+      signInWithGoogle();
+    } catch (err) {
+      console.error('[login] sign-in failed', err);
+      setSigningIn(false);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -19,152 +54,234 @@ export default function LoginPage() {
     return <Navigate to="/trips" replace />;
   }
 
+  const greeting = getGreeting();
+
   return (
     <div className="bg-background text-foreground fixed inset-0 flex antialiased">
-
       {/* Left — Hero Panel (60%) */}
-      <div className="relative hidden flex-col lg:flex lg:w-[60%]">
+      <div className="relative hidden flex-col overflow-hidden lg:flex lg:w-[60%]">
+        {/* Topographic contour pattern — replaces the dot-grid + ambient glow
+            of the previous design. Concentric "elevation lines" evoke a
+            paper atlas without using any gradient fills. */}
+        <TopoPattern />
 
-        {/* Ambient glows using design tokens */}
-        <div className="bg-primary/15 absolute -left-32 -top-32 h-[600px] w-[600px] rounded-full blur-[140px]" />
-        <div className="bg-primary/8 absolute bottom-0 left-1/4 h-[500px] w-[500px] rounded-full blur-[120px]" />
+        {/* Corner coordinate labels — purely decorative, but they sell the
+            "atlas" vibe and break up the otherwise empty corners. Numbers
+            are Bangkok (top-left) + Chiang Mai (bottom-right) to suit the
+            current user base. */}
+        <span className="text-muted-foreground/40 absolute left-6 top-6 font-mono text-[10px] tracking-widest">
+          13.7563° N · 100.5018° E
+        </span>
+        <span className="text-muted-foreground/40 absolute bottom-6 right-6 font-mono text-[10px] tracking-widest">
+          18.7883° N · 98.9853° E
+        </span>
 
-        {/* Dot-grid */}
-        <div
-          aria-hidden
-          className="text-foreground/5 absolute inset-0"
-          style={{
-            backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)',
-            backgroundSize: '28px 28px',
-          }}
-        />
-
-        <div className="relative z-10 flex flex-1 flex-col justify-between px-14 py-12 xl:px-20">
-
-          {/* Brand */}
-          <div className="flex items-center gap-3">
-            <div className="border-primary text-primary flex h-10 w-10 items-center justify-center rounded-full border-2">
-              <SpinningCompass size={5} />
-            </div>
-            <span className="font-headline text-primary text-lg font-bold tracking-tight">
-              TripFlow
-            </span>
-          </div>
-
+        <div className="relative z-10 flex flex-1 flex-col justify-center px-14 py-12 xl:px-20">
           {/* Hero copy */}
           <div className="max-w-lg">
-            <div className="border-primary/30 bg-primary/10 text-primary mb-5 inline-flex items-center gap-2 rounded-full border px-3.5 py-1">
-              <Globe className="h-3 w-3" strokeWidth={2} />
-              <span className="text-[11px] font-semibold uppercase tracking-widest">
-                Adventure Awaits
+            {/* Brand mark, anchored above the headline. Replaces the former
+                "Adventure Awaits" chip + top-left logo — keeping a single
+                identity point keeps the eye flowing straight into the H1. */}
+            <div className="mb-6 flex items-center gap-3">
+              <div className="border-primary text-primary flex h-10 w-10 items-center justify-center rounded-full border-2">
+                <SpinningCompass size={5} />
+              </div>
+              <span className="font-headline text-primary text-lg font-bold tracking-tight">
+                TripFlow
               </span>
             </div>
 
             <h1 className="font-headline text-foreground mb-5 text-5xl font-extrabold leading-[1.08] tracking-tight xl:text-6xl">
               Plan your next
               <br />
-              journey,{' '}
-              <span className="text-primary">together.</span>
+              journey, <span className="text-primary">together.</span>
             </h1>
 
             <p className="text-muted-foreground mb-10 max-w-sm text-base leading-relaxed">
               Drag-and-drop itineraries, real-time collaboration, and smart reminders — all in one workspace.
             </p>
 
-            {/* Feature cards */}
-            <div className="grid grid-cols-3 gap-3">
-              {FEATURES.map((feature) => (
-                <div
-                  key={feature.title}
-                  className="bg-card border-border rounded-2xl border p-4"
+            {/* Numbered step flow — three columns connected by a dashed
+                line that runs through the icon row. Reads as "do A → then B
+                → then C" rather than as three independent feature blurbs. */}
+            <ol className="relative grid grid-cols-3 gap-3">
+              {/* Connector line behind the icon row. Top is calc'd to align
+                  with the centre of the 10x10 icon discs (p-4 = 16px + h-10/2
+                  = 20px → 36px from card top, then -translate-y-1/2). */}
+              <div
+                aria-hidden
+                className="border-primary/25 absolute left-[16%] right-[16%] top-[2.25rem] border-t border-dashed"
+              />
+              {STEPS.map((step, idx) => (
+                <li
+                  key={step.title}
+                  className="bg-card border-border relative flex flex-col items-center rounded-2xl border p-4 text-center"
                 >
-                  <div className="bg-primary/10 text-primary mb-3 flex h-8 w-8 items-center justify-center rounded-lg">
-                    <feature.icon className="h-4 w-4" strokeWidth={1.75} />
+                  <div className="bg-card text-primary border-primary/40 relative z-10 mb-3 flex h-10 w-10 items-center justify-center rounded-full border-2">
+                    <step.icon className="h-4 w-4" strokeWidth={2} />
+                    <span className="bg-primary text-primary-foreground absolute -right-1 -top-1 inline-flex h-4 w-4 items-center justify-center rounded-full text-[0.6rem] font-bold tabular-nums">
+                      {idx + 1}
+                    </span>
                   </div>
-                  <p className="text-foreground text-sm font-semibold">{feature.title}</p>
-                  <p className="text-muted-foreground mt-0.5 text-xs leading-relaxed">{feature.desc}</p>
-                </div>
+                  <p className="text-foreground text-sm font-semibold">{step.title}</p>
+                  <p className="text-muted-foreground mt-0.5 truncate text-xs">
+                    {step.desc}
+                  </p>
+                </li>
               ))}
-            </div>
-          </div>
+            </ol>
 
-          {/* Footer */}
-          <p className="text-muted-foreground/50 text-xs">
-            © {new Date().getFullYear()} TripFlow · Crafted for explorers
-          </p>
+            {/* Footer sits tight against the step row — a small `mt-3` keeps
+                a hairline of breathing room without re-opening the visual
+                gap that flex-justify-center used to create. */}
+            <p className="text-muted-foreground/50 mt-3 text-xs">
+              © {new Date().getFullYear()} TripFlow · Crafted for explorers
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Right — Sign-in Panel (40%) */}
-      <div className="relative flex flex-1 flex-col items-center justify-center px-6 lg:w-[40%] lg:flex-none lg:border-l lg:border-border lg:px-12 xl:px-16">
-
+      <div className="lg:border-border relative flex flex-1 flex-col items-center justify-center px-6 lg:w-[40%] lg:flex-none lg:border-l lg:px-12 xl:px-16">
         <div className="relative z-10 w-full max-w-sm">
-
           <div className="bg-card border-border rounded-3xl border p-8 shadow-xl">
-
             {/* Logo inside card — mobile only */}
             <div className="mb-7 flex flex-col items-center gap-2 lg:hidden">
               <div className="border-primary text-primary flex h-12 w-12 items-center justify-center rounded-full border-2">
                 <SpinningCompass size={6} />
               </div>
-              <span className="font-headline text-primary text-xl font-bold tracking-tight">TripFlow</span>
+              <span className="font-headline text-primary text-xl font-bold tracking-tight">
+                TripFlow
+              </span>
             </div>
 
-            {/* Heading */}
+            {/* Heading — time-aware greeting personalises the page without
+                requiring user data. Subtitle stays static so the call-to-
+                action context is consistent. */}
             <div className="mb-8">
               <h2 className="font-headline text-foreground mb-1.5 text-2xl font-bold tracking-tight">
-                Welcome back
+                {greeting}
               </h2>
               <p className="text-muted-foreground text-sm">
                 Sign in to continue planning your adventures
               </p>
             </div>
 
-            {/* Google sign-in */}
+            {/* Google sign-in — swaps to the compass loader while the OAuth
+                redirect is in flight. Disabled to prevent double-clicks. */}
             <Button
               id="google-sign-in-button"
-              onClick={signInWithGoogle}
+              onClick={handleSignIn}
+              disabled={signingIn}
               variant="outline"
-              className="text-foreground hover:text-foreground hover:bg-muted h-12 w-full cursor-pointer gap-3 rounded-xl font-medium transition-all duration-200 hover:shadow-md"
+              className="border-border text-foreground hover:bg-primary/5 hover:border-primary/40 hover:text-foreground h-12 w-full cursor-pointer gap-3 rounded-xl font-medium transition-all duration-200 hover:shadow-md disabled:cursor-wait disabled:opacity-80"
             >
-              <GoogleIcon />
-              Continue with Google
+              {signingIn ? (
+                <>
+                  <SpinningCompass size={5} className="text-primary" />
+                  Signing in…
+                </>
+              ) : (
+                <>
+                  <GoogleIcon />
+                  Continue with Google
+                </>
+              )}
             </Button>
 
-            <div className="mt-6 flex items-center gap-3">
-              <div className="bg-border h-px flex-1" />
-              <span className="text-muted-foreground text-[11px] uppercase tracking-widest">Secure login</span>
-              <div className="bg-border h-px flex-1" />
-            </div>
+            {/* Trust chips — replace the "Secure login" divider with two
+                explicit privacy promises. Stacks naturally on narrow card. */}
+            <ul className="mt-6 space-y-2">
+              <li className="text-muted-foreground flex items-center gap-2 text-xs">
+                <span className="bg-primary/10 text-primary inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
+                  <Lock className="h-3 w-3" strokeWidth={2.25} />
+                </span>
+                Sign-in handled by Google · no password stored
+              </li>
+              <li className="text-muted-foreground flex items-center gap-2 text-xs">
+                <span className="bg-primary/10 text-primary inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
+                  <ShieldCheck className="h-3 w-3" strokeWidth={2.25} />
+                </span>
+                We never read your email or contacts
+              </li>
+            </ul>
 
-            <p className="text-muted-foreground mt-6 text-center text-xs leading-relaxed">
+            <p className="text-muted-foreground/70 mt-6 text-center text-[11px] leading-relaxed">
               By signing in, you agree to our Terms of Service.
-              <br />
-              Your data is encrypted and never shared.
             </p>
           </div>
         </div>
       </div>
-
     </div>
   );
 }
 
-const FEATURES = [
+/**
+ * Concentric SVG rings that read as topographic contour lines. The pattern
+ * is offset to the left so the densest area sits behind the brand mark and
+ * fades out toward the hero copy — keeping text legibility intact.
+ *
+ * Uses currentColor so the line weight follows `text-foreground/N` and
+ * inherits theme switches automatically.
+ */
+function TopoPattern() {
+  // Generate ~14 rings increasing by ~38px so the lines look hand-drawn,
+  // not perfectly even.
+  const rings = Array.from({ length: 14 }, (_, i) => 60 + i * 38);
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 800 800"
+      preserveAspectRatio="xMinYMin slice"
+      className="text-foreground/[0.06] absolute inset-0 h-full w-full"
+    >
+      <g
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.25}
+        transform="translate(180 420)"
+      >
+        {rings.map((r) => (
+          <circle key={r} cx={0} cy={0} r={r} />
+        ))}
+      </g>
+      {/* Secondary, smaller cluster offset to the lower-right — looks like
+          a neighbouring hill on the map. */}
+      <g
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.25}
+        transform="translate(680 720)"
+      >
+        {[40, 80, 120, 160, 200, 240, 280].map((r) => (
+          <circle key={r} cx={0} cy={0} r={r} />
+        ))}
+      </g>
+    </svg>
+  );
+}
+
+/**
+ * Three-step flow describing the actual user journey through the app —
+ * favoured over a flat feature list because it doubles as onboarding:
+ * a returning user sees the loop they already know, a new visitor learns
+ * what they'll do once signed in.
+ */
+const STEPS = [
   {
     icon: MapPin,
-    title: 'Smart Itineraries',
-    desc: 'Drag-and-drop with Maps',
+    title: 'Add places',
+    desc: 'Drop pins',
   },
   {
     icon: Users,
-    title: 'Live Collaboration',
-    desc: 'Plan together in real-time',
+    title: 'Vote together',
+    desc: 'Pick favourites',
   },
   {
     icon: Zap,
-    title: 'Auto Reminders',
-    desc: 'Smart notifications',
+    title: 'Drag to plan',
+    desc: 'Build the day',
   },
 ] as const;
 
