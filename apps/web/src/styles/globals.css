@@ -16,6 +16,13 @@
   to { transform: rotate(360deg); }
 }
 
+/* Used by the route flow connector — animates the dash pattern so the line
+   appears to "flow" from one stop to the next, like a moving map route. */
+@keyframes route-flow-dash {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -16; }
+}
+
 @layer base {
   * {
     @apply border-border;
