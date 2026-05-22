@@ -98,7 +98,7 @@ export function CreateExpenseForm({
         userId: m.userId,
         amount: 0,
         itemPaid: '',
-        checked: true,
+        checked: m.userId === currentUserId,
       })),
     },
   });
@@ -112,14 +112,17 @@ export function CreateExpenseForm({
   const watchAmount = watch('amount') || 0;
   const watchSplitMethod = watch('splitMethod');
   const watchSplits = watch('splits') || [];
+  const watchDescription = watch('description') || '';
+  const watchPaidById = watch('paidById');
 
   const checkedCount = watchSplits.filter((s) => s.checked).length;
+  const lastDescriptionRef = useRef(watchDescription);
 
   // Auto-recalculate splits in 'equally' mode when amount or checked items change
   useEffect(() => {
     if (watchSplitMethod === 'equally') {
       const equalShare = checkedCount > 0 ? Number((watchAmount / checkedCount).toFixed(2)) : 0;
-      
+
       // Distribute remainder (due to rounding) to the first checked member
       let remainder = 0;
       if (checkedCount > 0) {
@@ -143,6 +146,27 @@ export function CreateExpenseForm({
     }
   }, [watchAmount, watchSplitMethod, checkedCount, setValue]);
 
+  // Auto-calculate exact split for the payer (paidById) and default itemPaid to merchant description
+  // Auto-calculate exact split for the payer (paidById) and default itemPaid to merchant description
+  useEffect(() => {
+    if (watchSplitMethod === 'exact_amount') {
+      // Find the index of the payer (paidById) in splits
+      const payerIndex = watchSplits.findIndex((s) => s.userId === watchPaidById);
+      if (payerIndex !== -1) {
+        // Ensure the payer is checked/included by default in exact split
+        if (!watchSplits[payerIndex]?.checked) {
+          setValue(`splits.${payerIndex}.checked`, true);
+        }
+
+        // Set default itemPaid to merchant description for the payer if it's empty or needs to match
+        if (watchDescription && (!watchSplits[payerIndex]?.itemPaid || watchSplits[payerIndex]?.itemPaid === lastDescriptionRef.current)) {
+          setValue(`splits.${payerIndex}.itemPaid`, watchDescription);
+        }
+      }
+    }
+    lastDescriptionRef.current = watchDescription;
+  }, [watchSplitMethod, watchPaidById, watchDescription, setValue, watchSplits]);
+
   // Handle click outside "+ Add Person" dropdown to close it
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -154,15 +178,30 @@ export function CreateExpenseForm({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // --- Render-time calculations for Exact Amount Split ---
+  const exactPayerIndex = watchSplits.findIndex((s) => s.userId === watchPaidById);
+  const exactOtherSplitsSum = watchSplits.reduce((sum, s, idx) => {
+    if (idx !== exactPayerIndex && s.checked) {
+      return sum + (Number(s.amount) || 0);
+    }
+    return sum;
+  }, 0);
+  const calculatedPayerAmount = Number(Math.max(0, watchAmount - exactOtherSplitsSum).toFixed(2));
+
   // Validation: Sum of exact split amounts must match total expense amount
-  const exactSplitSum = watchSplits.reduce((sum, s) => sum + (s.amount || 0), 0);
+  const exactSplitSum = watchSplits.reduce((sum, s, idx) => {
+    if (watchSplitMethod === 'exact_amount' && idx === exactPayerIndex) {
+      return sum + calculatedPayerAmount;
+    }
+    return sum + (s.checked ? (Number(s.amount) || 0) : 0);
+  }, 0);
   const isExactMismatch =
     watchSplitMethod === 'exact_amount' && Math.abs(exactSplitSum - watchAmount) > 0.05;
 
   // Simulate receipt upload & OCR parsing
   const handleReceiptUpload = (e: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>) => {
     let file: File | null = null;
-    
+
     if ('files' in e.target && e.target.files) {
       file = e.target.files[0] || null;
     } else if ('dataTransfer' in e && e.dataTransfer.files) {
@@ -182,7 +221,7 @@ export function CreateExpenseForm({
     setTimeout(() => {
       setIsScanning(false);
       setIsAutofilled(true);
-      
+
       // Auto-fill values to match the screenshots perfectly
       setValue('description', 'Nara Thai Cuisine');
       setValue('amount', 2500);
@@ -222,10 +261,16 @@ export function CreateExpenseForm({
   const handleFormSubmit = (data: ExpenseFormValues) => {
     // Filter down to involved splits only
     const activeSplits = data.splits
-      .filter((s) => (data.splitMethod === 'equally' ? s.checked : s.amount > 0))
+      .filter((s) => {
+        if (data.splitMethod === 'equally') return s.checked;
+        if (s.userId === data.paidById) return calculatedPayerAmount > 0;
+        return s.amount > 0 && s.checked;
+      })
       .map((s) => ({
         userId: s.userId,
-        amount: s.amount,
+        amount: data.splitMethod === 'exact_amount' && s.userId === data.paidById 
+          ? calculatedPayerAmount 
+          : s.amount,
         itemPaid: data.splitMethod === 'exact_amount' ? s.itemPaid || null : null,
       }));
 
@@ -378,9 +423,8 @@ export function CreateExpenseForm({
                 <Input
                   id="description"
                   placeholder="e.g. Nara Thai Cuisine"
-                  className={`pl-9 h-11 border-slate-200/80 dark:border-slate-800 dark:bg-slate-950 rounded-xl focus-visible:ring-emerald-500 text-sm ${
-                    errors.description ? 'border-red-500 dark:border-red-950' : ''
-                  }`}
+                  className={`pl-9 h-11 border-slate-200/80 dark:border-slate-800 dark:bg-slate-950 rounded-xl focus-visible:ring-emerald-500 text-sm ${errors.description ? 'border-red-500 dark:border-red-950' : ''
+                    }`}
                   {...register('description')}
                 />
                 <Store className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400 dark:text-slate-500" />
@@ -420,9 +464,8 @@ export function CreateExpenseForm({
                 type="number"
                 step="0.01"
                 placeholder="0.00"
-                className={`pl-14 h-14 border-slate-200/80 dark:border-slate-800 dark:bg-slate-950 rounded-xl focus-visible:ring-emerald-500 text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-100 ${
-                  errors.amount ? 'border-red-500 dark:border-red-950' : ''
-                }`}
+                className={`pl-14 h-14 border-slate-200/80 dark:border-slate-800 dark:bg-slate-950 rounded-xl focus-visible:ring-emerald-500 text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-100 ${errors.amount ? 'border-red-500 dark:border-red-950' : ''
+                  }`}
                 {...register('amount', { valueAsNumber: true })}
               />
               <div className="absolute left-4 flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
@@ -487,22 +530,20 @@ export function CreateExpenseForm({
             <button
               type="button"
               onClick={() => setValue('splitMethod', 'equally')}
-              className={`flex-1 text-center py-2.5 text-xs font-bold rounded-full transition-all duration-200 ${
-                watchSplitMethod === 'equally'
-                  ? 'bg-white shadow-sm text-emerald-700 dark:bg-slate-950 dark:text-emerald-400 font-extrabold'
-                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-              }`}
+              className={`flex-1 text-center py-2.5 text-xs font-bold rounded-full transition-all duration-200 ${watchSplitMethod === 'equally'
+                ? 'bg-white shadow-sm text-emerald-700 dark:bg-slate-950 dark:text-emerald-400 font-extrabold'
+                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                }`}
             >
               Equally
             </button>
             <button
               type="button"
               onClick={() => setValue('splitMethod', 'exact_amount')}
-              className={`flex-1 text-center py-2.5 text-xs font-bold rounded-full transition-all duration-200 ${
-                watchSplitMethod === 'exact_amount'
-                  ? 'bg-white shadow-sm text-emerald-700 dark:bg-slate-950 dark:text-emerald-400 font-extrabold'
-                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-              }`}
+              className={`flex-1 text-center py-2.5 text-xs font-bold rounded-full transition-all duration-200 ${watchSplitMethod === 'exact_amount'
+                ? 'bg-white shadow-sm text-emerald-700 dark:bg-slate-950 dark:text-emerald-400 font-extrabold'
+                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                }`}
             >
               By Exact Amount
             </button>
@@ -532,88 +573,107 @@ export function CreateExpenseForm({
               const isChecked = watchSplits[index]?.checked ?? true;
               const splitAmount = watchSplits[index]?.amount ?? 0;
 
-              // Hide excluded travelers visually (we filter from view, they are shown in Add Person popup)
-              if (!isChecked) return null;
-
               return (
-                <div
-                  key={field.id}
-                  className="group relative border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 rounded-2xl shadow-sm transition-all duration-200 hover:shadow-md"
-                >
-                  {/* Close button X (excludes traveler) — hidden for current user */}
-                  {field.userId !== currentUserId && (
-                    <button
-                      type="button"
-                      onClick={() => handleExcludeTraveler(index)}
-                      className="absolute top-3 right-3 w-6 h-6 rounded-full flex items-center justify-center text-slate-300 hover:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 duration-150"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  )}
+                <div key={field.id}>
+                  <input type="hidden" defaultValue={field.userId} {...register(`splits.${index}.userId`)} />
+                  <input
+                    type="checkbox"
+                    className="hidden"
+                    checked={!!watchSplits[index]?.checked}
+                    {...register(`splits.${index}.checked`)}
+                  />
 
-                  <div className="flex items-center justify-between gap-3">
-                    {/* User profile & Name */}
-                    <div className="flex items-center gap-3">
-                      {member?.avatarUrl ? (
-                        <img
-                          src={member.avatarUrl}
-                          alt={member.name}
-                          className="w-9 h-9 rounded-full object-cover shadow-sm ring-1 ring-slate-100 dark:ring-slate-800"
-                        />
-                      ) : (
-                        <div className={`w-9 h-9 rounded-full font-bold flex items-center justify-center text-xs ${getAvatarBgColor(member?.name || '')}`}>
-                          {member?.name.charAt(0).toUpperCase()}
+                  {isChecked && (
+                    <div
+                      className="group relative border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 rounded-2xl shadow-sm transition-all duration-200 hover:shadow-md animate-slide-down"
+                    >
+                      {/* Close button X (excludes traveler) — hidden for current user and payer */}
+                      {field.userId !== currentUserId && field.userId !== watchPaidById && (
+                        <button
+                          type="button"
+                          onClick={() => handleExcludeTraveler(index)}
+                          className="absolute top-3 right-3 w-6 h-6 rounded-full flex items-center justify-center text-slate-300 hover:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 duration-150"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+
+                      <div className="flex items-center justify-between gap-3">
+                        {/* User profile & Name */}
+                        <div className="flex items-center gap-3">
+                          {member?.avatarUrl ? (
+                            <img
+                              src={member.avatarUrl}
+                              alt={member.name}
+                              className="w-9 h-9 rounded-full object-cover shadow-sm ring-1 ring-slate-100 dark:ring-slate-800"
+                            />
+                          ) : (
+                            <div className={`w-9 h-9 rounded-full font-bold flex items-center justify-center text-xs ${getAvatarBgColor(member?.name || '')}`}>
+                              {member?.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div>
+                            <span className="text-slate-800 dark:text-slate-100 text-sm font-semibold leading-none block">
+                              {member?.userId === currentUserId ? `${member?.name} (Me)` : member?.name}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Amount display for Equal share */}
+                        {watchSplitMethod === 'equally' && (
+                          <span className="text-emerald-700 dark:text-emerald-400 text-base font-extrabold min-w-[5rem] text-right">
+                            ฿{splitAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Inputs display for Exact split */}
+                      {watchSplitMethod === 'exact_amount' && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 border-t border-slate-50 dark:border-slate-900 pt-3 animate-slide-down">
+                          <div className="space-y-1">
+                            <Label htmlFor={`splits.${index}.itemPaid`} className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center h-4">
+                              Item Paid
+                            </Label>
+                            <Input
+                              id={`splits.${index}.itemPaid`}
+                              type="text"
+                              placeholder="Menu/item (e.g. Pad Thai)"
+                              className="h-9 text-xs border-slate-200/80 dark:border-slate-800 rounded-xl focus-visible:ring-emerald-500 bg-slate-50/30 dark:bg-slate-900/30"
+                              {...register(`splits.${index}.itemPaid`)}
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <Label htmlFor={`splits.${index}.amount`} className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center justify-between h-4">
+                              <span>Amount (THB)</span>
+                              {field.userId === watchPaidById && (
+                                <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-extrabold normal-case leading-none">
+                                  (Auto Payer Remainder)
+                                </span>
+                              )}
+                            </Label>
+                            <div className="relative">
+                              <Input
+                                id={`splits.${index}.amount`}
+                                type="number"
+                                step="0.01"
+                                placeholder="0.00"
+                                readOnly={field.userId === watchPaidById}
+                                value={field.userId === watchPaidById ? calculatedPayerAmount : undefined}
+                                className={`h-9 pl-6 pr-2 text-xs font-bold border-slate-200/80 dark:border-slate-800 rounded-xl focus-visible:ring-emerald-500 text-right ${
+                                  field.userId === watchPaidById
+                                    ? 'bg-slate-100/80 dark:bg-slate-900/80 text-slate-500 cursor-not-allowed select-none'
+                                    : 'text-slate-700 dark:text-slate-200'
+                                }`}
+                                {...(field.userId === watchPaidById ? {} : register(`splits.${index}.amount`, { valueAsNumber: true }))}
+                              />
+                              <span className="absolute left-2.5 top-2.5 text-[10px] font-bold text-slate-400">
+                                ฿
+                              </span>
+                            </div>
+                          </div>
                         </div>
                       )}
-                      <div>
-                        <span className="text-slate-800 dark:text-slate-100 text-sm font-semibold leading-none block">
-                          {member?.userId === currentUserId ? `${member?.name} (Me)` : member?.name}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Amount display for Equal share */}
-                    {watchSplitMethod === 'equally' && (
-                      <span className="text-emerald-700 dark:text-emerald-400 text-base font-extrabold min-w-[5rem] text-right">
-                        ฿{splitAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Inputs display for Exact split */}
-                  {watchSplitMethod === 'exact_amount' && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 border-t border-slate-50 dark:border-slate-900 pt-3 animate-slide-down">
-                      <div className="space-y-1">
-                        <Label htmlFor={`splits.${index}.itemPaid`} className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                          Item Paid
-                        </Label>
-                        <Input
-                          id={`splits.${index}.itemPaid`}
-                          type="text"
-                          placeholder="Menu/item (e.g. Pad Thai)"
-                          className="h-9 text-xs border-slate-200/80 dark:border-slate-800 rounded-xl focus-visible:ring-emerald-500 bg-slate-50/30 dark:bg-slate-900/30"
-                          {...register(`splits.${index}.itemPaid`)}
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <Label htmlFor={`splits.${index}.amount`} className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                          Amount (THB)
-                        </Label>
-                        <div className="relative">
-                          <Input
-                            id={`splits.${index}.amount`}
-                            type="number"
-                            step="0.01"
-                            placeholder="0.00"
-                            className="h-9 pl-6 pr-2 text-xs font-bold border-slate-200/80 dark:border-slate-800 rounded-xl focus-visible:ring-emerald-500 text-right text-slate-700 dark:text-slate-200"
-                            {...register(`splits.${index}.amount`, { valueAsNumber: true })}
-                          />
-                          <span className="absolute left-2.5 top-2.5 text-[10px] font-bold text-slate-400">
-                            ฿
-                          </span>
-                        </div>
-                      </div>
                     </div>
                   )}
                 </div>

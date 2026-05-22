@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useResource } from '@/lib/useResource';
 import { getPaymentDetails, savePaymentDetails } from '@/features/finances/api';
+import { BankSelect } from '@/components/BankSelect';
 import jsQR from 'jsqr';
 import { parse } from 'promptparse';
 
@@ -330,11 +331,11 @@ export function PaymentDetailsCard() {
                   <div className="grid gap-6 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="bankName">Bank Name</Label>
-                      <Input
+                      <BankSelect
                         id="bankName"
-                        placeholder="e.g. Kasikornbank (KBank)"
                         value={bankName}
-                        onChange={(e) => setBankName(e.target.value)}
+                        onChange={(val) => setBankName(val)}
+                        placeholder="Search or select a bank…"
                       />
                     </div>
 

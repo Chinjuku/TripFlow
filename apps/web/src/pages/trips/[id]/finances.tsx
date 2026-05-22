@@ -77,10 +77,14 @@ export default function TripFinancesPage() {
 
   // Handle Recording an Expense
   const handleRecordExpenseSubmit = async (values: any) => {
+    if (!id) return;
     setIsSubmittingExpense(true);
     setErrorMsg(null);
     try {
-      await createExpense(values);
+      await createExpense({
+        ...values,
+        tripId: id,
+      });
       await refreshFinances();
       setCreateOpen(false);
     } catch (err) {

@@ -5,6 +5,7 @@ import { Label } from '@trip-flow/ui/components/label';
 import { Button } from '@trip-flow/ui/components/button';
 import { QrCode, CreditCard, Banknote, User, Upload, X, AlertCircle } from 'lucide-react';
 import type { UserPaymentDetail } from '../types';
+import { BankSelect } from '@/components/BankSelect';
 import jsQR from 'jsqr';
 import { parse } from 'promptparse';
 
@@ -298,12 +299,12 @@ export function PaymentDetailsModal({
               <Label htmlFor="bank-name" className="text-[10px] font-bold text-muted-foreground">
                 Bank Name
               </Label>
-              <Input
+              <BankSelect
                 id="bank-name"
                 value={bankName}
-                onChange={(e) => setBankName(e.target.value)}
-                placeholder="e.g. SCB, KBANK, BBL"
-                className="h-9 border-border bg-white text-xs dark:bg-card"
+                onChange={(val) => setBankName(val)}
+                placeholder="Search or select a bank…"
+                compact
               />
             </div>
             <div className="space-y-1">
