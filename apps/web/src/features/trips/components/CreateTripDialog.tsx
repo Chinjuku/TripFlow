@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { Plane, PlusCircle } from 'lucide-react';
 import { Button } from '@trip-flow/ui/components/button';
 import { Input } from '@trip-flow/ui/components/input';
 import { Label } from '@trip-flow/ui/components/label';
@@ -12,12 +13,19 @@ interface CreateTripDialogProps {
   onCreated: () => void;
 }
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDialogProps) {
   const [title, setTitle] = useState('');
   const [startsOn, setStartsOn] = useState<Date | undefined>(undefined);
   const [endsOn, setEndsOn] = useState<Date | undefined>(undefined);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const duration =
+    startsOn && endsOn && endsOn >= startsOn
+      ? Math.round((endsOn.getTime() - startsOn.getTime()) / DAY_MS) + 1
+      : null;
 
   function reset() {
     setTitle('');
@@ -29,7 +37,6 @@ export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDi
 
   function handleStartChange(date: Date | undefined) {
     setStartsOn(date);
-    // Clear end if it's now before the new start.
     if (date && endsOn && endsOn < date) {
       setEndsOn(undefined);
     }
@@ -69,57 +76,63 @@ export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDi
         if (!next) reset();
         onOpenChange(next);
       }}
-      title="New trip"
-      description="Set up a workspace your group can plan together."
+      title="Create Group Trip"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="trip-title">Title</Label>
-          <Input
-            id="trip-title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Bangkok long weekend"
-            autoFocus
-            maxLength={120}
-            required
-          />
+          <Label htmlFor="trip-title">Trip Name</Label>
+          <div className="relative">
+            <Plane
+              className="text-muted-foreground pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2"
+              strokeWidth={1.75}
+            />
+            <Input
+              id="trip-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Summer Alps Retreat"
+              autoFocus
+              maxLength={120}
+              required
+              className="pl-10"
+            />
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2">
-            <Label htmlFor="trip-start">Start date</Label>
+        <div className="space-y-2">
+          <Label>Dates</Label>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <DatePicker
               id="trip-start"
               value={startsOn}
               onChange={handleStartChange}
-              placeholder="Select start"
+              placeholder="Departure"
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="trip-end">End date</Label>
             <DatePicker
               id="trip-end"
               value={endsOn}
               onChange={setEndsOn}
               minDate={startsOn ?? undefined}
-              placeholder="Select end"
+              placeholder="Return"
             />
           </div>
+        </div>
+
+        <div className="bg-muted/40 border-border rounded-xl border p-4">
+          <p className="text-muted-foreground text-xs font-medium">Calculated Duration</p>
+          <p className="text-foreground mt-1 text-base font-semibold">
+            {duration !== null ? `${duration} day${duration === 1 ? '' : 's'}` : '— days'}
+          </p>
         </div>
 
         {error && (
           <p className="bg-destructive/10 text-destructive rounded-md p-3 text-sm">{error}</p>
         )}
 
-        <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={submitting}>
-            {submitting ? 'Creating…' : 'Create trip'}
-          </Button>
-        </div>
+        <Button type="submit" disabled={submitting} className="h-12 w-full gap-2">
+          {!submitting && <PlusCircle className="h-5 w-5" strokeWidth={2} />}
+          {submitting ? 'Creating…' : 'Create Trip'}
+        </Button>
       </form>
     </Modal>
   );
