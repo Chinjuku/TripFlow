@@ -1,0 +1,18 @@
+export { useTripFinances } from './hooks';
+export { getFinances, createExpense, createSettlement, confirmSettlement, updateBudget, savePaymentDetails } from './api';
+export { ExpenseSummary } from './components/ExpenseSummary';
+export { ExpenseList } from './components/ExpenseList';
+export { CreateExpenseModal } from './components/CreateExpenseModal';
+export { SettleUpModal } from './components/SettleUpModal';
+export { BudgetModal } from './components/BudgetModal';
+export { PaymentDetailsModal } from './components/PaymentDetailsModal';
+export type { 
+  FinancesData, 
+  FinanceSummary, 
+  DebtRelation, 
+  HydratedExpense, 
+  HydratedExpenseSplit, 
+  HydratedSettlement,
+  CreateExpensePayload,
+  CreateSettlementPayload
+} from './types';

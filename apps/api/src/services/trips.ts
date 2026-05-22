@@ -168,7 +168,7 @@ export async function createTrip(
   throw new Error('Failed to generate a unique invite code after 3 attempts');
 }
 
-async function loadTripMembers(tripId: string): Promise<TripMemberProfile[]> {
+export async function loadTripMembers(tripId: string): Promise<TripMemberProfile[]> {
   const rows = await db.select().from(tripMembers).where(eq(tripMembers.trip_id, tripId));
   const byTrip = await hydrateMemberProfiles(rows);
   return byTrip.get(tripId) ?? [];

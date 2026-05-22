@@ -8,6 +8,7 @@ import {
   primaryKey,
   uniqueIndex,
   index,
+  boolean,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
@@ -266,6 +267,8 @@ export const userPaymentDetails = pgTable(
     bank_name: text('bank_name'), // Optional e.g. KBANK, SCB
     bank_account_number: text('bank_account_number'),
     bank_account_name: text('bank_account_name'),
+    is_show_mobile_banking: boolean('is_show_mobile_banking').default(true).notNull(),
+    is_show_promptpay: boolean('is_show_promptpay').default(true).notNull(),
     created_at: timestamp('created_at', { withTimezone: true, mode: 'string' })
       .notNull()
       .default(sql`now()`),

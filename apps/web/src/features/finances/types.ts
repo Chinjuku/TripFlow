@@ -1,0 +1,49 @@
+import { api } from '@/lib/api';
+
+// Derive exact types from the Elysia E2E schema definition
+type AppResponse<T> = T extends (...args: any[]) => Promise<{ data: infer D }> ? NonNullable<D> : never;
+
+export type FinancesData = AppResponse<typeof api['finances']['trip'][string]['get']>;
+
+export type FinanceSummary = FinancesData['summary'];
+export type DebtRelation = FinanceSummary['whoOwesYou'][number];
+export type HydratedExpense = FinancesData['expenses'][number];
+export type HydratedExpenseSplit = HydratedExpense['splits'][number];
+export type HydratedSettlement = FinancesData['settlements'][number];
+export type UserPaymentDetail = NonNullable<FinanceSummary['paymentDetails'][string]>;
+
+export interface CreateExpensePayload {
+  tripId: string;
+  description: string;
+  amount: number;
+  paidById: string;
+  category: 'food' | 'transport' | 'activity' | 'lodging' | 'other';
+  splitMethod: 'equally' | 'exact_amount';
+  expenseDate?: string;
+  splits: {
+    userId: string;
+    amount: number;
+    itemPaid?: string | null;
+  }[];
+}
+
+export interface CreateSettlementPayload {
+  tripId: string;
+  payeeId: string;
+  amount: number;
+}
+
+export interface UpdateBudgetPayload {
+  tripId: string;
+  amount: number;
+}
+
+export interface SavePaymentDetailsPayload {
+  promptpayId?: string | null;
+  qrCodeUrl?: string | null;
+  bankName?: string | null;
+  bankAccountNumber?: string | null;
+  bankAccountName?: string | null;
+  isShowMobileBanking?: boolean;
+  isShowPromptpay?: boolean;
+}
