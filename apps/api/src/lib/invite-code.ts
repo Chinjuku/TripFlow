@@ -2,12 +2,12 @@
  * Short, human-shareable invite codes.
  *
  * Alphabet excludes ambiguous glyphs (0/O, 1/I, L) so codes are safe to
- * read aloud or transcribe by hand. 32 chars ^ 8 ≈ 1.1 trillion combinations
- * — collision-resistant enough that the database UNIQUE index will catch
+ * read aloud or transcribe by hand. 31 chars ^ 6 ≈ 887M combinations —
+ * collision-resistant enough that the database UNIQUE index will catch
  * any rare clash and the caller can simply retry.
  */
 const ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
-const CODE_LENGTH = 8;
+const CODE_LENGTH = 6;
 
 export function generateInviteCode(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(CODE_LENGTH));

@@ -5,7 +5,7 @@ import { Modal } from '@trip-flow/ui/components/modal';
 import { joinTrip } from '@/features/trips';
 import { OtpInput } from './OtpInput';
 
-const CODE_LENGTH = 8;
+const CODE_LENGTH = 6;
 
 interface JoinTripDialogProps {
   open: boolean;
@@ -59,11 +59,13 @@ export function JoinTripDialog({ open, onOpenChange, onJoined }: JoinTripDialogP
     >
       <form onSubmit={handleSubmit} className="flex flex-col">
         {/* Header */}
-        <div className="flex flex-col items-center gap-3 px-6 pb-6 pt-2 text-center">
+        <div className="flex flex-col items-center gap-3 px-5 pb-5 pt-2 text-center sm:px-6 sm:pb-6">
           <div className="bg-tertiary text-tertiary-foreground flex h-12 w-12 items-center justify-center rounded-full">
             <UserPlus className="h-5 w-5" strokeWidth={1.75} />
           </div>
-          <h2 className="font-headline text-foreground text-xl font-bold">Join a Trip</h2>
+          <h2 className="font-headline text-foreground text-lg font-bold sm:text-xl">
+            Join a Trip
+          </h2>
           <p className="text-muted-foreground max-w-xs text-sm leading-relaxed">
             Enter the {CODE_LENGTH}-character invite code provided by your group organizer.
           </p>
@@ -72,7 +74,7 @@ export function JoinTripDialog({ open, onOpenChange, onJoined }: JoinTripDialogP
         <div className="border-border border-t" />
 
         {/* Code slots */}
-        <div className="px-6 py-6">
+        <div className="px-5 py-5 sm:px-6 sm:py-6">
           <OtpInput
             length={CODE_LENGTH}
             value={code}
@@ -90,7 +92,7 @@ export function JoinTripDialog({ open, onOpenChange, onJoined }: JoinTripDialogP
         </div>
 
         {/* Actions */}
-        <div className="space-y-2 px-6 pb-6">
+        <div className="space-y-2 px-5 pb-5 sm:px-6 sm:pb-6">
           <Button type="submit" disabled={submitting || code.length !== CODE_LENGTH} className="h-11 w-full gap-2">
             {submitting ? 'Joining…' : 'Join Trip'}
             {!submitting && <ArrowRight className="h-4 w-4" strokeWidth={2} />}
@@ -105,7 +107,7 @@ export function JoinTripDialog({ open, onOpenChange, onJoined }: JoinTripDialogP
         </div>
 
         {/* Footer */}
-        <div className="bg-muted/50 border-border text-muted-foreground border-t px-6 py-4 text-center text-sm">
+        <div className="bg-muted/50 border-border text-muted-foreground border-t px-5 py-4 text-center text-sm sm:px-6">
           Don't have a code?{' '}
           <span className="text-foreground font-medium">Ask the friend who set up the trip.</span>
         </div>
