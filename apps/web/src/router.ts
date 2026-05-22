@@ -10,9 +10,13 @@ export type Path =
   | `/settings`
   | `/trips`
   | `/trips/:id`
+  | `/trips/:id/plan`
+  | `/trips/:id/schedule`
 
 export type Params = {
   '/trips/:id': { id: string }
+  '/trips/:id/plan': { id: string }
+  '/trips/:id/schedule': { id: string }
 }
 
 export type ModalPath = never
