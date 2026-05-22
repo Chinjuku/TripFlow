@@ -157,8 +157,11 @@ export default function LoginPage() {
 
             {/* Heading — time-aware greeting personalises the page without
                 requiring user data. Subtitle stays static so the call-to-
-                action context is consistent. */}
-            <div className="mb-8">
+                action context is consistent. Centred on mobile (where the
+                card stands alone) and left-aligned on lg+ where the hero
+                panel sits to the left and a flush-left heading reads
+                more naturally. */}
+            <div className="mb-8 text-center lg:text-left">
               <h2 className="font-headline text-foreground mb-1.5 text-2xl font-bold tracking-tight">
                 {greeting}
               </h2>
