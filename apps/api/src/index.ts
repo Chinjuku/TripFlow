@@ -1,10 +1,10 @@
 import { cors } from '@elysiajs/cors';
 import { Elysia } from 'elysia';
-import { reminderCron } from './cron/reminders';
 import { env } from './env';
 import { DomainError, UnauthorizedError, ForbiddenError, NotFoundError } from './errors/domain';
 import { healthRoute } from './routes/health';
 import { authRoute } from './routes/auth';
+import { placesRoute } from './routes/places';
 import { tripsRoute } from './routes/trips';
 
 export const app = new Elysia()
@@ -41,7 +41,7 @@ export const app = new Elysia()
   .use(healthRoute)
   .use(authRoute)
   .use(tripsRoute)
-  .use(reminderCron)
+  .use(placesRoute)
   .listen(env.port);
 
 console.info(`[api] TripFlow API listening on http://${app.server?.hostname}:${app.server?.port}`);
