@@ -27,6 +27,8 @@ export interface ScheduleItem {
   /** Place snapshot at fetch time — denormalised for the UI. */
   place: {
     id: string;
+    /** Google place_id (or "mock_…" id for legacy rows). */
+    externalId: string;
     name: string;
     address: string | null;
     category: string | null;
@@ -76,6 +78,7 @@ function toScheduleItem(item: TripScheduleItem, place: TripPlace): ScheduleItem 
     createdAt: item.created_at,
     place: {
       id: place.id,
+      externalId: place.external_id,
       name: place.name,
       address: place.address,
       category: place.category,

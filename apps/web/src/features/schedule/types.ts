@@ -1,5 +1,7 @@
 export interface SchedulePlace {
   id: string;
+  /** Google place_id (or "mock_…" for legacy rows). */
+  externalId: string;
   name: string;
   address: string | null;
   category: string | null;

@@ -76,6 +76,47 @@ function snapMinute(minute: number, step = 15): number {
   return Math.max(HOURS_START * 60, Math.round(minute / step) * step);
 }
 
+/**
+ * Builds a Google Maps directions URL from one scheduled stop to the next.
+ *
+ * Prefers Google place_ids (cached on `trip_places.external_id` when the
+ * pick came from the map) — that pins the route to the exact venue rather
+ * than a fuzzy name search. Falls back to lat/lng, then to the place name.
+ *
+ * @see https://developers.google.com/maps/documentation/urls/get-started#directions-action
+ */
+function buildMapsDirectionsUrl(from: ScheduleItem, to: ScheduleItem): string {
+  const params = new URLSearchParams({ api: '1', travelmode: 'driving' });
+  const origin = describeLocation(from);
+  const destination = describeLocation(to);
+  params.set('origin', origin.query);
+  if (origin.placeId) params.set('origin_place_id', origin.placeId);
+  params.set('destination', destination.query);
+  if (destination.placeId) params.set('destination_place_id', destination.placeId);
+  return `https://www.google.com/maps/dir/?${params.toString()}`;
+}
+
+function describeLocation(item: ScheduleItem): { query: string; placeId?: string } {
+  const place = item.place;
+  const placeId = isGooglePlaceId(place.externalId) ? place.externalId : undefined;
+
+  if (place.lat !== null && place.lng !== null) {
+    return { query: `${place.lat},${place.lng}`, placeId };
+  }
+  return { query: place.name, placeId };
+}
+
+/**
+ * Distinguishes a Google place_id (e.g. "ChIJN1t_tDeuEmsRUsoyG83frY4") from
+ * our internal UUIDs. Heuristic, not perfect — but UUID v4 is dash-separated
+ * and place_ids are not, so a single regex tells them apart cheaply.
+ */
+function isGooglePlaceId(value: string | null | undefined): value is string {
+  if (!value || value.length < 10) return false;
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(value)) return false; // UUID
+  return true;
+}
+
 /** Pixel offset (from timeline top) → minute since midnight. */
 function pxToMinute(px: number): number {
   return snapMinute(HOURS_START * 60 + (px / HOUR_HEIGHT_PX) * 60);
@@ -233,6 +274,9 @@ export default function TripSchedulePage() {
             {error.message}
           </div>
         )}
+
+        {/* Route flow — high-level A → B → C summary of the day */}
+        <RouteFlowCard items={itemsForDay} />
 
         {/* Main grid: timeline + sidebar */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
@@ -445,14 +489,13 @@ function EventBlock({ item, next, onRemove }: EventBlockProps) {
         {...attributes}
         style={style}
         className={cn(
-          'absolute left-2 right-2 cursor-grab overflow-hidden rounded-lg border pl-3 pr-2 py-2',
+          'absolute left-2 right-2 cursor-grab overflow-hidden rounded-lg border px-3 py-2',
           'flex items-start gap-2 shadow-sm',
           tone.bg,
           tone.border,
           'active:cursor-grabbing',
         )}
       >
-        <div className={cn('absolute left-0 top-0 bottom-0 w-1 rounded-l-lg', tone.bar)} />
         <div className="min-w-0 flex-1">
           <p className={cn('truncate text-sm font-bold', tone.text)}>{item.place.name}</p>
           <p className="text-muted-foreground mt-0.5 truncate text-xs">
@@ -496,6 +539,7 @@ function TravelGap({ startPx, endPx, gapMinutes }: TravelGapProps) {
   const top = startPx;
   const height = Math.max(0, endPx - startPx);
   if (height < 14) return null;
+
   return (
     <div
       className="absolute left-2 right-2 flex items-center justify-center"
@@ -575,6 +619,119 @@ function PlacePill({ place, dragging }: { place: TripPlace; dragging?: boolean }
           aria-hidden
           className="bg-card border-primary absolute inset-0 -m-px rounded-xl border-2 shadow-lg"
         />
+      )}
+    </>
+  );
+}
+
+/* ------------------------------------------------------------------------ */
+/*  Route flow card — horizontal A → B → C chip summary                    */
+/* ------------------------------------------------------------------------ */
+
+function RouteFlowCard({ items }: { items: ScheduleItem[] }) {
+  if (items.length === 0) {
+    return (
+      <div className="border-border bg-card text-muted-foreground rounded-2xl border border-dashed px-5 py-4 text-center text-xs">
+        Your route flow will appear here once you schedule stops for the day.
+      </div>
+    );
+  }
+
+  return (
+    <div className="border-border bg-card rounded-2xl border p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="text-foreground text-xs font-bold uppercase tracking-wide">
+          Route flow
+        </h3>
+        <span className="text-muted-foreground text-xs">
+          {items.length} {items.length === 1 ? 'stop' : 'stops'}
+        </span>
+      </div>
+
+      {/* Horizontal scroll on narrow viewports — keeps long days legible without wrapping. */}
+      <div className="-mx-1 flex items-stretch gap-1 overflow-x-auto px-1 pb-1">
+        {items.map((item, idx) => (
+          <RouteFlowStep
+            key={item.id}
+            index={idx}
+            item={item}
+            next={items[idx + 1]}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+interface RouteFlowStepProps {
+  index: number;
+  item: ScheduleItem;
+  next: ScheduleItem | undefined;
+}
+
+function RouteFlowStep({ index, item, next }: RouteFlowStepProps) {
+  const tone = toneFor(item.id);
+
+  return (
+    <>
+      <div className="flex shrink-0 items-stretch">
+        <div
+          className={cn(
+            'flex min-w-[10rem] max-w-[14rem] flex-col gap-1 rounded-xl border px-3 py-2',
+            tone.bg,
+            tone.border,
+          )}
+        >
+          <div className="flex items-center gap-2">
+            <span
+              className={cn(
+                'inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[0.65rem] font-bold text-white',
+                tone.bar,
+              )}
+            >
+              {index + 1}
+            </span>
+            <span className={cn('truncate text-xs font-semibold', tone.text)}>
+              {item.place.name}
+            </span>
+          </div>
+          <p className="text-muted-foreground pl-7 text-[0.65rem] tabular-nums">
+            {formatTime(item.startMinute)} · {formatDuration(item.durationMinutes)}
+          </p>
+        </div>
+      </div>
+
+      {next && (
+        <a
+          href={buildMapsDirectionsUrl(item, next)}
+          target="_blank"
+          rel="noreferrer"
+          title={`Open directions from ${item.place.name} to ${next.place.name}`}
+          className="text-muted-foreground/70 hover:text-foreground hover:bg-muted/60 group/arrow flex shrink-0 flex-col items-center justify-center rounded-md px-1.5 py-1 transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-4 w-4"
+            aria-hidden
+          >
+            <path d="M5 12h14M13 5l7 7-7 7" />
+          </svg>
+          {next.startMinute > item.startMinute + item.durationMinutes ? (
+            <span className="mt-0.5 text-[0.6rem] tabular-nums">
+              +{formatDuration(next.startMinute - (item.startMinute + item.durationMinutes))}
+            </span>
+          ) : (
+            <span className="mt-0.5 text-[0.55rem] uppercase tracking-wide opacity-0 transition-opacity group-hover/arrow:opacity-100">
+              Map
+            </span>
+          )}
+        </a>
       )}
     </>
   );
