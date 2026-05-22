@@ -120,6 +120,40 @@ export const tripPlaceVotes = pgTable(
   }),
 );
 
+/**
+ * A place placed on the day-by-day itinerary. Promoted out of trip_places
+ * after voting; the FK with onDelete cascade means removing a candidate
+ * automatically clears anywhere it was scheduled.
+ *
+ * `start_minute` is minutes since 00:00 — keeps the row sortable without
+ * dragging timezones into the math. Default duration is 60 min.
+ */
+export const tripScheduleItems = pgTable(
+  'trip_schedule_items',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    trip_id: uuid('trip_id')
+      .notNull()
+      .references(() => trips.id, { onDelete: 'cascade' }),
+    trip_place_id: uuid('trip_place_id')
+      .notNull()
+      .references(() => tripPlaces.id, { onDelete: 'cascade' }),
+    day_index: integer('day_index').notNull(),
+    start_minute: integer('start_minute').notNull(),
+    duration_minutes: integer('duration_minutes').notNull().default(60),
+    notes: text('notes'),
+    created_at: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .notNull()
+      .default(sql`now()`),
+  },
+  (table) => ({
+    tripDayIdx: index('trip_schedule_items_trip_day_idx').on(
+      table.trip_id,
+      table.day_index,
+    ),
+  }),
+);
+
 export type Trip = typeof trips.$inferSelect;
 export type NewTrip = typeof trips.$inferInsert;
 export type TripMember = typeof tripMembers.$inferSelect;
@@ -128,3 +162,5 @@ export type TripPlace = typeof tripPlaces.$inferSelect;
 export type NewTripPlace = typeof tripPlaces.$inferInsert;
 export type TripPlaceVote = typeof tripPlaceVotes.$inferSelect;
 export type NewTripPlaceVote = typeof tripPlaceVotes.$inferInsert;
+export type TripScheduleItem = typeof tripScheduleItems.$inferSelect;
+export type NewTripScheduleItem = typeof tripScheduleItems.$inferInsert;

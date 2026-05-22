@@ -5,6 +5,7 @@ import { DomainError, UnauthorizedError, ForbiddenError, NotFoundError } from '.
 import { healthRoute } from './routes/health';
 import { authRoute } from './routes/auth';
 import { placesRoute } from './routes/places';
+import { scheduleRoute } from './routes/schedule';
 import { tripsRoute } from './routes/trips';
 
 export const app = new Elysia()
@@ -42,6 +43,7 @@ export const app = new Elysia()
   .use(authRoute)
   .use(tripsRoute)
   .use(placesRoute)
+  .use(scheduleRoute)
   .listen(env.port);
 
 console.info(`[api] TripFlow API listening on http://${app.server?.hostname}:${app.server?.port}`);
