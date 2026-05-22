@@ -97,48 +97,61 @@ function PlanCard({
   }
 
   return (
-    <article className="border-border bg-card flex gap-3 rounded-2xl border p-3 sm:gap-4 sm:p-4">
+    // Soft UI Evolution: card carries its own subtle elevation + a hover
+    // affordance so the row reads as a tappable item, not a static label.
+    // Border stays transparent at rest and brightens to `border-primary/30`
+    // on hover — keeps the surface calm but signals interactivity. Radius
+    // matches the photo's (rounded-xl = 16px) so corners line up cleanly.
+    <article
+      className={cn(
+        // Static card surface — no hover state on the row itself. The
+        // green outline that appeared on hover felt out of place; the
+        // interactive affordance lives on the inner vote chip + trash
+        // button, where hover actually means something.
+        'group/card border-border bg-card relative flex gap-3 rounded-xl border p-2.5 shadow-sm sm:gap-3.5 sm:p-3',
+      )}
+    >
       {place.photoUrl ? (
         <img
           src={place.photoUrl}
           alt=""
           loading="lazy"
-          className="bg-muted h-20 w-20 shrink-0 rounded-xl object-cover sm:h-24 sm:w-24"
+          className="bg-muted h-20 w-20 shrink-0 rounded-lg object-cover sm:h-24 sm:w-24"
         />
       ) : (
-        <div className="bg-muted text-muted-foreground flex h-20 w-20 shrink-0 items-center justify-center rounded-xl sm:h-24 sm:w-24">
+        <div className="bg-muted text-muted-foreground flex h-20 w-20 shrink-0 items-center justify-center rounded-lg sm:h-24 sm:w-24">
           <MapPin className="h-6 w-6" strokeWidth={1.75} />
         </div>
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex items-start justify-between gap-2">
-          <h4 className="text-foreground truncate text-sm font-bold sm:text-base">{place.name}</h4>
+          <h4 className="text-foreground truncate text-sm font-semibold leading-tight sm:text-[0.95rem]">
+            {place.name}
+          </h4>
           <VoteChip count={place.voteCount} liked={place.liked} onClick={toggleLike} busy={busy} />
         </div>
         {place.address && (
-          <p className="text-muted-foreground mt-0.5 line-clamp-2 text-xs sm:text-sm">
+          <p className="text-muted-foreground line-clamp-2 text-xs leading-snug sm:text-[0.8rem]">
             {place.address}
           </p>
         )}
-        <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-          {place.category && (
-            <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-[0.65rem] font-medium uppercase tracking-wide">
-              {place.category}
-            </span>
-          )}
-          {canRemove && (
+        {/* Trash action — always visible (not hover-only) so the place's
+            owner can see at a glance that the row is theirs to remove.
+            `mt-auto` pins it to the bottom regardless of address length. */}
+        {canRemove && (
+          <div className="mt-auto flex justify-end">
             <button
               type="button"
               onClick={handleRemove}
               disabled={busy}
               aria-label="Remove place"
-              className="text-muted-foreground hover:text-destructive ml-auto inline-flex h-7 w-7 items-center justify-center rounded-md transition-colors disabled:opacity-50"
+              className="text-muted-foreground hover:bg-destructive hover:text-destructive-foreground inline-flex h-6 w-6 items-center justify-center rounded-md transition-colors disabled:opacity-50"
             >
-              <Trash2 className="h-4 w-4" strokeWidth={1.75} />
+              <Trash2 className="h-3.5 w-3.5" strokeWidth={2} />
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </article>
   );
@@ -155,6 +168,9 @@ function VoteChip({
   onClick: () => void;
   busy: boolean;
 }) {
+  // Pill styled like a stat tag rather than a hard button so it reads as
+  // "current state + tap to toggle". Filled primary when liked, neutral
+  // ring when not — matches the calm hierarchy the rest of the card uses.
   return (
     <button
       type="button"
@@ -163,14 +179,14 @@ function VoteChip({
       aria-pressed={liked}
       aria-label={liked ? 'Unlike' : 'Like'}
       className={cn(
-        'inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold transition-colors',
+        'inline-flex h-6 shrink-0 items-center gap-1 rounded-full px-2 text-[0.7rem] font-semibold tabular-nums transition-all',
         liked
-          ? 'bg-primary/10 text-primary'
-          : 'bg-muted text-muted-foreground hover:bg-muted/70',
+          ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm'
+          : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground border bg-transparent',
         'disabled:cursor-not-allowed disabled:opacity-50',
       )}
     >
-      <Heart className={cn('h-3 w-3', liked && 'fill-current')} strokeWidth={2} />
+      <Heart className={cn('h-3 w-3', liked && 'fill-current')} strokeWidth={2.25} />
       {count}
     </button>
   );
