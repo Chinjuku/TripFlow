@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight, Compass, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { SpinningCompass } from '@/components/SpinningCompass';
 import { Button } from '@trip-flow/ui/components/button';
 import { cn } from '@trip-flow/ui/lib/cn';
 import { SidebarNav } from './SidebarNav';
@@ -63,7 +64,7 @@ export function Sidebar({ open, onOpenChange }: SidebarProps) {
           )}
         >
           <div className="border-primary text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2">
-            <Compass className="h-5 w-5" strokeWidth={2} />
+            <SpinningCompass />
           </div>
 
           {!collapsed && (

@@ -11,6 +11,7 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react';
+import { SpinningCompass } from '@/components/SpinningCompass';
 import { Button } from '@trip-flow/ui/components/button';
 import { cn } from '@trip-flow/ui/lib/cn';
 import { SidebarUserMenu } from './SidebarUserMenu';
@@ -89,7 +90,7 @@ export function TripSidebar({ tripId, open, onOpenChange }: TripSidebarProps) {
             className="border-primary text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2"
             title="Back to all trips"
           >
-            <Compass className="h-5 w-5" strokeWidth={2} />
+            <SpinningCompass />
           </Link>
 
           {!collapsed && (

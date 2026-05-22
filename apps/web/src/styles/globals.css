@@ -11,6 +11,11 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -42,5 +47,16 @@
   label,
   .label {
     @apply font-label;
+  }
+}
+
+@layer utilities {
+  /* Hides native scrollbars while keeping the element scrollable. Used by
+     the day-tabs row so long trips scroll cleanly without grey bars. */
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 }
