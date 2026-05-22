@@ -9,9 +9,30 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragMoveEvent,
   type DragStartEvent,
 } from '@dnd-kit/core';
-import { ArrowLeft, ArrowUp, ChevronLeft, ChevronRight, Clock, MapPin, Trash2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowUp,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Coffee,
+  Flag,
+  FlagTriangleRight,
+  Hotel,
+  Landmark,
+  Map as MapIcon,
+  MapPin,
+  Mountain,
+  ShoppingBag,
+  Trash2,
+  TreePine,
+  Trophy,
+  Utensils,
+  Wine,
+} from 'lucide-react';
 import { Skeleton } from '@trip-flow/ui/components/skeleton';
 import { cn } from '@trip-flow/ui/lib/cn';
 import { useTrip } from '@/features/trips';
@@ -24,8 +45,8 @@ import {
   type ScheduleItem,
 } from '@/features/schedule';
 
-const HOURS_START = 8; // 08:00
-const HOURS_END = 22; // 22:00 (last grid line)
+const HOURS_START = 0; // 00:00
+const HOURS_END = 24; // 24:00 (last grid line, exclusive top edge)
 const HOUR_HEIGHT_PX = 56;
 const TIMELINE_HEIGHT_PX = (HOURS_END - HOURS_START) * HOUR_HEIGHT_PX;
 const DEFAULT_DURATION = 90;
@@ -117,6 +138,50 @@ function isGooglePlaceId(value: string | null | undefined): value is string {
   return true;
 }
 
+/**
+ * Builds a single Google Maps directions URL that strings every stop of the
+ * day together (origin → waypoints → destination). The 2-arg overload above
+ * still powers leg-by-leg arrows; this one drives the "View full route" CTA.
+ */
+function buildFullDayDirectionsUrl(items: ScheduleItem[]): string | null {
+  if (items.length < 2) return null;
+  const params = new URLSearchParams({ api: '1', travelmode: 'driving' });
+  const first = describeLocation(items[0]!);
+  const last = describeLocation(items[items.length - 1]!);
+  params.set('origin', first.query);
+  if (first.placeId) params.set('origin_place_id', first.placeId);
+  params.set('destination', last.query);
+  if (last.placeId) params.set('destination_place_id', last.placeId);
+  if (items.length > 2) {
+    const middle = items.slice(1, -1).map((it) => describeLocation(it));
+    params.set('waypoints', middle.map((m) => m.query).join('|'));
+    const ids = middle.map((m) => m.placeId).filter((x): x is string => Boolean(x));
+    if (ids.length === middle.length) {
+      params.set('waypoint_place_ids', ids.join('|'));
+    }
+  }
+  return `https://www.google.com/maps/dir/?${params.toString()}`;
+}
+
+/**
+ * Maps a free-text category (Google's `types` or our own enum) to a small
+ * lucide icon. Falls back to a generic pin so unmatched categories still
+ * render something meaningful.
+ */
+function categoryIconFor(category: string | null | undefined) {
+  const c = (category ?? '').toLowerCase();
+  if (/cafe|coffee/.test(c)) return Coffee;
+  if (/bar|pub|night|club/.test(c)) return Wine;
+  if (/restaurant|food|eat|dining|meal/.test(c)) return Utensils;
+  if (/hotel|lodging|stay|hostel|resort/.test(c)) return Hotel;
+  if (/museum|gallery|art|temple|shrine|church|landmark|monument/.test(c)) return Landmark;
+  if (/park|garden|nature|forest/.test(c)) return TreePine;
+  if (/mountain|hike|trek|trail|view/.test(c)) return Mountain;
+  if (/shop|store|mall|market|boutique/.test(c)) return ShoppingBag;
+  if (/sport|stadium|gym|arena/.test(c)) return Trophy;
+  return MapPin;
+}
+
 /** Pixel offset (from timeline top) → minute since midnight. */
 function pxToMinute(px: number): number {
   return snapMinute(HOURS_START * 60 + (px / HOUR_HEIGHT_PX) * 60);
@@ -139,6 +204,22 @@ export default function TripSchedulePage() {
   );
   const [activeDay, setActiveDay] = useState(0);
   const [dragging, setDragging] = useState<DragPayload | null>(null);
+  /**
+   * Live preview while a drag is in flight. `startMinute` is what the drop
+   * would commit if released right now; `durationMinutes` is the size of the
+   * ghost block (new place → default, existing event → its own duration).
+   * `conflict` is true when the proposed slot overlaps another scheduled
+   * event — used to colour the ghost red and block the actual drop.
+   * Reset on dragEnd / dragCancel.
+   */
+  const [dragPreview, setDragPreview] = useState<{
+    startMinute: number;
+    durationMinutes: number;
+    conflict: boolean;
+  } | null>(null);
+  // Ref so `handleDragMove` can read the timeline DOM rect without re-creating
+  // the callback on every render. Set by the Timeline component via callback.
+  const timelineElRef = useRef<HTMLDivElement | null>(null);
 
   const placesById = useMemo(() => {
     const map = new Map<string, TripPlace>();
@@ -178,11 +259,88 @@ export default function TripSchedulePage() {
     if (data) setDragging(data);
   }
 
+  /**
+   * Fires continuously while the pointer moves during a drag. We use it for
+   * two things:
+   *   1. Compute a live drop preview — the minute the event would land on if
+   *      released now — and feed it to the Timeline so it can render a ghost
+   *      block + time tooltip.
+   *   2. Auto-scroll the page when the pointer nears the top or bottom edge
+   *      of the timeline. Without this, a 24-hour timeline is unusable: you
+   *      can't drag a 19:00 event into a 04:00 slot without releasing.
+   */
+  function handleDragMove(e: DragMoveEvent) {
+    const data = e.active.data.current as DragPayload | undefined;
+    const tl = timelineElRef.current;
+    if (!data || !tl) return;
+
+    const activeRect = e.active.rect.current.translated;
+    if (!activeRect) return;
+
+    const timelineRect = tl.getBoundingClientRect();
+    const yWithinTimeline = activeRect.top - timelineRect.top;
+    const startMinute = pxToMinute(yWithinTimeline);
+
+    // For existing events keep the original duration so the ghost matches the
+    // block being moved; for new places the placeholder uses the default.
+    const durationMinutes =
+      data.kind === 'existing'
+        ? (schedule ?? []).find((s) => s.id === data.scheduleId)?.durationMinutes ??
+          DEFAULT_DURATION
+        : DEFAULT_DURATION;
+
+    // Overlap detection — interval is [start, start + duration). When moving
+    // an existing event we exclude its own row from the check so the user
+    // can drop it back where it already is without "self-conflict".
+    const endMinute = startMinute + durationMinutes;
+    const selfId = data.kind === 'existing' ? data.scheduleId : null;
+    const conflict = (schedule ?? []).some((s) => {
+      if (s.dayIndex !== activeDay) return false;
+      if (s.id === selfId) return false;
+      const sEnd = s.startMinute + s.durationMinutes;
+      return startMinute < sEnd && endMinute > s.startMinute;
+    });
+
+    setDragPreview({ startMinute, durationMinutes, conflict });
+
+    // Auto-scroll near the viewport edges. We use `window.scrollBy` because
+    // the page's scroll container is the document (the TripLayout `<main>`
+    // also scrolls, but document-level scrolling is what users actually feel
+    // when dragging near the screen edges).
+    const EDGE = 80; // px from edge where auto-scroll kicks in
+    const MAX_SPEED = 18; // px per move event
+    const cursorY = activeRect.top + activeRect.height / 2;
+    const viewportH = window.innerHeight;
+    let delta = 0;
+    if (cursorY < EDGE) {
+      delta = -Math.ceil(((EDGE - cursorY) / EDGE) * MAX_SPEED);
+    } else if (cursorY > viewportH - EDGE) {
+      delta = Math.ceil(((cursorY - (viewportH - EDGE)) / EDGE) * MAX_SPEED);
+    }
+    if (delta !== 0) {
+      // Try the document first, then fall back to the layout's <main> if the
+      // page doesn't scroll at the document level.
+      const main = document.querySelector('main');
+      if (main && main.scrollHeight > main.clientHeight) {
+        main.scrollBy({ top: delta });
+      } else {
+        window.scrollBy({ top: delta });
+      }
+    }
+  }
+
   async function handleDragEnd(e: DragEndEvent) {
     const data = e.active.data.current as DragPayload | undefined;
+    // Snapshot the conflict flag before we clear preview state — the drop
+    // must respect what the user was seeing on the ghost at release time.
+    const wasConflicting = dragPreview?.conflict === true;
     setDragging(null);
+    setDragPreview(null);
     if (!id || !data) return;
     if (e.over?.id !== 'timeline') return;
+    // Block the drop entirely if the live preview was red. dnd-kit doesn't
+    // know about our domain rules, so we enforce them here.
+    if (wasConflicting) return;
 
     // Translate the drop offset to a minute-of-day. dnd-kit gives us the
     // active rect (rendered DragOverlay) — we use its top against the
@@ -227,12 +385,51 @@ export default function TripSchedulePage() {
     }
   }
 
+  /**
+   * Commits a resized event back to the server. We optimistically update the
+   * local cache first so the timeline doesn't snap back during the request;
+   * if the PATCH fails we restore the previous value and log it.
+   */
+  async function handleResize(scheduleId: string, durationMinutes: number) {
+    if (!id) return;
+    const prev = schedule?.find((s) => s.id === scheduleId);
+    if (!prev || prev.durationMinutes === durationMinutes) return;
+
+    mutate((curr) =>
+      (curr ?? []).map((s) =>
+        s.id === scheduleId ? { ...s, durationMinutes } : s,
+      ),
+    );
+
+    try {
+      const updated = await updateSchedule(id, scheduleId, { durationMinutes });
+      mutate((curr) =>
+        (curr ?? []).map((s) => (s.id === scheduleId ? updated : s)),
+      );
+    } catch (err) {
+      console.error('[schedule] resize failed', err);
+      // Roll back to the pre-resize value on failure.
+      mutate((curr) =>
+        (curr ?? []).map((s) => (s.id === scheduleId ? prev : s)),
+      );
+    }
+  }
+
   if (!id) return null;
 
   const activeDayMeta = days[activeDay];
 
   return (
-    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+    <DndContext
+      sensors={sensors}
+      onDragStart={handleDragStart}
+      onDragMove={handleDragMove}
+      onDragEnd={handleDragEnd}
+      onDragCancel={() => {
+        setDragging(null);
+        setDragPreview(null);
+      }}
+    >
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
         {/* Header */}
         <div className="space-y-2">
@@ -278,13 +475,21 @@ export default function TripSchedulePage() {
               <Timeline
                 items={itemsForDay}
                 onRemove={handleRemove}
+                onResize={handleResize}
                 ghost={dragging?.kind === 'new' ? dragging : null}
+                dragPreview={dragging ? dragPreview : null}
+                timelineRef={(el) => {
+                  timelineElRef.current = el;
+                }}
               />
             )}
           </div>
 
-          {/* Top voted sidebar */}
-          <aside className="border-border bg-card h-fit rounded-2xl border p-5">
+          {/* Top voted sidebar — sticky on lg+ so it stays in view while the
+              user scrolls a tall (24-hour) timeline. `self-start` is critical:
+              without it the grid stretches the aside to the full row height,
+              leaving sticky no room to move. */}
+          <aside className="border-border bg-card rounded-2xl border p-5 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto">
             <div className="border-border mb-3 flex items-center justify-between gap-2 border-b pb-3">
               <h3 className="text-foreground font-headline text-base font-bold">
                 Top Voted Places
@@ -455,17 +660,37 @@ function DayTabsScroller({ days, activeDay, onSelect }: DayTabsScrollerProps) {
 interface TimelineProps {
   items: ScheduleItem[];
   onRemove: (scheduleId: string) => void;
+  onResize: (scheduleId: string, durationMinutes: number) => void;
   ghost: ({ kind: 'new'; tripPlaceId: string }) | null;
+  /** Snap-aligned preview of where the active drag would commit. */
+  dragPreview:
+    | { startMinute: number; durationMinutes: number; conflict: boolean }
+    | null;
+  /** Receives the timeline DOM node so the page can measure it during drag. */
+  timelineRef: (el: HTMLDivElement | null) => void;
 }
 
-function Timeline({ items, onRemove }: TimelineProps) {
+function Timeline({
+  items,
+  onRemove,
+  onResize,
+  dragPreview,
+  timelineRef,
+}: TimelineProps) {
   const { setNodeRef, isOver } = useDroppable({ id: 'timeline' });
 
   const hourLines = Array.from({ length: HOURS_END - HOURS_START + 1 }, (_, i) => HOURS_START + i);
 
+  // Combine dnd-kit's droppable ref with our page-level ref so we can both
+  // register with dnd-kit AND measure the rect during a drag.
+  const composedRef = (el: HTMLDivElement | null) => {
+    setNodeRef(el);
+    timelineRef(el);
+  };
+
   return (
     <div
-      ref={setNodeRef}
+      ref={composedRef}
       className={cn(
         'relative ml-12 transition-colors',
         isOver && 'bg-primary/5 rounded-lg',
@@ -494,9 +719,15 @@ function Timeline({ items, onRemove }: TimelineProps) {
             item={item}
             next={next}
             onRemove={() => onRemove(item.id)}
+            onResize={(duration) => onResize(item.id, duration)}
           />
         );
       })}
+
+      {/* Live drop preview — outline-only block + time tooltip pinned to its
+          top edge. Shown only while a drag is in progress AND the pointer
+          has produced a snap target inside this droppable. */}
+      {dragPreview && <DropPreview preview={dragPreview} />}
 
       {/* Empty hint */}
       {items.length === 0 && (
@@ -508,61 +739,103 @@ function Timeline({ items, onRemove }: TimelineProps) {
   );
 }
 
+/**
+ * Outline-only ghost block + floating time chip rendered at the snap target
+ * during a drag. Pointer-events-none so it never absorbs the drop. Turns red
+ * when the proposed slot overlaps an existing event — the matching chip text
+ * tells the user the drop will be ignored.
+ */
+function DropPreview({
+  preview,
+}: {
+  preview: { startMinute: number; durationMinutes: number; conflict: boolean };
+}) {
+  const top = minuteToPx(preview.startMinute);
+  const height = (preview.durationMinutes / 60) * HOUR_HEIGHT_PX;
+  const endMinute = preview.startMinute + preview.durationMinutes;
+  const { conflict } = preview;
+
+  return (
+    <div
+      aria-hidden
+      className={cn(
+        'pointer-events-none absolute left-2 right-2 rounded-lg border-2 border-dashed',
+        conflict
+          ? 'border-destructive bg-destructive/10'
+          : 'border-primary bg-primary/10',
+      )}
+      style={{ top, height }}
+    >
+      <span
+        className={cn(
+          'absolute -top-2 left-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.65rem] font-bold tabular-nums shadow-md',
+          conflict
+            ? 'bg-destructive text-destructive-foreground'
+            : 'bg-primary text-primary-foreground',
+        )}
+      >
+        {conflict ? (
+          <>Overlaps · won't drop</>
+        ) : (
+          <>
+            {formatTime(preview.startMinute)}
+            <span className="opacity-70">→ {formatTime(endMinute)}</span>
+          </>
+        )}
+      </span>
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------------ */
 /*  Event block                                                             */
 /* ------------------------------------------------------------------------ */
 
-const TONES: Array<{ bg: string; border: string; bar: string; text: string }> = [
-  {
-    bg: 'bg-emerald-50 dark:bg-emerald-500/10',
-    border: 'border-emerald-200 dark:border-emerald-500/30',
-    bar: 'bg-emerald-500',
-    text: 'text-emerald-700 dark:text-emerald-300',
-  },
-  {
-    bg: 'bg-violet-50 dark:bg-violet-500/10',
-    border: 'border-violet-200 dark:border-violet-500/30',
-    bar: 'bg-violet-500',
-    text: 'text-violet-700 dark:text-violet-300',
-  },
-  {
-    bg: 'bg-rose-50 dark:bg-rose-500/10',
-    border: 'border-rose-200 dark:border-rose-500/30',
-    bar: 'bg-rose-500',
-    text: 'text-rose-700 dark:text-rose-300',
-  },
-  {
-    bg: 'bg-amber-50 dark:bg-amber-500/10',
-    border: 'border-amber-200 dark:border-amber-500/30',
-    bar: 'bg-amber-500',
-    text: 'text-amber-700 dark:text-amber-300',
-  },
-];
+/**
+ * Single shared tone for every event block + route-flow step. Solid primary
+ * background makes each scheduled stop pop against the neutral timeline
+ * grid; text uses primary-foreground (the theme's high-contrast pair).
+ */
+const TONE = {
+  bg: 'bg-primary',
+  border: 'border-primary',
+  bar: 'bg-primary-foreground/80',
+  text: 'text-primary-foreground',
+} as const;
 
-function toneFor(scheduleId: string) {
-  // Stable per-id pick so re-renders keep the same colour. Hash the first
-  // few hex chars of the uuid — good enough for visual variety.
-  let h = 0;
-  for (let i = 0; i < Math.min(scheduleId.length, 8); i++) h = (h * 31 + scheduleId.charCodeAt(i)) | 0;
-  const tone = TONES[Math.abs(h) % TONES.length];
-  if (!tone) throw new Error('TONES is empty');
-  return tone;
+function toneFor(_scheduleId: string) {
+  return TONE;
 }
 
 interface EventBlockProps {
   item: ScheduleItem;
   next: ScheduleItem | undefined;
   onRemove: () => void;
+  onResize: (durationMinutes: number) => void;
 }
 
-function EventBlock({ item, next, onRemove }: EventBlockProps) {
+/** Minimum slot a user can shrink an event down to (in minutes). */
+const MIN_DURATION_MINUTES = 15;
+/** Resize snap step — matches the drop snap so create + resize feel uniform. */
+const RESIZE_STEP_MINUTES = 15;
+
+function EventBlock({ item, next, onRemove, onResize }: EventBlockProps) {
   const top = minuteToPx(item.startMinute);
-  const height = (item.durationMinutes / 60) * HOUR_HEIGHT_PX;
   const tone = toneFor(item.id);
+
+  // Local override during an active resize drag. While set, this drives the
+  // block's height and the time label so the user sees the new duration
+  // immediately; on pointer-up we hand it off to `onResize` and clear the
+  // local state so the SWR-cached value becomes the source of truth again.
+  const [draftDuration, setDraftDuration] = useState<number | null>(null);
+  const effectiveDuration = draftDuration ?? item.durationMinutes;
+  const height = (effectiveDuration / 60) * HOUR_HEIGHT_PX;
+  const isResizing = draftDuration !== null;
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: `event-${item.id}`,
     data: { kind: 'existing', scheduleId: item.id } satisfies DragPayload,
+    disabled: isResizing,
   });
 
   // dnd-kit's transform is applied to the dragged element directly so it
@@ -575,6 +848,58 @@ function EventBlock({ item, next, onRemove }: EventBlockProps) {
       : undefined,
     opacity: transform ? 0.6 : 1,
   };
+
+  /**
+   * Begins a resize gesture. We capture the pointer on the handle itself so
+   * the user can drag fast past the timeline edge without losing the event
+   * stream. Snap math mirrors the create-flow (`snapMinute`) so a 1h block
+   * resized to "about 90m" lands exactly on 90m.
+   */
+  function handleResizePointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    e.stopPropagation();
+    e.preventDefault();
+    const handle = e.currentTarget;
+    handle.setPointerCapture(e.pointerId);
+
+    const startY = e.clientY;
+    const startDuration = item.durationMinutes;
+    let latest = startDuration;
+
+    // Ceiling for this resize: the next event's start (so we never overlap),
+    // or end-of-day if this is the last event. Captured once at drag start —
+    // adjacent events don't move while the user resizes.
+    const ceilingMinute =
+      next !== undefined ? next.startMinute : HOURS_END * 60;
+    const maxDuration = ceilingMinute - item.startMinute;
+
+    const onMove = (ev: PointerEvent) => {
+      const dyPx = ev.clientY - startY;
+      const dyMinutes = (dyPx / HOUR_HEIGHT_PX) * 60;
+      const raw = startDuration + dyMinutes;
+      const snapped =
+        Math.round(raw / RESIZE_STEP_MINUTES) * RESIZE_STEP_MINUTES;
+      // Clamp: can't shrink below MIN_DURATION, can't grow past the next
+      // event's start (or end-of-day if there is no next event).
+      const nextDuration = Math.max(
+        MIN_DURATION_MINUTES,
+        Math.min(maxDuration, snapped),
+      );
+      latest = nextDuration;
+      setDraftDuration(nextDuration);
+    };
+
+    const onUp = () => {
+      handle.removeEventListener('pointermove', onMove);
+      handle.removeEventListener('pointerup', onUp);
+      handle.removeEventListener('pointercancel', onUp);
+      setDraftDuration(null);
+      if (latest !== startDuration) onResize(latest);
+    };
+
+    handle.addEventListener('pointermove', onMove);
+    handle.addEventListener('pointerup', onUp);
+    handle.addEventListener('pointercancel', onUp);
+  }
 
   return (
     <>
@@ -589,13 +914,15 @@ function EventBlock({ item, next, onRemove }: EventBlockProps) {
           tone.bg,
           tone.border,
           'active:cursor-grabbing',
+          isResizing && 'ring-primary/60 ring-2',
         )}
       >
         <div className="min-w-0 flex-1">
           <p className={cn('truncate text-sm font-bold', tone.text)}>{item.place.name}</p>
-          <p className="text-muted-foreground mt-0.5 truncate text-xs">
-            {item.place.category ?? 'Event'} · {formatTime(item.startMinute)} -{' '}
-            {formatTime(item.startMinute + item.durationMinutes)}
+          <p className="text-primary-foreground/80 mt-0.5 truncate text-xs">
+            {formatTime(item.startMinute)} -{' '}
+            {formatTime(item.startMinute + effectiveDuration)}
+            <span className="ml-1 opacity-70">({formatDuration(effectiveDuration)})</span>
           </p>
         </div>
         <button
@@ -606,18 +933,41 @@ function EventBlock({ item, next, onRemove }: EventBlockProps) {
           }}
           onPointerDown={(e) => e.stopPropagation()}
           aria-label="Remove from schedule"
-          className="text-muted-foreground hover:text-destructive inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md"
+          className="text-primary-foreground/70 hover:text-destructive-foreground hover:bg-destructive inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-colors"
         >
           <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
         </button>
+
+        {/* Resize handle — sits at the bottom edge of the block. Stops both
+            drag and click propagation so it never triggers the dnd-kit
+            draggable on the parent. The visible grip thickens on hover. */}
+        <div
+          role="slider"
+          aria-label="Resize event duration"
+          aria-valuemin={MIN_DURATION_MINUTES}
+          aria-valuenow={effectiveDuration}
+          onPointerDown={handleResizePointerDown}
+          onClick={(e) => e.stopPropagation()}
+          className="group/resize absolute inset-x-0 bottom-0 flex h-2.5 cursor-ns-resize items-end justify-center"
+        >
+          <span
+            className={cn(
+              'mb-0.5 h-1 w-8 rounded-full transition-all',
+              tone.bar,
+              'opacity-40 group-hover/resize:h-1.5 group-hover/resize:opacity-80',
+              isResizing && 'h-1.5 opacity-100',
+            )}
+          />
+        </div>
       </div>
 
-      {/* Travel gap chip between adjacent events */}
-      {next && next.startMinute > item.startMinute + item.durationMinutes && (
+      {/* Travel gap chip between adjacent events — uses effective duration so
+          the gap label updates live while the user is resizing. */}
+      {next && next.startMinute > item.startMinute + effectiveDuration && (
         <TravelGap
-          startPx={minuteToPx(item.startMinute + item.durationMinutes)}
+          startPx={minuteToPx(item.startMinute + effectiveDuration)}
           endPx={minuteToPx(next.startMinute)}
-          gapMinutes={next.startMinute - (item.startMinute + item.durationMinutes)}
+          gapMinutes={next.startMinute - (item.startMinute + effectiveDuration)}
         />
       )}
     </>
@@ -704,10 +1054,11 @@ function PlacePill({ place, dragging }: { place: TripPlace; dragging?: boolean }
             {place.voteCount}
           </span>
         </div>
-        <p className="text-muted-foreground mt-0.5 truncate text-xs">
-          {place.category ?? 'Place'}
-          {place.openingHoursText && ` · ${place.openingHoursText}`}
-        </p>
+        {place.openingHoursText && (
+          <p className="text-muted-foreground mt-0.5 truncate text-xs">
+            {place.openingHoursText}
+          </p>
+        )}
       </div>
       {dragging && (
         <div
@@ -725,30 +1076,60 @@ function PlacePill({ place, dragging }: { place: TripPlace; dragging?: boolean }
 
 function RouteFlowCard({ items }: { items: ScheduleItem[] }) {
   if (items.length === 0) {
-    return (
-      <div className="border-border bg-card text-muted-foreground rounded-2xl border border-dashed px-5 py-4 text-center text-xs">
-        Your route flow will appear here once you schedule stops for the day.
-      </div>
-    );
+    return <RouteFlowEmpty />;
   }
+
+  // Summary stats for the header strip. `activeMinutes` = sum of stop
+  // durations (not span), so big gaps don't inflate the "active" number.
+  const activeMinutes = items.reduce((sum, it) => sum + it.durationMinutes, 0);
+  const firstStart = items[0]!.startMinute;
+  const lastEnd =
+    items[items.length - 1]!.startMinute + items[items.length - 1]!.durationMinutes;
+  const fullRouteUrl = buildFullDayDirectionsUrl(items);
 
   return (
     <div className="border-border bg-card rounded-2xl border p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-foreground text-xs font-bold uppercase tracking-wide">
-          Route flow
-        </h3>
-        <span className="text-muted-foreground text-xs">
-          {items.length} {items.length === 1 ? 'stop' : 'stops'}
-        </span>
+      {/* Header: title + stats + view-route CTA */}
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <h3 className="text-foreground text-xs font-bold uppercase tracking-wide">
+            Route flow
+          </h3>
+          <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-[0.65rem] font-semibold">
+            {items.length} {items.length === 1 ? 'stop' : 'stops'}
+          </span>
+        </div>
+        <div className="text-muted-foreground flex items-center gap-3 text-[0.7rem] tabular-nums">
+          <span className="inline-flex items-center gap-1">
+            <Clock className="h-3 w-3" strokeWidth={2.25} />
+            {formatDuration(activeMinutes)} active
+          </span>
+          <span className="hidden sm:inline">
+            {formatTime(firstStart)} → {formatTime(lastEnd)}
+          </span>
+          {fullRouteUrl && (
+            <a
+              href={fullRouteUrl}
+              target="_blank"
+              rel="noreferrer"
+              title="Open the full day's route in Google Maps"
+              className="border-border hover:bg-muted hover:text-foreground inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[0.65rem] font-semibold transition-colors"
+            >
+              <MapIcon className="h-3 w-3" strokeWidth={2.25} />
+              View route
+            </a>
+          )}
+        </div>
       </div>
 
-      {/* Horizontal scroll on narrow viewports — keeps long days legible without wrapping. */}
-      <div className="-mx-1 flex items-stretch gap-1 overflow-x-auto px-1 pb-1">
+      {/* Horizontal scroll on narrow viewports — keeps long days legible without wrapping.
+          `items-stretch` makes every step card the same height regardless of content. */}
+      <div className="scrollbar-none -mx-1 flex items-stretch gap-1 overflow-x-auto px-1 pb-1">
         {items.map((item, idx) => (
           <RouteFlowStep
             key={item.id}
             index={idx}
+            total={items.length}
             item={item}
             next={items[idx + 1]}
           />
@@ -758,76 +1139,212 @@ function RouteFlowCard({ items }: { items: ScheduleItem[] }) {
   );
 }
 
+/**
+ * Empty state — instead of a single line of text, sketch a ghost A → B → C so
+ * the user can see what the card will look like once they drop stops in.
+ */
+function RouteFlowEmpty() {
+  return (
+    <div className="border-border bg-card rounded-2xl border border-dashed p-5">
+      <div className="text-muted-foreground mb-3 text-center text-xs">
+        Your route flow will appear here once you schedule stops for the day.
+      </div>
+      <div className="flex items-center justify-center gap-2 opacity-50">
+        {['A', 'B', 'C'].map((letter, idx) => (
+          <div key={letter} className="flex items-center gap-2">
+            <div className="border-border bg-muted/40 flex h-10 w-20 items-center gap-1.5 rounded-lg border px-2">
+              <span className="bg-muted text-muted-foreground inline-flex h-5 w-5 items-center justify-center rounded-full text-[0.65rem] font-bold">
+                {letter}
+              </span>
+              <div className="bg-muted h-1.5 flex-1 rounded-full" />
+            </div>
+            {idx < 2 && (
+              <svg
+                viewBox="0 0 32 8"
+                className="text-muted-foreground h-2 w-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                aria-hidden
+              >
+                <path d="M2 4 H 30" strokeDasharray="3 3" />
+              </svg>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 interface RouteFlowStepProps {
   index: number;
+  total: number;
   item: ScheduleItem;
   next: ScheduleItem | undefined;
 }
 
-function RouteFlowStep({ index, item, next }: RouteFlowStepProps) {
+function RouteFlowStep({ index, total, item, next }: RouteFlowStepProps) {
   const tone = toneFor(item.id);
+  const Icon = categoryIconFor(item.place.category);
+  const isFirst = index === 0;
+  const isLast = index === total - 1;
+
+  // Start/end pins replace the numeric badge for the first and last stops.
+  // Visually evokes a "race route" — clear anchors at both ends.
+  const Pin = isFirst ? Flag : isLast ? FlagTriangleRight : null;
 
   return (
     <>
-      <div className="flex shrink-0 items-stretch">
+      <div className="group/step relative flex shrink-0 items-stretch">
         <div
           className={cn(
-            'flex min-w-[10rem] max-w-[14rem] flex-col gap-1 rounded-xl border px-3 py-2',
+            'flex h-full min-w-[12rem] max-w-[16rem] items-center gap-2.5 rounded-xl border p-2 transition-shadow',
             tone.bg,
             tone.border,
+            'hover:shadow-md',
           )}
         >
-          <div className="flex items-center gap-2">
-            <span
-              className={cn(
-                'inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[0.65rem] font-bold text-white',
-                tone.bar,
-              )}
-            >
-              {index + 1}
-            </span>
-            <span className={cn('truncate text-xs font-semibold', tone.text)}>
-              {item.place.name}
-            </span>
+          {/* Thumbnail — falls back to a category icon tile if the place has no photo. */}
+          {item.place.photoUrl ? (
+            <div className="relative h-12 w-12 shrink-0">
+              <img
+                src={item.place.photoUrl}
+                alt=""
+                loading="lazy"
+                className="h-12 w-12 rounded-lg object-cover"
+              />
+              <span
+                className={cn(
+                  'bg-primary-foreground text-primary ring-primary absolute -left-1 -top-1 inline-flex h-5 w-5 items-center justify-center rounded-full text-[0.6rem] font-bold shadow ring-2',
+                )}
+              >
+                {Pin ? <Pin className="h-3 w-3" strokeWidth={2.5} /> : index + 1}
+              </span>
+            </div>
+          ) : (
+            <div className="bg-primary-foreground text-primary relative flex h-12 w-12 shrink-0 items-center justify-center rounded-lg">
+              <Icon className="h-5 w-5" strokeWidth={2} />
+              <span
+                className={cn(
+                  'bg-primary-foreground text-primary ring-primary absolute -left-1 -top-1 inline-flex h-5 w-5 items-center justify-center rounded-full text-[0.6rem] font-bold shadow ring-2',
+                )}
+              >
+                {Pin ? <Pin className="h-3 w-3" strokeWidth={2.5} /> : index + 1}
+              </span>
+            </div>
+          )}
+
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1">
+              <Icon
+                className={cn('h-3 w-3 shrink-0', tone.text)}
+                strokeWidth={2.25}
+                aria-hidden
+              />
+              <span className={cn('truncate text-xs font-semibold', tone.text)}>
+                {item.place.name}
+              </span>
+            </div>
+            <p className="text-primary-foreground/80 mt-0.5 text-[0.65rem] tabular-nums">
+              {formatTime(item.startMinute)} · {formatDuration(item.durationMinutes)}
+            </p>
           </div>
-          <p className="text-muted-foreground pl-7 text-[0.65rem] tabular-nums">
-            {formatTime(item.startMinute)} · {formatDuration(item.durationMinutes)}
-          </p>
+        </div>
+
+        {/* Hover tooltip — bigger thumbnail + hours, anchored above the card.
+            Pointer-events-none so it never steals hover from the step. */}
+        <div className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-56 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover/step:opacity-100">
+          <div className="border-border bg-popover text-popover-foreground rounded-lg border p-2 shadow-lg">
+            <div className="flex gap-2">
+              {item.place.photoUrl ? (
+                <img
+                  src={item.place.photoUrl}
+                  alt=""
+                  className="h-14 w-14 shrink-0 rounded-md object-cover"
+                />
+              ) : (
+                <div
+                  className={cn(
+                    'flex h-14 w-14 shrink-0 items-center justify-center rounded-md text-white',
+                    tone.bar,
+                  )}
+                >
+                  <Icon className="h-6 w-6" strokeWidth={2} />
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-bold">{item.place.name}</p>
+                <p className="text-muted-foreground mt-0.5 text-[0.65rem] tabular-nums">
+                  {formatTime(item.startMinute)} –{' '}
+                  {formatTime(item.startMinute + item.durationMinutes)}
+                </p>
+                {item.place.openingHoursText && (
+                  <p className="text-muted-foreground mt-0.5 truncate text-[0.65rem]">
+                    {item.place.openingHoursText}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {next && (
-        <a
-          href={buildMapsDirectionsUrl(item, next)}
-          target="_blank"
-          rel="noreferrer"
-          title={`Open directions from ${item.place.name} to ${next.place.name}`}
-          className="text-muted-foreground/70 hover:text-foreground hover:bg-muted/60 group/arrow flex shrink-0 flex-col items-center justify-center rounded-md px-1.5 py-1 transition-colors"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4"
-            aria-hidden
-          >
-            <path d="M5 12h14M13 5l7 7-7 7" />
-          </svg>
-          {next.startMinute > item.startMinute + item.durationMinutes ? (
-            <span className="mt-0.5 text-[0.6rem] tabular-nums">
-              +{formatDuration(next.startMinute - (item.startMinute + item.durationMinutes))}
-            </span>
-          ) : (
-            <span className="mt-0.5 text-[0.55rem] uppercase tracking-wide opacity-0 transition-opacity group-hover/arrow:opacity-100">
-              Map
-            </span>
-          )}
-        </a>
+        <RouteFlowConnector
+          from={item}
+          to={next}
+          gapMinutes={Math.max(0, next.startMinute - (item.startMinute + item.durationMinutes))}
+        />
       )}
     </>
+  );
+}
+
+interface RouteFlowConnectorProps {
+  from: ScheduleItem;
+  to: ScheduleItem;
+  gapMinutes: number;
+}
+
+/**
+ * Animated dashed line between two stops. The SVG path uses
+ * `stroke-dasharray` + the `route-flow-dash` keyframe to "flow" from left to
+ * right, evoking a moving map route. Clicking opens turn-by-turn directions
+ * in Google Maps.
+ */
+function RouteFlowConnector({ from, to, gapMinutes }: RouteFlowConnectorProps) {
+  return (
+    <a
+      href={buildMapsDirectionsUrl(from, to)}
+      target="_blank"
+      rel="noreferrer"
+      title={`Open directions from ${from.place.name} to ${to.place.name}`}
+      className="text-muted-foreground/70 hover:text-primary group/arrow relative flex shrink-0 flex-col items-center self-start px-1 pt-5"
+      style={{ minWidth: '3rem' }}
+    >
+      <svg
+        viewBox="0 0 48 12"
+        className="h-3 w-12"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        aria-hidden
+      >
+        {/* Dashed flowing path — animated via CSS. */}
+        <path
+          d="M2 6 H 38"
+          strokeDasharray="4 4"
+          style={{ animation: 'route-flow-dash 0.9s linear infinite' }}
+        />
+        {/* Arrow head */}
+        <path d="M36 2 L42 6 L36 10" strokeLinejoin="round" />
+      </svg>
+      <span className="mt-0.5 text-[0.6rem] tabular-nums">
+        {gapMinutes > 0 ? `+${formatDuration(gapMinutes)}` : '—'}
+      </span>
+    </a>
   );
 }
