@@ -1,19 +1,16 @@
 import { Navigate } from 'react-router-dom';
-import { Compass, MapPin, Users, Zap } from 'lucide-react';
+import { MapPin, Users, Zap, Globe } from 'lucide-react';
 import { Button } from '@trip-flow/ui/components/button';
 import { useAuth } from '@/features/auth/useAuth';
+import { SpinningCompass } from '@/components/SpinningCompass';
 
-/**
- * Full-screen login page with Google OAuth.
- * Redirects authenticated users to /trips.
- */
 export default function LoginPage() {
   const { isAuthenticated, isLoading, signInWithGoogle } = useAuth();
 
   if (isLoading) {
     return (
       <div className="bg-background fixed inset-0 flex items-center justify-center">
-        <Compass className="text-primary h-10 w-10 animate-spin" strokeWidth={1.75} />
+        <SpinningCompass size={10} className="text-primary" />
       </div>
     );
   }
@@ -24,91 +21,131 @@ export default function LoginPage() {
 
   return (
     <div className="bg-background text-foreground fixed inset-0 flex antialiased">
-      {/* Left — Branding Panel */}
-      <div className="relative hidden flex-col justify-between overflow-hidden lg:flex lg:w-1/2">
-        {/* Ambient emerald glow */}
-        <div className="bg-primary/20 absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full blur-[120px]" />
-        <div className="bg-tertiary/30 absolute -bottom-40 -right-20 h-[400px] w-[400px] rounded-full blur-[120px]" />
-        <div className="bg-primary/10 absolute left-1/3 top-1/2 h-[300px] w-[300px] rounded-full blur-[100px]" />
 
-        <div className="relative z-10 flex flex-1 flex-col justify-center px-16">
-          <BrandLogo />
+      {/* Left — Hero Panel (60%) */}
+      <div className="relative hidden flex-col lg:flex lg:w-[60%]">
 
-          <h1 className="font-headline text-foreground mb-6 text-4xl font-extrabold leading-tight tracking-tight xl:text-5xl">
-            Plan your next journey,{' '}
-            <span className="text-primary">collaboratively.</span>
-          </h1>
+        {/* Ambient glows using design tokens */}
+        <div className="bg-primary/15 absolute -left-32 -top-32 h-[600px] w-[600px] rounded-full blur-[140px]" />
+        <div className="bg-primary/8 absolute bottom-0 left-1/4 h-[500px] w-[500px] rounded-full blur-[120px]" />
 
-          <p className="text-muted-foreground mb-12 max-w-lg text-lg leading-relaxed">
-            Drag-and-drop itineraries, real-time collaboration, and smart reminders — all in one
-            beautifully crafted workspace.
-          </p>
+        {/* Dot-grid */}
+        <div
+          aria-hidden
+          className="text-foreground/5 absolute inset-0"
+          style={{
+            backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)',
+            backgroundSize: '28px 28px',
+          }}
+        />
 
-          <div className="grid max-w-md grid-cols-1 gap-4">
-            {FEATURES.map((feature) => (
-              <div
-                key={feature.title}
-                className="bg-card/60 border-border flex items-start gap-4 rounded-xl border p-4 backdrop-blur-sm"
-              >
-                <div className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
-                  <feature.icon className="h-5 w-5" strokeWidth={1.75} />
-                </div>
-                <div>
-                  <p className="text-foreground text-sm font-semibold">{feature.title}</p>
-                  <p className="text-muted-foreground text-xs leading-relaxed">{feature.desc}</p>
-                </div>
-              </div>
-            ))}
+        <div className="relative z-10 flex flex-1 flex-col justify-between px-14 py-12 xl:px-20">
+
+          {/* Brand */}
+          <div className="flex items-center gap-3">
+            <div className="border-primary text-primary flex h-10 w-10 items-center justify-center rounded-full border-2">
+              <SpinningCompass size={5} />
+            </div>
+            <span className="font-headline text-primary text-lg font-bold tracking-tight">
+              TripFlow
+            </span>
           </div>
-        </div>
 
-        <div className="text-muted-foreground relative z-10 px-16 pb-8 text-xs">
-          © {new Date().getFullYear()} TripFlow. Crafted for explorers.
+          {/* Hero copy */}
+          <div className="max-w-lg">
+            <div className="border-primary/30 bg-primary/10 text-primary mb-5 inline-flex items-center gap-2 rounded-full border px-3.5 py-1">
+              <Globe className="h-3 w-3" strokeWidth={2} />
+              <span className="text-[11px] font-semibold uppercase tracking-widest">
+                Adventure Awaits
+              </span>
+            </div>
+
+            <h1 className="font-headline text-foreground mb-5 text-5xl font-extrabold leading-[1.08] tracking-tight xl:text-6xl">
+              Plan your next
+              <br />
+              journey,{' '}
+              <span className="text-primary">together.</span>
+            </h1>
+
+            <p className="text-muted-foreground mb-10 max-w-sm text-base leading-relaxed">
+              Drag-and-drop itineraries, real-time collaboration, and smart reminders — all in one workspace.
+            </p>
+
+            {/* Feature cards */}
+            <div className="grid grid-cols-3 gap-3">
+              {FEATURES.map((feature) => (
+                <div
+                  key={feature.title}
+                  className="bg-card border-border rounded-2xl border p-4"
+                >
+                  <div className="bg-primary/10 text-primary mb-3 flex h-8 w-8 items-center justify-center rounded-lg">
+                    <feature.icon className="h-4 w-4" strokeWidth={1.75} />
+                  </div>
+                  <p className="text-foreground text-sm font-semibold">{feature.title}</p>
+                  <p className="text-muted-foreground mt-0.5 text-xs leading-relaxed">{feature.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <p className="text-muted-foreground/50 text-xs">
+            © {new Date().getFullYear()} TripFlow · Crafted for explorers
+          </p>
         </div>
       </div>
 
-      {/* Right — Sign-in Card */}
-      <div className="relative flex flex-1 flex-col items-center justify-center px-6 lg:px-16">
-        {/* Mobile-only ambient glow */}
-        <div className="bg-primary/15 absolute right-10 top-20 h-[300px] w-[300px] rounded-full blur-[100px] lg:hidden" />
+      {/* Right — Sign-in Panel (40%) */}
+      <div className="relative flex flex-1 flex-col items-center justify-center px-6 lg:w-[40%] lg:flex-none lg:border-l lg:border-border lg:px-12 xl:px-16">
 
-        <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-8">
-          {/* Mobile-only logo */}
-          <div className="mb-4 lg:hidden">
-            <BrandLogo compact />
-          </div>
+        <div className="relative z-10 w-full max-w-sm">
 
-          <div className="space-y-2 text-center">
-            <h2 className="font-headline text-foreground text-2xl font-bold tracking-tight">
-              Welcome back
-            </h2>
-            <p className="text-muted-foreground text-sm">
-              Sign in to continue planning your trips
+          <div className="bg-card border-border rounded-3xl border p-8 shadow-xl">
+
+            {/* Logo inside card — mobile only */}
+            <div className="mb-7 flex flex-col items-center gap-2 lg:hidden">
+              <div className="border-primary text-primary flex h-12 w-12 items-center justify-center rounded-full border-2">
+                <SpinningCompass size={6} />
+              </div>
+              <span className="font-headline text-primary text-xl font-bold tracking-tight">TripFlow</span>
+            </div>
+
+            {/* Heading */}
+            <div className="mb-8">
+              <h2 className="font-headline text-foreground mb-1.5 text-2xl font-bold tracking-tight">
+                Welcome back
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Sign in to continue planning your adventures
+              </p>
+            </div>
+
+            {/* Google sign-in */}
+            <Button
+              id="google-sign-in-button"
+              onClick={signInWithGoogle}
+              variant="outline"
+              className="text-foreground hover:text-foreground hover:bg-muted h-12 w-full cursor-pointer gap-3 rounded-xl font-medium transition-all duration-200 hover:shadow-md"
+            >
+              <GoogleIcon />
+              Continue with Google
+            </Button>
+
+            <div className="mt-6 flex items-center gap-3">
+              <div className="bg-border h-px flex-1" />
+              <span className="text-muted-foreground text-[11px] uppercase tracking-widest">Secure login</span>
+              <div className="bg-border h-px flex-1" />
+            </div>
+
+            <p className="text-muted-foreground mt-6 text-center text-xs leading-relaxed">
+              By signing in, you agree to our Terms of Service.
+              <br />
+              Your data is encrypted and never shared.
             </p>
           </div>
-
-          <Button
-            id="google-sign-in-button"
-            onClick={signInWithGoogle}
-            variant="outline"
-            className="bg-card text-foreground hover:bg-muted h-12 w-full gap-3 rounded-xl font-medium shadow-sm transition-shadow hover:shadow-md"
-          >
-            <GoogleIcon />
-            Continue with Google
-          </Button>
-
-          <div className="flex w-full items-center gap-3">
-            <div className="bg-border h-px flex-1" />
-            <span className="text-muted-foreground text-xs uppercase tracking-widest">Secure</span>
-            <div className="bg-border h-px flex-1" />
-          </div>
-
-          <p className="text-muted-foreground max-w-xs text-center text-xs leading-relaxed">
-            By signing in, you agree to our Terms of Service. Your data is encrypted and never
-            shared.
-          </p>
         </div>
       </div>
+
     </div>
   );
 }
@@ -117,32 +154,19 @@ const FEATURES = [
   {
     icon: MapPin,
     title: 'Smart Itineraries',
-    desc: 'Drag-and-drop boards with Google Maps integration',
+    desc: 'Drag-and-drop with Maps',
   },
   {
     icon: Users,
-    title: 'Real-time Collaboration',
-    desc: 'Plan together with friends in live sync',
+    title: 'Live Collaboration',
+    desc: 'Plan together in real-time',
   },
   {
     icon: Zap,
-    title: 'Automated Reminders',
-    desc: 'Cron-powered notifications that keep trips on track',
+    title: 'Auto Reminders',
+    desc: 'Smart notifications',
   },
 ] as const;
-
-function BrandLogo({ compact = false }: { compact?: boolean }) {
-  return (
-    <div className={compact ? 'flex items-center gap-3' : 'mb-12 flex items-center gap-3'}>
-      <div className="border-primary text-primary flex h-12 w-12 items-center justify-center rounded-full border-2">
-        <Compass className="h-6 w-6" strokeWidth={2} />
-      </div>
-      <span className="font-headline text-primary text-2xl font-bold tracking-tight">
-        TripFlow
-      </span>
-    </div>
-  );
-}
 
 function GoogleIcon() {
   return (

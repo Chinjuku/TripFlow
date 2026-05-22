@@ -1,6 +1,6 @@
 import { Link, Outlet } from 'react-router-dom';
-import { Compass } from 'lucide-react';
 import { UserMenu } from './UserMenu';
+import { SpinningCompass } from '@/components/SpinningCompass';
 
 /**
  * Lightweight shell used for non-trip pages (Trips list, Settings, etc.).
@@ -13,7 +13,7 @@ export function GlobalLayout() {
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Link to="/trips" className="flex items-center gap-2.5">
             <div className="border-primary text-primary flex h-9 w-9 items-center justify-center rounded-full border-2">
-              <Compass className="h-4 w-4" strokeWidth={2} />
+              <SpinningCompass size={4} />
             </div>
             <span className="font-headline text-primary text-lg font-bold tracking-tight">
               TripFlow
