@@ -1,16 +1,13 @@
 import React, { useState, createContext, useContext } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import {
-  ArrowLeft,
-  Plus,
-  CreditCard,
-  AlertCircle,
-} from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Plus, CreditCard, AlertCircle } from 'lucide-react';
 import { Button } from '@trip-flow/ui/components/button';
 import { Skeleton } from '@trip-flow/ui/components/skeleton';
 import { cn } from '@trip-flow/ui/lib/cn';
 import { useTrip, formatDateRange } from '@/components/feat/trips';
 import { useAuth } from '@/hooks/useAuth';
+import { BackLink } from '@/components/shared/BackLink';
+import { TripPageHeader } from '@/components/shared/TripPageHeader';
 
 // Finances Feature Components & Hooks
 import {
@@ -103,13 +100,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   if (error) {
     return (
       <div className="mx-auto max-w-6xl">
-        <Link
-          to="/trips"
-          className="text-muted-foreground hover:text-primary mb-6 inline-flex items-center gap-2 text-xs font-semibold transition-colors"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          All trips
-        </Link>
+        <BackLink to="/trips" label="All trips" className="mb-6" />
         <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border p-4 text-sm flex items-center gap-2">
           <AlertCircle className="w-5 h-5 shrink-0" />
           <span>{error.message}</span>
@@ -231,48 +222,41 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
       }}
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-8 h-full">
-        {/* 1. Header with dynamic trip overview info (Line/Border bottom is REMOVED per user request) */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <Link
-              to="/trips"
-              className="text-muted-foreground hover:text-primary mb-2 inline-flex items-center gap-2 text-xs font-semibold transition-colors"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              All trips
-            </Link>
-            <h1 className="text-foreground font-headline text-3xl font-extrabold tracking-tight">
-              Trip Finances
-            </h1>
-            {trip ? (
-              <p className="text-muted-foreground text-sm">
+        <TripPageHeader
+          backTo="/trips"
+          backLabel="All trips"
+          title="Trip Finances"
+          subtitle={
+            trip ? (
+              <>
                 Managing costs for <b>{trip.title}</b> (
                 {formatDateRange(trip.startsOn, trip.endsOn).range})
-              </p>
+              </>
             ) : (
               <Skeleton className="h-4 w-48" />
-            )}
-          </div>
+            )
+          }
+          actions={
+            <>
+              <Button
+                variant="outline"
+                onClick={() => setPaymentOpen(true)}
+                className="gap-2 text-xs font-bold rounded-xl border border-border transition-colors h-10 animate-in fade-in duration-300"
+              >
+                <CreditCard className="h-4 w-4" />
+                Your QR & Payment Details
+              </Button>
 
-          <div className="flex flex-wrap gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setPaymentOpen(true)}
-              className="gap-2 text-xs font-bold rounded-xl border border-border transition-colors h-10 animate-in fade-in duration-300"
-            >
-              <CreditCard className="h-4 w-4" />
-              Your QR & Payment Details
-            </Button>
-
-            <Button
-              onClick={() => setCreateOpen(true)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-2 rounded-xl shadow-sm shadow-emerald-600/10 transition-colors h-10 shrink-0"
-            >
-              <Plus className="h-4 w-4" />
-              Record Expense
-            </Button>
-          </div>
-        </div>
+              <Button
+                onClick={() => setCreateOpen(true)}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-2 rounded-xl shadow-sm shadow-emerald-600/10 transition-colors h-10 shrink-0"
+              >
+                <Plus className="h-4 w-4" />
+                Record Expense
+              </Button>
+            </>
+          }
+        />
 
         {/* Error alert toast */}
         {errorMsg && (
