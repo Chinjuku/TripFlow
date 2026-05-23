@@ -6,19 +6,12 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-
-export type Theme = 'light' | 'dark';
-
-export interface ThemeContextValue {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-  toggleTheme: () => void;
-}
-
-export const ThemeContext = createContext<ThemeContextValue | null>(null);
+import type { Theme, ThemeContextValue } from '@/types/theme';
 
 export const THEME_STORAGE_KEY = 'trip-flow-theme';
 const DEFAULT_THEME: Theme = 'light';
+
+export const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function readStoredTheme(): Theme {
   if (typeof window === 'undefined') return DEFAULT_THEME;
@@ -33,9 +26,6 @@ function readStoredTheme(): Theme {
 
 function applyTheme(theme: Theme): void {
   const root = document.documentElement;
-  // Suppress CSS transitions for the duration of the swap so the theme
-  // change is instant instead of cross-fading every `transition-colors`
-  // on the page. Restored on the next frame.
   root.classList.add('theme-switching');
   root.classList.toggle('dark', theme === 'dark');
   root.style.colorScheme = theme;

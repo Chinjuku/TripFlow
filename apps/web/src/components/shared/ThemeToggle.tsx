@@ -1,6 +1,7 @@
 import { Moon, Sun, type LucideIcon } from 'lucide-react';
 import { cn } from '@trip-flow/ui/lib/cn';
-import { useTheme, type Theme } from './';
+import { useTheme } from '@/hooks/useTheme';
+import type { Theme } from '@/types/theme';
 
 interface Option {
   value: Theme;
