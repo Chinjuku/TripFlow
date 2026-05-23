@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@trip-flow/ui/lib/cn';
 import { BUCKETS, bucketFor } from '@/utils/places';
 import type { PlaceBucket } from '@/types/places';
@@ -12,6 +13,7 @@ interface CategoryTabsProps {
 }
 
 export function CategoryTabs({ active, onChange, available, places }: CategoryTabsProps) {
+  const { t } = useTranslation();
   const counts = useMemo(() => {
     const out: Record<string, number> = { all: places.length };
     for (const p of places) {
@@ -27,7 +29,7 @@ export function CategoryTabs({ active, onChange, available, places }: CategoryTa
     >
   ).map((id) => ({
     id,
-    label: id === 'all' ? 'All' : BUCKETS[id].plural,
+    label: id === 'all' ? t('common.all') : BUCKETS[id].plural,
     swatch: id === 'all' ? null : BUCKETS[id].swatch,
     count: counts[id] ?? 0,
   }));
@@ -35,7 +37,7 @@ export function CategoryTabs({ active, onChange, available, places }: CategoryTa
   return (
     <div
       role="tablist"
-      aria-label="Filter by category"
+      aria-label={t('plan.filterByCategory')}
       className="scrollbar-none -mx-1 flex shrink-0 items-center gap-1.5 overflow-x-auto px-1"
     >
       {visible.map((t) => {

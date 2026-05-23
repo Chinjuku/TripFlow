@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Settings as SettingsIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@trip-flow/ui/lib/cn';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -14,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 export function UserMenu() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -42,7 +44,7 @@ export function UserMenu() {
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        title={user?.name ?? 'Account'}
+        title={user?.name ?? t('common.traveller')}
         className="focus-visible:ring-ring rounded-full ring-2 ring-transparent transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
       >
         {user?.avatarUrl ? (
@@ -82,7 +84,7 @@ export function UserMenu() {
             )}
             <div className="min-w-0 flex-1">
               <p className="text-foreground truncate text-sm font-semibold">
-                {user?.name ?? 'Traveller'}
+                {user?.name ?? t('common.traveller')}
               </p>
               <p className="text-muted-foreground truncate text-xs">{user?.email ?? ''}</p>
             </div>
@@ -91,7 +93,7 @@ export function UserMenu() {
           <div className="p-1">
             <MenuItem
               icon={SettingsIcon}
-              label="Settings"
+              label={t('nav.settings')}
               onClick={() => {
                 setOpen(false);
                 navigate('/settings');
@@ -99,7 +101,7 @@ export function UserMenu() {
             />
             <MenuItem
               icon={LogOut}
-              label="Sign out"
+              label={t('auth.signOut')}
               variant="destructive"
               onClick={() => {
                 setOpen(false);

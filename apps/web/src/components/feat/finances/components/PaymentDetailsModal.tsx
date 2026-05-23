@@ -8,6 +8,7 @@ import type { UserPaymentDetail } from '../types';
 import { BankSelect } from '@/components/feat/finances/BankSelect';
 import jsQR from 'jsqr';
 import { parse } from 'promptparse';
+import { useTranslation } from 'react-i18next';
 
 interface PaymentDetailsModalProps {
   open: boolean;
@@ -33,6 +34,7 @@ export function PaymentDetailsModal({
     initialDetails?.is_show_mobile_banking ? 'banking' : 'promptpay'
   );
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -41,7 +43,7 @@ export function PaymentDetailsModal({
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      setUploadError('Image must be smaller than 5MB');
+      setUploadError(t('finances.errorImageSize'));
       return;
     }
 
@@ -104,7 +106,7 @@ export function PaymentDetailsModal({
       img.src = dataUrl;
     };
     reader.onerror = () => {
-      setUploadError('Failed to read QR image file');
+      setUploadError(t('finances.errorReadQR'));
     };
     reader.readAsDataURL(file);
   };
@@ -125,13 +127,13 @@ export function PaymentDetailsModal({
       !(hasBankName && hasBankAccountNumber && hasBankAccountName);
 
     if (isBankPartiallyFilled) {
-      setUploadError('All three bank fields (Bank Name, Account Number, and Account Holder Name) must be filled, or all left empty.');
+      setUploadError(t('finances.errorBankFields'));
       return;
     }
 
     if (preferredChannel === 'banking') {
       if (!hasBankName || !hasBankAccountNumber || !hasBankAccountName) {
-        setUploadError('Cannot select Mobile Banking as your preferred receiving channel because your bank details are incomplete. Please fill in Bank Name, Account Number, and Account Holder Name.');
+        setUploadError(t('finances.errorSelectMobileBanking'));
         return;
       }
     }
@@ -140,7 +142,7 @@ export function PaymentDetailsModal({
     const hasPromptPayQr = !!qrCodeUrl;
     if (preferredChannel === 'promptpay') {
       if (!hasPromptPayId && !hasPromptPayQr) {
-        setUploadError('Cannot select PromptPay as your preferred receiving channel because your PromptPay details are incomplete. Please provide a PromptPay ID or upload a QR Code image.');
+        setUploadError(t('finances.errorSelectPromptPay'));
         return;
       }
     }
@@ -162,15 +164,15 @@ export function PaymentDetailsModal({
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      title="Your Receiving Details"
-      description="Provide your PromptPay ID or Bank Account info so others can settle up easily."
+      title={t('finances.receivingDetails')}
+      description={t('finances.receivingDetailsDesc')}
       className="sm:max-w-md"
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-2">
         {/* Preferred Channel Selection */}
         <div className="space-y-2 p-3 bg-muted/40 border border-border rounded-xl">
           <Label className="text-[10px] font-bold text-muted-foreground uppercase block">
-            Preferred Repayment Method
+            {t('finances.preferredRepaymentMethod')}
           </Label>
           <div className="flex bg-muted rounded-lg p-1 border border-border gap-1">
             <button
@@ -183,7 +185,7 @@ export function PaymentDetailsModal({
               }`}
             >
               <QrCode className="w-3.5 h-3.5" />
-              PromptPay
+              {t('finances.promptPay')}
             </button>
             <button
               type="button"
@@ -195,24 +197,24 @@ export function PaymentDetailsModal({
               }`}
             >
               <CreditCard className="w-3.5 h-3.5" />
-              Mobile Banking
+              {t('finances.mobileBanking')}
             </button>
           </div>
           <p className="text-[10px] text-muted-foreground leading-normal mt-1">
-            Only the selected channel will be shown to other users to settle up with you.
+            {t('finances.selectedChannelDesc')}
           </p>
 
           {preferredChannel === 'banking' && !(bankName.trim() && bankAccountNumber.trim() && bankAccountName.trim()) && (
             <div className="bg-destructive/10 border border-destructive/20 text-destructive text-[10px] font-medium px-2 py-1.5 rounded-lg flex items-center gap-1.5 mt-2 animate-in fade-in slide-in-from-top-1">
               <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-              <span>Fill in all Bank fields before saving.</span>
+              <span>{t('finances.fillInAllBankFields')}</span>
             </div>
           )}
 
           {preferredChannel === 'promptpay' && !(promptPayId.trim() || qrCodeUrl) && (
             <div className="bg-destructive/10 border border-destructive/20 text-destructive text-[10px] font-medium px-2 py-1.5 rounded-lg flex items-center gap-1.5 mt-2 animate-in fade-in slide-in-from-top-1">
               <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-              <span>Provide a PromptPay ID or QR Code image.</span>
+              <span>{t('finances.providePromptPayIdOrQr')}</span>
             </div>
           )}
         </div>
@@ -220,11 +222,11 @@ export function PaymentDetailsModal({
         {/* PromptPay section */}
         <div className="space-y-3 p-3 bg-blue-50/30 border border-blue-100 rounded-xl dark:bg-slate-900/30 dark:border-blue-950/20">
           <h4 className="text-xs font-bold text-blue-700 dark:text-blue-400 flex items-center gap-1.5 uppercase">
-            <QrCode className="w-3.5 h-3.5" /> PromptPay Transfer (Thailand)
+            <QrCode className="w-3.5 h-3.5" /> {t('finances.promptPayTransfer')}
           </h4>
           <div className="space-y-1">
             <Label htmlFor="promptpay-id" className="text-[10px] font-bold text-muted-foreground">
-              PromptPay Phone / National ID
+              {t('finances.promptPayIdLabel')}
             </Label>
             <Input
               id="promptpay-id"
@@ -236,7 +238,7 @@ export function PaymentDetailsModal({
           </div>
           <div className="space-y-1.5">
             <Label className="text-[10px] font-bold text-muted-foreground">
-              Or PromptPay QR Code Image
+              {t('finances.orPromptPayQrLabel')}
             </Label>
             {uploadError && (
               <p className="text-[10px] text-rose-500 font-semibold">{uploadError}</p>
@@ -261,7 +263,7 @@ export function PaymentDetailsModal({
                   }}
                 >
                   <X className="h-3 w-3 mr-1" />
-                  Remove QR Image
+                  {t('finances.removeQrImage')}
                 </Button>
               </div>
             ) : (
@@ -273,8 +275,8 @@ export function PaymentDetailsModal({
                   <Upload className="h-4 w-4" />
                 </div>
                 <div>
-                  <p className="text-foreground text-[10px] font-semibold">Upload PromptPay QR image</p>
-                  <p className="text-muted-foreground text-[8px] mt-0.5">PNG, JPG, or WEBP up to 5MB</p>
+                  <p className="text-foreground text-[10px] font-semibold">{t('finances.uploadPromptPayQr')}</p>
+                  <p className="text-muted-foreground text-[8px] mt-0.5">{t('finances.uploadPromptPayQrFormat')}</p>
                 </div>
               </div>
             )}
@@ -292,12 +294,12 @@ export function PaymentDetailsModal({
         {/* Bank transfer section */}
         <div className="space-y-3 p-3 bg-purple-50/30 border border-purple-100 rounded-xl dark:bg-slate-900/30 dark:border-purple-950/20">
           <h4 className="text-xs font-bold text-purple-700 dark:text-purple-400 flex items-center gap-1.5 uppercase">
-            <CreditCard className="w-3.5 h-3.5" /> Bank Account Transfer
+            <CreditCard className="w-3.5 h-3.5" /> {t('finances.bankAccountTransfer')}
           </h4>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label htmlFor="bank-name" className="text-[10px] font-bold text-muted-foreground">
-                Bank Name
+                {t('finances.bankName')}
               </Label>
               <BankSelect
                 id="bank-name"
@@ -309,7 +311,7 @@ export function PaymentDetailsModal({
             </div>
             <div className="space-y-1">
               <Label htmlFor="bank-acc-num" className="text-[10px] font-bold text-muted-foreground">
-                Account Number
+                {t('finances.accountNumber')}
               </Label>
               <Input
                 id="bank-acc-num"
@@ -322,7 +324,7 @@ export function PaymentDetailsModal({
           </div>
           <div className="space-y-1">
             <Label htmlFor="bank-acc-name" className="text-[10px] font-bold text-muted-foreground">
-              Account Holder Name
+              {t('finances.accountHolderName')}
             </Label>
             <Input
               id="bank-acc-name"
@@ -349,14 +351,14 @@ export function PaymentDetailsModal({
             disabled={isSubmitting}
             className="text-xs h-9 px-4 rounded-xl border border-border hover:bg-muted font-bold transition-colors"
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             type="submit"
             disabled={isSubmitting}
             className="bg-emerald-600 text-white hover:bg-emerald-700 text-xs h-9 px-5 rounded-xl font-bold shadow-sm shadow-emerald-600/10 transition-colors"
           >
-            {isSubmitting ? 'Saving...' : 'Save Details'}
+            {isSubmitting ? t('finances.saving') : t('finances.saveDetails')}
           </Button>
         </div>
       </form>

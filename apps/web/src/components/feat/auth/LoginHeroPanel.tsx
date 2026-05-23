@@ -1,8 +1,22 @@
+import { useTranslation } from 'react-i18next';
 import { SpinningCompass } from '@/components/ui/SpinningCompass';
-import { HERO_COORDINATES, LOGIN_STEPS } from '@/utils/auth';
 import { TopoPattern } from './TopoPattern';
+import { MapPin, Users, Zap } from 'lucide-react';
+
+const HERO_COORDINATES = {
+  topLeft: '13.7563° N · 100.5018° E',
+  bottomRight: '18.7883° N · 98.9853° E',
+} as const;
 
 export function LoginHeroPanel() {
+  const { t } = useTranslation();
+
+  const steps = [
+    { icon: MapPin, titleKey: 'auth.steps.addPlaces', descKey: 'auth.steps.addPlacesDesc' },
+    { icon: Users, titleKey: 'auth.steps.voteTogether', descKey: 'auth.steps.voteTogetherDesc' },
+    { icon: Zap, titleKey: 'auth.steps.dragToPlan', descKey: 'auth.steps.dragToPlanDesc' },
+  ] as const;
+
   return (
     <div className="relative hidden flex-col overflow-hidden lg:flex lg:w-[60%]">
       <TopoPattern />
@@ -26,13 +40,13 @@ export function LoginHeroPanel() {
           </div>
 
           <h1 className="font-headline text-foreground mb-5 text-5xl font-extrabold leading-[1.08] tracking-tight xl:text-6xl">
-            Plan your next
+            {t('auth.heroTitle1')}
             <br />
-            journey, <span className="text-primary">together.</span>
+            {t('auth.heroTitle2')} <span className="text-primary">{t('auth.heroTitle3')}</span>
           </h1>
 
           <p className="text-muted-foreground mb-10 max-w-sm text-base leading-relaxed">
-            Drag-and-drop itineraries, real-time collaboration, and smart reminders — all in one workspace.
+            {t('auth.heroSubtitle')}
           </p>
 
           <ol className="relative grid grid-cols-3 gap-3">
@@ -40,9 +54,9 @@ export function LoginHeroPanel() {
               aria-hidden
               className="border-primary/25 absolute left-[16%] right-[16%] top-[2.25rem] border-t border-dashed"
             />
-            {LOGIN_STEPS.map((step, idx) => (
+            {steps.map((step, idx) => (
               <li
-                key={step.title}
+                key={step.titleKey}
                 className="bg-card border-border relative flex flex-col items-center rounded-2xl border p-4 text-center"
               >
                 <div className="bg-card text-primary border-primary/40 relative z-10 mb-3 flex h-10 w-10 items-center justify-center rounded-full border-2">
@@ -51,14 +65,14 @@ export function LoginHeroPanel() {
                     {idx + 1}
                   </span>
                 </div>
-                <p className="text-foreground text-sm font-semibold">{step.title}</p>
-                <p className="text-muted-foreground mt-0.5 truncate text-xs">{step.desc}</p>
+                <p className="text-foreground text-sm font-semibold">{t(step.titleKey)}</p>
+                <p className="text-muted-foreground mt-0.5 truncate text-xs">{t(step.descKey)}</p>
               </li>
             ))}
           </ol>
 
           <p className="text-muted-foreground/50 mt-3 text-xs">
-            © {new Date().getFullYear()} TripFlow · Crafted for explorers
+            {t('auth.copyright', { year: new Date().getFullYear() })}
           </p>
         </div>
       </div>

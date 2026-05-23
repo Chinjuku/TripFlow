@@ -21,6 +21,7 @@ import {
 import { Button } from '@trip-flow/ui/components/button';
 import { Input } from '@trip-flow/ui/components/input';
 import { Label } from '@trip-flow/ui/components/label';
+import { useTranslation } from 'react-i18next';
 
 // Zod schema for validation
 const createExpenseSchema = z.object({
@@ -80,6 +81,7 @@ export function CreateExpenseForm({
   const [isAutofilled, setIsAutofilled] = useState(false);
   const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
   const addPersonRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
 
   const {
     register,
@@ -338,10 +340,10 @@ export function CreateExpenseForm({
           </div>
           <div>
             <h2 className="font-headline text-lg font-bold text-foreground leading-tight">
-              Record & Split
+              {t('finances.recordAndSplit')}
             </h2>
             <p className="text-xs text-muted-foreground">
-              Add a new expense and choose how to distribute the cost
+              {t('finances.recordAndSplitDesc')}
             </p>
           </div>
         </div>
@@ -382,7 +384,7 @@ export function CreateExpenseForm({
             {isScanning ? (
               <div className="space-y-1.5 z-20">
                 <p className="text-sm font-semibold text-muted-foreground">
-                  Scanning receipt for details...
+                  {t('finances.scanningReceipt')}
                 </p>
                 <div className="w-48 h-1.5 bg-muted rounded-full mx-auto overflow-hidden">
                   <div className="h-full bg-primary animate-infinite-loading rounded-full" />
@@ -391,7 +393,7 @@ export function CreateExpenseForm({
             ) : uploadedFile ? (
               <div className="z-20">
                 <p className="text-sm font-semibold text-primary flex items-center gap-1.5 justify-center">
-                  <Check className="w-4 h-4" /> Receipt Loaded
+                  <Check className="w-4 h-4" /> {t('finances.receiptLoaded')}
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {uploadedFile.name} ({uploadedFile.size})
@@ -400,10 +402,10 @@ export function CreateExpenseForm({
             ) : (
               <div className="z-20">
                 <p className="text-sm font-semibold text-muted-foreground">
-                  Upload Receipt for OCR
+                  {t('finances.uploadReceipt')}
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  PNG, JPG or PDF up to 10MB
+                  {t('finances.uploadReceiptFormat')}
                 </p>
               </div>
             )}
@@ -416,7 +418,7 @@ export function CreateExpenseForm({
           {isAutofilled && (
             <div className="absolute -top-3 left-4 flex items-center gap-1 bg-primary/10 text-primary border border-primary/20 px-2.5 py-1 rounded-full text-[10px] font-bold shadow-sm animate-pulse-once">
               <Sparkles className="w-3 h-3" />
-              <span>Auto-filled</span>
+              <span>{t('finances.autoFilled')}</span>
             </div>
           )}
 
@@ -427,7 +429,7 @@ export function CreateExpenseForm({
                 htmlFor="description"
                 className="text-xs font-bold text-muted-foreground"
               >
-                Merchant
+                {t('finances.merchant')}
               </Label>
               <div className="relative">
                 <Input
@@ -452,7 +454,7 @@ export function CreateExpenseForm({
                 htmlFor="expenseDate"
                 className="text-xs font-bold text-muted-foreground"
               >
-                Date
+                {t('finances.expenseDate')}
               </Label>
               <div className="relative">
                 <Input
@@ -477,7 +479,7 @@ export function CreateExpenseForm({
               htmlFor="amount"
               className="text-xs font-bold text-muted-foreground"
             >
-              Total Amount (THB)
+              {t('finances.totalAmountThb')}
             </Label>
             <div className="relative flex items-center">
               <Input
@@ -508,7 +510,7 @@ export function CreateExpenseForm({
               htmlFor="category"
               className="text-xs font-bold text-muted-foreground"
             >
-              Category
+              {t('finances.categoryLabel')}
             </Label>
             <div className="relative">
               <select
@@ -516,11 +518,11 @@ export function CreateExpenseForm({
                 className="flex h-11 w-full rounded-xl border border-input bg-background px-3 pl-9 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 text-foreground font-semibold"
                 {...register('category')}
               >
-                <option value="food">🍴 Food & Drink</option>
-                <option value="transport">🚗 Transportation</option>
-                <option value="activity">🧗 Activities & Sightseeing</option>
-                <option value="lodging">🏨 Lodging & Stays</option>
-                <option value="other">💵 Other Costs</option>
+                <option value="food">{t('finances.categoryFoodLabel')}</option>
+                <option value="transport">{t('finances.categoryTransportLabel')}</option>
+                <option value="activity">{t('finances.categoryActivityLabel')}</option>
+                <option value="lodging">{t('finances.categoryLodgingLabel')}</option>
+                <option value="other">{t('finances.categoryOtherLabel')}</option>
               </select>
               <Tag className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
             </div>
@@ -537,7 +539,7 @@ export function CreateExpenseForm({
               htmlFor="paidById"
               className="text-xs font-bold text-muted-foreground"
             >
-              Paid By
+              {t('finances.paidBy')}
             </Label>
             <select
               id="paidById"
@@ -546,7 +548,7 @@ export function CreateExpenseForm({
             >
               {members.map((m) => (
                 <option key={m.userId} value={m.userId}>
-                  {m.userId === currentUserId ? 'You' : m.name}
+                  {m.userId === currentUserId ? t('common.you') : m.name}
                 </option>
               ))}
             </select>
@@ -556,7 +558,7 @@ export function CreateExpenseForm({
         {/* Split Method Pill selector */}
         <div className="space-y-2">
           <Label className="text-xs font-bold text-muted-foreground">
-            Split Method
+            {t('finances.splitMethod')}
           </Label>
           <div className="flex bg-muted rounded-full p-1 border border-border/20 w-full gap-1">
             <button
@@ -568,7 +570,7 @@ export function CreateExpenseForm({
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Equally
+              {t('finances.splitEqually')}
             </button>
             <button
               type="button"
@@ -579,7 +581,7 @@ export function CreateExpenseForm({
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              By Exact Amount
+              {t('finances.splitByExactAmount')}
             </button>
           </div>
         </div>
@@ -587,7 +589,7 @@ export function CreateExpenseForm({
         {/* Split Breakdown */}
         <div className="space-y-3">
           <Label className="text-xs font-bold text-muted-foreground">
-            Split Breakdown
+            {t('finances.splitBreakdown')}
           </Label>
 
           {watchSplitMethod === 'exact_amount' && isExactMismatch && (
@@ -661,7 +663,7 @@ export function CreateExpenseForm({
                           <div>
                             <span className="text-foreground text-sm font-semibold leading-none block">
                               {member?.userId === currentUserId
-                                ? `${member?.name} (Me)`
+                                ? `${member?.name} (${t('common.you')})`
                                 : member?.name}
                             </span>
                           </div>
@@ -683,7 +685,7 @@ export function CreateExpenseForm({
                               htmlFor={`splits.${index}.itemPaid`}
                               className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center h-4"
                             >
-                              Item Paid
+                              {t('finances.itemPaidLabel')}
                             </Label>
                             <Input
                               id={`splits.${index}.itemPaid`}
@@ -699,10 +701,10 @@ export function CreateExpenseForm({
                               htmlFor={`splits.${index}.amount`}
                               className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between h-4"
                             >
-                              <span>Amount (THB)</span>
+                              <span>{t('finances.amountThbLabel')}</span>
                               {field.userId === watchPaidById && (
                                 <span className="text-[9px] text-primary font-extrabold normal-case leading-none">
-                                  (Auto Payer Remainder)
+                                  ({t('finances.autoPayerRemainder')})
                                 </span>
                               )}
                             </Label>
@@ -747,11 +749,11 @@ export function CreateExpenseForm({
                   className="w-full flex items-center justify-center gap-2 py-3.5 border border-dashed border-border hover:border-primary hover:bg-primary/10 rounded-2xl text-xs font-bold text-primary hover:text-primary/80 transition-all duration-200 cursor-pointer shadow-sm bg-muted/10"
                 >
                   <UserPlus className="w-4 h-4" />
-                  <span>+ Add Person</span>
+                  <span>{t('finances.addPerson')}</span>
                 </button>
               ) : (
                 <div className="text-center py-2.5 text-xs text-muted-foreground font-semibold border border-dashed border-border rounded-2xl">
-                  All trip members included in split
+                  {t('finances.allTripMembersIncluded')}
                 </div>
               )}
 
@@ -759,7 +761,7 @@ export function CreateExpenseForm({
               {isAddPersonOpen && excludedTravelers.length > 0 && (
                 <div className="absolute z-30 top-full left-0 right-0 mt-2 max-h-48 overflow-y-auto border border-border bg-popover rounded-2xl shadow-xl p-2 flex flex-col gap-1.5 animate-slide-down">
                   <div className="px-2.5 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider border-b border-border/40 flex justify-between items-center">
-                    <span>Add traveler</span>
+                    <span>{t('finances.addTraveler')}</span>
                   </div>
                   {excludedTravelers.length > 1 && (
                     <button
@@ -770,7 +772,7 @@ export function CreateExpenseForm({
                       <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary">
                         <Users className="w-3.5 h-3.5" />
                       </div>
-                      <span className="text-xs">Everyone</span>
+                      <span className="text-xs">{t('finances.everyone')}</span>
                     </button>
                   )}
                   {excludedTravelers.map((field) => {
@@ -796,7 +798,7 @@ export function CreateExpenseForm({
                           </div>
                         )}
                         <span className="text-xs text-foreground font-semibold">
-                          {member?.userId === currentUserId ? `${member?.name} (Me)` : member?.name}
+                          {member?.userId === currentUserId ? `${member?.name} (${t('common.you')})` : member?.name}
                         </span>
                       </button>
                     );
@@ -816,7 +818,7 @@ export function CreateExpenseForm({
             disabled={isSubmitting}
             className="text-xs h-10 px-5 rounded-full border border-input hover:bg-muted font-bold transition-all text-muted-foreground"
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             type="submit"
@@ -826,12 +828,12 @@ export function CreateExpenseForm({
             {isSubmitting ? (
               <>
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span>Saving...</span>
+                <span>{t('common.saving')}</span>
               </>
             ) : (
               <>
                 <Check className="w-3.5 h-3.5" />
-                <span>Save Expense</span>
+                <span>{t('finances.saveExpense')}</span>
               </>
             )}
           </Button>

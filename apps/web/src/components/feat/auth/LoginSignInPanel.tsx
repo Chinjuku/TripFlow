@@ -1,17 +1,18 @@
 import { Lock, ShieldCheck } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@trip-flow/ui/components/button';
 import { SpinningCompass } from '@/components/ui/SpinningCompass';
 import { useGoogleSignIn } from '@/hooks/useGoogleSignIn';
-import { getGreeting } from '@/utils/auth';
 import { GoogleIcon } from './GoogleIcon';
-
-const TRUST_POINTS = [
-  { icon: Lock, label: 'Sign-in handled by Google · no password stored' },
-  { icon: ShieldCheck, label: 'We never read your email or contacts' },
-] as const;
 
 export function LoginSignInPanel() {
   const { signingIn, signIn } = useGoogleSignIn();
+  const { t } = useTranslation();
+
+  const trustPoints = [
+    { icon: Lock, label: t('auth.trustSignIn') },
+    { icon: ShieldCheck, label: t('auth.trustPrivacy') },
+  ] as const;
 
   return (
     <div className="lg:border-border relative flex flex-1 flex-col items-center justify-center px-6 lg:w-[40%] lg:flex-none lg:border-l lg:px-12 xl:px-16">
@@ -28,10 +29,10 @@ export function LoginSignInPanel() {
 
           <div className="mb-8 text-center lg:text-left">
             <h2 className="font-headline text-foreground mb-1.5 text-2xl font-bold tracking-tight">
-              {getGreeting()}
+              {t(`auth.greeting.${getGreetingKey()}`)}
             </h2>
             <p className="text-muted-foreground text-sm">
-              Sign in to continue planning your adventures
+              {t('auth.signInToContinue')}
             </p>
           </div>
 
@@ -45,18 +46,18 @@ export function LoginSignInPanel() {
             {signingIn ? (
               <>
                 <SpinningCompass size={5} className="text-primary" />
-                Signing in…
+                {t('auth.signingIn')}
               </>
             ) : (
               <>
                 <GoogleIcon />
-                Continue with Google
+                {t('auth.continueWithGoogle')}
               </>
             )}
           </Button>
 
           <ul className="mt-6 space-y-2">
-            {TRUST_POINTS.map(({ icon: Icon, label }) => (
+            {trustPoints.map(({ icon: Icon, label }) => (
               <li key={label} className="text-muted-foreground flex items-center gap-2 text-xs">
                 <span className="bg-primary/10 text-primary inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
                   <Icon className="h-3 w-3" strokeWidth={2.25} />
@@ -67,10 +68,18 @@ export function LoginSignInPanel() {
           </ul>
 
           <p className="text-muted-foreground/70 mt-6 text-center text-[11px] leading-relaxed">
-            By signing in, you agree to our Terms of Service.
+            {t('auth.termsNotice')}
           </p>
         </div>
       </div>
     </div>
   );
+}
+
+function getGreetingKey(): string {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 12) return 'morning';
+  if (h >= 12 && h < 17) return 'afternoon';
+  if (h >= 17 && h < 22) return 'evening';
+  return 'lateNight';
 }

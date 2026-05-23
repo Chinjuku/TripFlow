@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { getInitials, type TripMemberProfile } from '@/components/feat/trips';
 
 interface CollaboratorRowProps {
@@ -7,6 +8,7 @@ interface CollaboratorRowProps {
 
 export function CollaboratorRow({ member, isCurrentUser }: CollaboratorRowProps) {
   const initials = getInitials(member.name);
+  const { t } = useTranslation();
 
   return (
     <div className="flex items-center gap-3">
@@ -26,10 +28,10 @@ export function CollaboratorRow({ member, isCurrentUser }: CollaboratorRowProps)
         <p className="text-foreground truncate text-sm font-medium">
           {member.name}
           {member.role === 'owner' && (
-            <span className="text-muted-foreground ml-1 text-xs font-normal">(Owner)</span>
+            <span className="text-muted-foreground ml-1 text-xs font-normal">({t('common.owner')})</span>
           )}
           {isCurrentUser && (
-            <span className="text-muted-foreground ml-1 text-xs font-normal">· you</span>
+            <span className="text-muted-foreground ml-1 text-xs font-normal">· {t('common.you')}</span>
           )}
         </p>
         <p className="text-muted-foreground truncate text-xs">{member.email || member.role}</p>

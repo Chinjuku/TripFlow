@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Map, Share2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@trip-flow/ui/components/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrip } from '@/components/feat/trips';
@@ -19,11 +20,12 @@ export default function TripBoardPage() {
   const { user } = useAuth();
   const { data: trip, error } = useTrip(id);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const { t } = useTranslation();
 
   if (error) {
     return (
       <div className="mx-auto max-w-6xl">
-        <BackLink to="/trips" label="All trips" className="mb-6" />
+        <BackLink to="/trips" label={t('overview.allTrips')} className="mb-6" />
         <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border p-4 text-sm">
           {error.message}
         </div>
@@ -39,12 +41,12 @@ export default function TripBoardPage() {
     <div className="mx-auto flex max-w-6xl flex-col gap-8">
       <TripPageHeader
         backTo="/trips"
-        backLabel="All trips"
+        backLabel={t('overview.allTrips')}
         title={trip.title}
         subtitle={
           <>
-            Invite code: <span className="font-mono">{trip.inviteCode}</span> — Created by{' '}
-            {owner?.name ?? 'Unknown'}
+            {t('common.inviteCode')}: <span className="font-mono">{trip.inviteCode}</span> — {t('common.createdBy')}{' '}
+            {owner?.name ?? t('common.unknown')}
           </>
         }
         withBorder
@@ -52,14 +54,14 @@ export default function TripBoardPage() {
           <>
             <Button variant="outline" className="gap-2" onClick={() => setInviteOpen(true)}>
               <Share2 className="h-4 w-4" />
-              Invite
+              {t('overview.invite')}
             </Button>
             <Link
               to={`/trips/${trip.id}/plan`}
               className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring inline-flex h-10 items-center gap-2 rounded-md px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
             >
               <Map className="h-4 w-4" />
-              Plan places
+              {t('overview.planPlaces')}
             </Link>
           </>
         }
@@ -67,14 +69,14 @@ export default function TripBoardPage() {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 lg:h-[calc(100vh-14rem)] lg:overflow-hidden">
         <div className="space-y-6 lg:col-span-2 lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
-          <h3 className="text-foreground font-headline text-lg font-bold shrink-0">Trip overview</h3>
+          <h3 className="text-foreground font-headline text-lg font-bold shrink-0">{t('overview.tripOverview')}</h3>
           <div className="shrink-0">
             <TripOverviewCard trip={trip} />
           </div>
           <TripPlacesSummaryCard trip={trip} className="lg:flex-1 lg:overflow-hidden" />
         </div>
         <div className="space-y-6 lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
-          <h3 className="text-foreground font-headline text-lg font-bold shrink-0">Board Collaborators</h3>
+          <h3 className="text-foreground font-headline text-lg font-bold shrink-0">{t('overview.boardCollaborators')}</h3>
           <div className="lg:flex-1 lg:overflow-y-auto pr-1 -mr-1 scrollbar-none">
             <CollaboratorsPanel members={trip.members} currentUserId={user?.id} />
           </div>

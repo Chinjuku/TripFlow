@@ -1,8 +1,10 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Wallet, ArrowDownLeft, ArrowUpRight, Plus, Sparkles } from 'lucide-react';
 import { Card, CardContent } from '@trip-flow/ui/components/card';
 import { Button } from '@trip-flow/ui/components/button';
 import type { FinanceSummary, DebtRelation } from '../types';
+import { Link, useParams } from 'react-router-dom';
 
 interface ExpenseSummaryProps {
   summary: FinanceSummary;
@@ -30,6 +32,8 @@ export function ExpenseSummary({
     whatYouOwe,
     budget,
   } = summary;
+  const { t } = useTranslation();
+  const { id } = useParams<{ id: string }>();
 
   // Calculate budget progress
   const budgetAmount = budget?.amount ?? 0;
@@ -49,7 +53,7 @@ export function ExpenseSummary({
           <CardContent className="p-6 space-y-6">
             <div className="flex items-center gap-2 text-muted-foreground text-[10px] font-bold tracking-wider uppercase font-label">
               <Wallet className="h-4 w-4" />
-              Total Group Trip Cost
+              {t('finances.totalGroupCost')}
             </div>
 
             <div className="space-y-1">
@@ -61,7 +65,7 @@ export function ExpenseSummary({
                 })}
               </div>
               <div className="text-muted-foreground text-sm">
-                Your share: ฿
+                {t('finances.yourShare')}: ฿
                 {userShare.toLocaleString(undefined, {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
@@ -81,13 +85,13 @@ export function ExpenseSummary({
                 <span className="text-primary font-semibold">
                   {budgetAmount > 0
                     ? `${progressPercent}% of ${formattedBudget} budget`
-                    : 'No budget set yet'}
+                    : t('finances.noBudgetSetYet')}
                 </span>
                 <button
                   onClick={onSetBudget}
                   className="text-primary hover:text-primary/80 font-medium hover:underline focus:outline-none transition-colors"
                 >
-                  {budgetAmount > 0 ? 'Edit Budget' : 'Set Budget'}
+                  {budgetAmount > 0 ? t('finances.editBudget') : t('finances.setBudget')}
                 </button>
               </div>
             </div>
@@ -97,13 +101,13 @@ export function ExpenseSummary({
         {/* Card 2: Who Owes You */}
         <Card className="rounded-2xl border-primary/10 bg-gradient-to-b from-primary/[0.03] to-primary/[0.08] shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md dark:border-primary/20 dark:from-primary/[0.01] dark:to-primary/[0.04] bg-card">
           <CardContent className="p-6 flex flex-col h-full min-h-[14rem]">
-            <button
+            <Link
               className="flex items-center gap-2 bg-primary text-primary-foreground text-[10px] font-bold tracking-wider uppercase hover:bg-primary/90 px-4 py-2 rounded-full transition-all w-fit shadow-md border border-primary/20 active:scale-95 font-label"
-              onClick={() => window.open('https://www.youtube.com', '_blank')}
+              to={`/trips/${id}/to-receive`}
             >
               <ArrowDownLeft className="h-4 w-4" />
-              Who owes you
-            </button>
+              {t('finances.whoOwesYou')}
+            </Link>
 
             <div className="font-headline text-primary text-3xl font-extrabold sm:text-4xl mt-3 mb-4">
               ฿
@@ -115,7 +119,7 @@ export function ExpenseSummary({
 
             {whoOwesYou.length === 0 ? (
               <div className="text-muted-foreground flex-1 flex items-center justify-center text-center text-xs px-4">
-                No one owes you money right now. Happy travels!
+                {t('finances.noOneOwesYou')}
               </div>
             ) : (
               <div className="space-y-3 flex-1 overflow-y-auto max-h-[12rem] pr-1">
@@ -151,13 +155,13 @@ export function ExpenseSummary({
         {/* Card 3: What You Owe */}
         <Card className="rounded-2xl border-destructive/15 bg-gradient-to-b from-destructive/[0.03] to-destructive/[0.08] shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md dark:border-destructive/20 dark:from-destructive/[0.01] dark:to-destructive/[0.04] bg-card">
           <CardContent className="p-6 flex flex-col h-full min-h-[14rem]">
-            <button
+            <Link
               className="flex items-center gap-2 bg-destructive text-destructive-foreground text-[10px] font-bold tracking-wider uppercase hover:bg-destructive/90 px-4 py-2 rounded-full transition-all w-fit shadow-md border border-destructive/20 active:scale-95 font-label"
-              onClick={() => window.open('https://www.youtube.com', '_blank')}
+              to={`/trips/${id}/to-pay`}
             >
               <ArrowUpRight className="h-4 w-4" />
-              What you owe
-            </button>
+              {t('finances.whatYouOwe')}
+            </Link>
 
             <div className="font-headline text-destructive text-3xl font-extrabold sm:text-4xl mt-3 mb-4">
               ฿
@@ -169,7 +173,7 @@ export function ExpenseSummary({
 
             {whatYouOwe.length === 0 ? (
               <div className="text-muted-foreground flex-1 flex items-center justify-center text-center text-xs px-4">
-                You do not owe anyone right now. Splendid job!
+                {t('finances.youDoNotOweAnyone')}
               </div>
             ) : (
               <div className="space-y-4 flex-1 flex flex-col justify-between">
@@ -201,7 +205,7 @@ export function ExpenseSummary({
                           onClick={() => onSettleUp(debt)}
                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-[10px] font-bold px-2 py-0.5 rounded transition-colors font-label"
                         >
-                          Settle Up
+                          {t('finances.settleUp')}
                         </button>
                       </div>
                     </div>
