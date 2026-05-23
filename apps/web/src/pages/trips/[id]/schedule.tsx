@@ -1,5 +1,5 @@
-import { useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import {
   DndContext,
   DragOverlay,
@@ -43,7 +43,35 @@ export default function TripSchedulePage() {
     () => (trip ? buildDays(trip.startsOn, trip.endsOn) : []),
     [trip],
   );
-  const [activeDay, setActiveDay] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeDay, setActiveDay] = useState(() => {
+    const day = searchParams.get('day');
+    if (!day) return 0;
+    const parsed = parseInt(day, 10);
+    return isNaN(parsed) ? 0 : parsed;
+  });
+
+  useEffect(() => {
+    const day = searchParams.get('day');
+    if (day) {
+      const parsed = parseInt(day, 10);
+      if (!isNaN(parsed) && parsed !== activeDay) {
+        setActiveDay(parsed);
+      }
+    }
+  }, [searchParams, activeDay]);
+
+  const handleSelectDay = (index: number) => {
+    setActiveDay(index);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set('day', String(index));
+        return next;
+      },
+      { replace: true },
+    );
+  };
   const [dragging, setDragging] = useState<DragPayload | null>(null);
   const [dragPreview, setDragPreview] = useState<{
     startMinute: number;
@@ -290,7 +318,7 @@ export default function TripSchedulePage() {
           withBorder
         />
 
-        <DayTabsScroller days={days} activeDay={activeDay} onSelect={setActiveDay} />
+        <DayTabsScroller days={days} activeDay={activeDay} onSelect={handleSelectDay} />
 
         {error && (
           <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border p-4 text-sm">

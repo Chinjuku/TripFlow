@@ -11,6 +11,7 @@ import {
   InviteModal,
   TripOverviewCard,
   CollaboratorsPanel,
+  TripPlacesSummaryCard,
 } from '@/components/feat/overview';
 
 export default function TripBoardPage() {
@@ -64,14 +65,19 @@ export default function TripBoardPage() {
         }
       />
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
-          <h3 className="text-foreground font-headline text-lg font-bold">Trip overview</h3>
-          <TripOverviewCard trip={trip} />
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 lg:h-[calc(100vh-14rem)] lg:overflow-hidden">
+        <div className="space-y-6 lg:col-span-2 lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
+          <h3 className="text-foreground font-headline text-lg font-bold shrink-0">Trip overview</h3>
+          <div className="shrink-0">
+            <TripOverviewCard trip={trip} />
+          </div>
+          <TripPlacesSummaryCard trip={trip} className="lg:flex-1 lg:overflow-hidden" />
         </div>
-        <div className="space-y-6">
-          <h3 className="text-foreground font-headline text-lg font-bold">Board Collaborators</h3>
-          <CollaboratorsPanel members={trip.members} currentUserId={user?.id} />
+        <div className="space-y-6 lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
+          <h3 className="text-foreground font-headline text-lg font-bold shrink-0">Board Collaborators</h3>
+          <div className="lg:flex-1 lg:overflow-y-auto pr-1 -mr-1 scrollbar-none">
+            <CollaboratorsPanel members={trip.members} currentUserId={user?.id} />
+          </div>
         </div>
       </div>
 

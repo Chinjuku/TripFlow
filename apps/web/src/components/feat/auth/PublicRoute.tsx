@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { SpinningCompass } from '@/components/ui/SpinningCompass';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -10,6 +10,7 @@ interface PublicRouteProps {
 
 export function PublicRoute({ children, redirectTo = '/trips' }: PublicRouteProps) {
   const { isAuthenticated, isLoading } = useAuth();
+  const [searchParams] = useSearchParams();
 
   if (isLoading) {
     return (
@@ -20,7 +21,8 @@ export function PublicRoute({ children, redirectTo = '/trips' }: PublicRouteProp
   }
 
   if (isAuthenticated) {
-    return <Navigate to={redirectTo} replace />;
+    const target = searchParams.get('redirectTo') || redirectTo;
+    return <Navigate to={target} replace />;
   }
 
   return <>{children}</>;

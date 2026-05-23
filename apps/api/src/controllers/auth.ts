@@ -47,8 +47,13 @@ export async function handleGoogleRedirect({
   redirect,
   request,
 }: Context): Promise<unknown> {
-  const origin = new URL(request.url).origin;
-  const callbackUrl = `${origin}/auth/callback`;
+  const urlObj = new URL(request.url);
+  const redirectTo = urlObj.searchParams.get('redirectTo');
+
+  const origin = urlObj.origin;
+  const callbackUrl = redirectTo
+    ? `${origin}/auth/callback?redirectTo=${encodeURIComponent(redirectTo)}`
+    : `${origin}/auth/callback`;
   const { url, codeVerifier } = await authService.getGoogleOAuthUrl(callbackUrl);
 
   setCookie(cookie, PKCE_COOKIE, buildPkceCookie(codeVerifier));
@@ -64,14 +69,18 @@ export async function handleGoogleRedirect({
  * 3. Exchanges both for a Supabase session
  * 4. Signs our own JWT and sets it as a session cookie
  * 5. Clears the PKCE cookie
- * 6. Redirects the browser to the frontend trips list
+ * 6. Redirects the browser to the frontend trips list (or custom redirectTo path)
  */
 export async function handleCallback({ query, cookie, redirect }: Context): Promise<unknown> {
   const code = query['code'] as string | undefined;
   const codeVerifier = cookie[PKCE_COOKIE]?.value as string | undefined;
+  const redirectTo = query['redirectTo'] as string | undefined;
 
   if (!code || !codeVerifier) {
-    return redirect(`${env.webUrl}/login?error=missing_code`);
+    const loginUrl = redirectTo
+      ? `${env.webUrl}/login?error=missing_code&redirectTo=${encodeURIComponent(redirectTo)}`
+      : `${env.webUrl}/login?error=missing_code`;
+    return redirect(loginUrl);
   }
 
   const user = await authService.exchangeCodeForUser(code, codeVerifier);
@@ -86,7 +95,8 @@ export async function handleCallback({ query, cookie, redirect }: Context): Prom
   setCookie(cookie, SESSION_COOKIE, buildSessionCookie(token));
   setCookie(cookie, PKCE_COOKIE, buildClearCookie());
 
-  return redirect(`${env.webUrl}/trips`);
+  const targetUrl = redirectTo ? `${env.webUrl}${redirectTo}` : `${env.webUrl}/trips`;
+  return redirect(targetUrl);
 }
 
 /**
