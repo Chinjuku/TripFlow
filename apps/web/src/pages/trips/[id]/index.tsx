@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Map, Share2 } from 'lucide-react';
 import { Button } from '@trip-flow/ui/components/button';
-import { useTrip, formatDateRange } from '@/features/trips';
-import { CollaboratorRow, TripBoardSkeleton, InviteModal } from '@/features/trips';
-import { useAuth } from '@/features/auth/useAuth';
+import { useTrip, formatDateRange } from '@/components/feat/trips';
+import { CollaboratorRow, TripBoardSkeleton, InviteModal } from '@/components/feat/trips';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function TripBoardPage() {
   const { id } = useParams<{ id: string }>();

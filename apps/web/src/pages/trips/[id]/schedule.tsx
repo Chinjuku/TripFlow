@@ -35,15 +35,15 @@ import { Button } from '@trip-flow/ui/components/button';
 import { Modal } from '@trip-flow/ui/components/modal';
 import { Skeleton } from '@trip-flow/ui/components/skeleton';
 import { cn } from '@trip-flow/ui/lib/cn';
-import { useTrip } from '@/features/trips';
-import { useTripPlaces, type TripPlace } from '@/features/places';
+import { useTrip } from '@/components/feat/trips';
+import { useTripPlaces, type TripPlace } from '@/components/feat/places';
 import {
   addSchedule,
   removeSchedule,
   updateSchedule,
   useSchedule,
   type ScheduleItem,
-} from '@/features/schedule';
+} from '@/components/feat/schedule';
 
 const HOURS_START = 0; // 00:00
 const HOURS_END = 24; // 24:00 (last grid line, exclusive top edge)

@@ -19,8 +19,8 @@ import {
 import { Button } from '@trip-flow/ui/components/button';
 import { Skeleton } from '@trip-flow/ui/components/skeleton';
 import { cn } from '@trip-flow/ui/lib/cn';
-import { useAuth } from '@/features/auth/useAuth';
-import { useTrip } from '@/features/trips';
+import { useAuth } from '@/hooks/useAuth';
+import { useTrip } from '@/components/feat/trips';
 import {
   addPlace,
   bucketFor,
@@ -29,8 +29,8 @@ import {
   useTripPlaces,
   type PlaceBucket,
   type TripPlace,
-} from '@/features/places';
-import { PlaceCard, PlacesMap, type PoiPreview } from '@/features/places/components';
+} from '@/components/feat/places';
+import { PlaceCard, PlacesMap, type PoiPreview } from '@/components/feat/places/components';
 
 /** What the user can filter the candidate list down to. */
 type FilterKey = 'all' | 'voted' | 'mine' | 'photos';
