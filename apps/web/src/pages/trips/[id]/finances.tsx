@@ -1,5 +1,5 @@
-import { TripFinancesLayout, useTripFinancesContext } from '@/features/finances/components/TripFinancesLayout';
-import { ExpenseSummary, ExpenseList } from '@/features/finances';
+import { TripFinancesLayout, useTripFinancesContext } from '@/components/feat/finances/components/TripFinancesLayout';
+import { ExpenseSummary, ExpenseList } from '@/components/feat/finances';
 
 export default function TripFinancesPage() {
   return (

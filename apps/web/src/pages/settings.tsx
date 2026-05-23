@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { ProfileCard, AppearanceCard, PaymentDetailsCard } from '@/features/settings';
+import { ProfileCard, AppearanceCard, PaymentDetailsCard } from '@/components/feat/settings';
 
 export default function SettingsPage() {
   const navigate = useNavigate();

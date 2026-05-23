@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { Plus, KeyRound } from 'lucide-react';
 import { Button } from '@trip-flow/ui/components/button';
 import { Skeleton } from '@trip-flow/ui/components/skeleton';
-import { useTrips } from '@/features/trips';
+import { useTrips } from '@/components/feat/trips';
 import {
   CreateTripDialog,
   JoinTripDialog,
   TripCard,
-} from '@/features/trips';
+} from '@/components/feat/trips';
 
 export default function TripsListPage() {
   const { data: trips, error, isLoading, refresh } = useTrips();
