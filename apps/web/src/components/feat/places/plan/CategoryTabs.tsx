@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { cn } from '@trip-flow/ui/lib/cn';
-import { BUCKETS, bucketFor, type PlaceBucket } from '../buckets';
+import { BUCKETS, bucketFor } from '@/utils/places';
+import type { PlaceBucket } from '@/types/places';
 import type { TripPlace } from '@/types/places';
 
 interface CategoryTabsProps {
