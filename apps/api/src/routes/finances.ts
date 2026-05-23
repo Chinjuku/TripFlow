@@ -1,15 +1,35 @@
+/**
+ * Finances routes — finances for a trip.
+ *
+ *   GET    /finances/trip/:tripId          Get trip finances (balances, expenses, settlements)
+ *   POST   /finances/expense               Create a new expense with custom split allocations
+ *   POST   /finances/settlement            Record a settlement payment between members
+ *   POST   /finances/settlement/:id/confirm
+ *                                          Confirm receipt of a pending settlement
+ *   POST   /finances/budget                Update the overall trip budget
+ *   POST   /finances/payment-details       Save current user's banking/PromptPay details
+ *   GET    /finances/payment-details       Retrieve current user's payment details
+ *
+ * All routes are scoped under /finances and require authentication.
+ */
+
 import { Elysia, t } from 'elysia';
 import { requireAuth } from '../middleware/auth';
-import * as financesService from '../services/finances';
+import {
+  handleGetFinancesByTripId,
+  handleCreateExpense,
+  handleCreateSettlement,
+  handleConfirmSettlement,
+  handleUpdateTripBudget,
+  handleSaveUserPaymentDetails,
+  handleGetUserPaymentDetails,
+} from '../controllers/finances';
 
 export const financesRoute = new Elysia({ prefix: '/finances' })
   .use(requireAuth)
   .get(
     '/trip/:tripId',
-    async ({ user, params, query }) => {
-      const isDebtOptimized = query.optimized === 'true';
-      return await financesService.getFinancesByTripId(user.sub, params.tripId, isDebtOptimized);
-    },
+    handleGetFinancesByTripId,
     {
       params: t.Object({
         tripId: t.String({ format: 'uuid' }),
@@ -21,9 +41,7 @@ export const financesRoute = new Elysia({ prefix: '/finances' })
   )
   .post(
     '/expense',
-    async ({ user, body }) => {
-      return await financesService.createExpense(user.sub, body);
-    },
+    handleCreateExpense,
     {
       body: t.Object({
         tripId: t.String({ format: 'uuid' }),
@@ -54,9 +72,7 @@ export const financesRoute = new Elysia({ prefix: '/finances' })
   )
   .post(
     '/settlement',
-    async ({ user, body }) => {
-      return await financesService.createSettlement(user.sub, body);
-    },
+    handleCreateSettlement,
     {
       body: t.Object({
         tripId: t.String({ format: 'uuid' }),
@@ -67,9 +83,7 @@ export const financesRoute = new Elysia({ prefix: '/finances' })
   )
   .post(
     '/settlement/:id/confirm',
-    async ({ user, params }) => {
-      return await financesService.confirmSettlement(user.sub, params.id);
-    },
+    handleConfirmSettlement,
     {
       params: t.Object({
         id: t.String({ format: 'uuid' }),
@@ -78,9 +92,7 @@ export const financesRoute = new Elysia({ prefix: '/finances' })
   )
   .post(
     '/budget',
-    async ({ user, body }) => {
-      return await financesService.updateTripBudget(user.sub, body);
-    },
+    handleUpdateTripBudget,
     {
       body: t.Object({
         tripId: t.String({ format: 'uuid' }),
@@ -90,9 +102,7 @@ export const financesRoute = new Elysia({ prefix: '/finances' })
   )
   .post(
     '/payment-details',
-    async ({ user, body }) => {
-      return await financesService.saveUserPaymentDetails(user.sub, body);
-    },
+    handleSaveUserPaymentDetails,
     {
       body: t.Object({
         promptpayId: t.Optional(t.Nullable(t.String({ maxLength: 50 }))),
@@ -107,8 +117,6 @@ export const financesRoute = new Elysia({ prefix: '/finances' })
   )
   .get(
     '/payment-details',
-    async ({ user }) => {
-      return await financesService.getUserPaymentDetails(user.sub);
-    }
+    handleGetUserPaymentDetails
   );
 

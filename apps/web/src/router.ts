@@ -9,16 +9,22 @@ export type Path =
   | `/settings`
   | `/trips`
   | `/trips/:id`
+  | `/trips/:id/all-expenses`
   | `/trips/:id/finances`
+  | `/trips/:id/monitoring`
   | `/trips/:id/plan`
   | `/trips/:id/schedule`
+  | `/trips/:id/to-paid`
   | `/trips/:id/to-receive`
 
 export type Params = {
   '/trips/:id': { id: string }
+  '/trips/:id/all-expenses': { id: string }
   '/trips/:id/finances': { id: string }
+  '/trips/:id/monitoring': { id: string }
   '/trips/:id/plan': { id: string }
   '/trips/:id/schedule': { id: string }
+  '/trips/:id/to-paid': { id: string }
   '/trips/:id/to-receive': { id: string }
 }
 

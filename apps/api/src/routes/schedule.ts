@@ -9,7 +9,12 @@
 
 import { Elysia, t } from 'elysia';
 import { requireAuth } from '../middleware/auth';
-import * as scheduleService from '../services/schedule';
+import {
+  handleListSchedule,
+  handleAddScheduleItem,
+  handleUpdateScheduleItem,
+  handleRemoveScheduleItem,
+} from '../controllers/schedule';
 
 const MAX_MINUTES_PER_DAY = 24 * 60;
 
@@ -17,18 +22,12 @@ export const scheduleRoute = new Elysia()
   .use(requireAuth)
   .get(
     '/trips/:id/schedule',
-    async ({ user, params }) => {
-      const items = await scheduleService.listSchedule(user.sub, params.id);
-      return { items };
-    },
+    handleListSchedule,
     { params: t.Object({ id: t.String({ format: 'uuid' }) }) },
   )
   .post(
     '/trips/:id/schedule',
-    async ({ user, params, body }) => {
-      const item = await scheduleService.addScheduleItem(user.sub, params.id, body);
-      return { item };
-    },
+    handleAddScheduleItem,
     {
       params: t.Object({ id: t.String({ format: 'uuid' }) }),
       body: t.Object({
@@ -42,15 +41,7 @@ export const scheduleRoute = new Elysia()
   )
   .patch(
     '/trips/:id/schedule/:scheduleId',
-    async ({ user, params, body }) => {
-      const item = await scheduleService.updateScheduleItem(
-        user.sub,
-        params.id,
-        params.scheduleId,
-        body,
-      );
-      return { item };
-    },
+    handleUpdateScheduleItem,
     {
       params: t.Object({
         id: t.String({ format: 'uuid' }),
@@ -66,10 +57,7 @@ export const scheduleRoute = new Elysia()
   )
   .delete(
     '/trips/:id/schedule/:scheduleId',
-    async ({ user, params }) => {
-      await scheduleService.removeScheduleItem(user.sub, params.id, params.scheduleId);
-      return { ok: true };
-    },
+    handleRemoveScheduleItem,
     {
       params: t.Object({
         id: t.String({ format: 'uuid' }),

@@ -8,10 +8,11 @@
  */
 
 import { Outlet, matchPath, useLocation } from 'react-router-dom';
-import { AuthProvider } from '@/features/auth/AuthProvider';
-import { ProtectedRoute } from '@/features/auth/ProtectedRoute';
-import { ThemeProvider } from '@/features/theme';
-import { GlobalLayout } from '@/components/layout/GlobalLayout';
+import { AuthProvider } from '@/components/feat/auth/AuthProvider';
+import { ProtectedRoute } from '@/components/feat/auth/ProtectedRoute';
+import { PublicRoute } from '@/components/feat/auth/PublicRoute';
+import { ThemeProvider } from '@/components/shared/ThemeProvider';
+import { GlobalLayout } from '@/components/shared/GlobalLayout';
 
 const PUBLIC_PATHS = ['/login'] as const;
 const TRIP_DETAIL_PATTERN = '/trips/:id/*';
@@ -31,7 +32,9 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         {isPublicPath(pathname) ? (
-          <Outlet />
+          <PublicRoute>
+            <Outlet />
+          </PublicRoute>
         ) : (
           <ProtectedRoute>
             {isTripDetailPath(pathname) ? <Outlet /> : <GlobalLayout />}
