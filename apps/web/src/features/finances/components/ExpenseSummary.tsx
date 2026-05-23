@@ -35,7 +35,7 @@ export function ExpenseSummary({
   const budgetAmount = budget?.amount ?? 0;
   const progressPercent =
     budgetAmount > 0 ? Math.min(100, Math.round((totalGroupCost / budgetAmount) * 100)) : 0;
-  const formattedBudget = budgetAmount > 0 ? `$${(budgetAmount / 1000).toFixed(1)}k` : '';
+  const formattedBudget = budgetAmount > 0 ? `฿${(budgetAmount / 1000).toFixed(1)}k` : '';
 
   return (
     <div className="space-y-6">
@@ -54,14 +54,14 @@ export function ExpenseSummary({
 
             <div className="space-y-1">
               <div className="font-headline text-foreground text-3xl font-extrabold sm:text-4xl">
-                $
+                ฿
                 {totalGroupCost.toLocaleString(undefined, {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}
               </div>
               <div className="text-muted-foreground text-sm">
-                Your share: $
+                Your share: ฿
                 {userShare.toLocaleString(undefined, {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
@@ -106,7 +106,7 @@ export function ExpenseSummary({
             </button>
 
             <div className="font-headline text-blue-800 dark:text-blue-300 text-3xl font-extrabold sm:text-4xl mt-3 mb-4">
-              $
+              ฿
               {totalOwedToUser.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
@@ -139,7 +139,7 @@ export function ExpenseSummary({
                       <span className="text-foreground text-xs font-semibold">{debt.name}</span>
                     </div>
                     <span className="text-emerald-600 dark:text-emerald-400 text-xs font-bold">
-                      +${debt.amount.toFixed(2)}
+                      +฿{debt.amount.toFixed(2)}
                     </span>
                   </div>
                 ))}
@@ -149,7 +149,7 @@ export function ExpenseSummary({
         </Card>
 
         {/* Card 3: What You Owe */}
-        <Card className="rounded-2xl border-rose-100 bg-gradient-to-b from-rose-50/30 to-rose-50/70 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md dark:border-rose-950/20 dark:from-slate-900/30 dark:to-slate-900/50 dark:bg-card">
+        <Card className="rounded-2xl border-rose-100 bg-gradient-to-b from-rose-50/30 to-rose-50/70 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md dark:border-rose-950/20 dark:from-slate-900/30 dark:to-rose-900/50 dark:bg-card">
           <CardContent className="p-6 flex flex-col h-full min-h-[14rem]">
             <button
               className="flex items-center gap-2 bg-rose-600 text-white text-[10px] font-bold tracking-wider uppercase hover:bg-rose-700 px-4 py-2 rounded-full transition-all w-fit shadow-md border border-rose-500/20 active:scale-95"
@@ -160,7 +160,7 @@ export function ExpenseSummary({
             </button>
 
             <div className="font-headline text-rose-800 dark:text-rose-300 text-3xl font-extrabold sm:text-4xl mt-3 mb-4">
-              $
+              ฿
               {totalUserOwes.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
@@ -195,7 +195,7 @@ export function ExpenseSummary({
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-rose-600 dark:text-rose-400 text-xs font-bold">
-                          -${debt.amount.toFixed(2)}
+                          -฿{debt.amount.toFixed(2)}
                         </span>
                         <button
                           onClick={() => onSettleUp(debt)}

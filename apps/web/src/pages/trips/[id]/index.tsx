@@ -1,14 +1,16 @@
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Map, Share2 } from 'lucide-react';
 import { Button } from '@trip-flow/ui/components/button';
 import { useTrip, formatDateRange } from '@/features/trips';
-import { CollaboratorRow, TripBoardSkeleton } from '@/features/trips/components';
+import { CollaboratorRow, TripBoardSkeleton, InviteModal } from '@/features/trips';
 import { useAuth } from '@/features/auth/useAuth';
 
 export default function TripBoardPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const { data: trip, error } = useTrip(id);
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   if (error) {
     return (
@@ -57,7 +59,7 @@ export default function TripBoardPage() {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2" onClick={() => setInviteOpen(true)}>
             <Share2 className="h-4 w-4" />
             Invite
           </Button>
@@ -123,6 +125,7 @@ export default function TripBoardPage() {
           </div>
         </div>
       </div>
+      <InviteModal open={inviteOpen} onOpenChange={setInviteOpen} trip={trip} />
     </div>
   );
 }

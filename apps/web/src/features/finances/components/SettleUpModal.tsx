@@ -215,7 +215,7 @@ export function SettleUpModal({
               </div>
             )}
             <p className="text-muted-foreground text-[10px] text-center max-w-xs leading-normal">
-              Scan the QR using any Thai Mobile Banking app to transfer exactly <b>${payee.amount.toFixed(2)}</b>.
+              Scan the QR using any Thai Mobile Banking app to transfer exactly <b>฿{payee.amount.toFixed(2)}</b>.
             </p>
           </div>
         )}
