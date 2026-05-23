@@ -1,3 +1,18 @@
+/**
+ * Finances routes — finances for a trip.
+ *
+ *   GET    /finances/trip/:tripId          Get trip finances (balances, expenses, settlements)
+ *   POST   /finances/expense               Create a new expense with custom split allocations
+ *   POST   /finances/settlement            Record a settlement payment between members
+ *   POST   /finances/settlement/:id/confirm
+ *                                          Confirm receipt of a pending settlement
+ *   POST   /finances/budget                Update the overall trip budget
+ *   POST   /finances/payment-details       Save current user's banking/PromptPay details
+ *   GET    /finances/payment-details       Retrieve current user's payment details
+ *
+ * All routes are scoped under /finances and require authentication.
+ */
+
 import { Elysia, t } from 'elysia';
 import { requireAuth } from '../middleware/auth';
 import {
