@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { Skeleton } from '@trip-flow/ui/components/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -9,9 +9,13 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isLoading, isAuthenticated } = useAuth();
+  const location = useLocation();
 
   if (isLoading) return <AppShellSkeleton />;
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAuthenticated) {
+    const target = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/login?redirectTo=${target}`} replace />;
+  }
 
   return <>{children}</>;
 }

@@ -127,20 +127,8 @@ export function TripSidebar({ tripId, open, onOpenChange }: TripSidebarProps) {
           </Button>
         </div>
 
-        {/* Back-to-trips link */}
-        {!collapsed && (
-          <Link
-            to="/trips"
-            onClick={close}
-            className="text-muted-foreground hover:text-foreground mx-6 mt-6 inline-flex items-center gap-2 text-xs font-semibold"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
-            All trips
-          </Link>
-        )}
-
         {/* Nav */}
-        <nav className="mt-4 flex-1 space-y-2 overflow-y-auto overflow-x-hidden px-3 py-2">
+        <nav className="mt-8 flex-1 space-y-2 overflow-y-auto overflow-x-hidden px-3 py-2">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isFinancesActive = item.name === 'Finances' && (

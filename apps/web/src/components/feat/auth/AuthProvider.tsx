@@ -24,7 +24,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const signInWithGoogle = useCallback(() => {
-    window.location.href = getGoogleSignInUrl();
+    const searchParams = new URLSearchParams(window.location.search);
+    const redirectTo = searchParams.get('redirectTo');
+    const baseUrl = getGoogleSignInUrl();
+    const url = redirectTo
+      ? `${baseUrl}?redirectTo=${encodeURIComponent(redirectTo)}`
+      : baseUrl;
+    window.location.href = url;
   }, []);
 
   const signOut = useCallback(async () => {

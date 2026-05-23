@@ -1,29 +1,39 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0f172a" />
-    <link rel="manifest" href="/manifest.json" />
-    <title>TripFlow</title>
-    <script>
-      // Anti-flash: apply theme before React mounts.
-      // Must match ThemeProvider's storage key (default light when missing).
-      (function () {
-        try {
-          var dark = localStorage.getItem('trip-flow-theme') === 'dark';
-          var root = document.documentElement;
-          if (dark) root.classList.add('dark');
-          root.style.colorScheme = dark ? 'dark' : 'light';
-        } catch (_) {
-          /* storage disabled — fall through with light theme */
-        }
-      })();
-    </script>
-  </head>
-  <body class="bg-background text-foreground antialiased">
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="manifest" href="/manifest.json" />
+  <title>TripFlow</title>
+  <script type="module">
+    //! first bun i react-grab
+    // then in head:
+    if (import.meta.env.DEV) {
+      import("react-grab");
+    }
+  </script>
+  <script>
+    // Anti-flash: apply theme before React mounts.
+    // Must match ThemeProvider's storage key (default light when missing).
+    (function () {
+      try {
+        var dark = localStorage.getItem('trip-flow-theme') === 'dark';
+        var root = document.documentElement;
+        if (dark) root.classList.add('dark');
+        root.style.colorScheme = dark ? 'dark' : 'light';
+      } catch (_) {
+        /* storage disabled — fall through with light theme */
+      }
+    })();
+  </script>
+</head>
+
+<body class="bg-background text-foreground antialiased">
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>
