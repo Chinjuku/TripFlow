@@ -1,9 +1,9 @@
 import { useMemo, useRef, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { cn } from '@trip-flow/ui/lib/cn';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrip } from '@/components/feat/trips';
+import { TripPageHeader } from '@/components/shared/TripPageHeader';
 import {
   addPlace,
   bucketFor,
@@ -223,20 +223,12 @@ export default function TripPlanPage() {
 
   return (
     <div className="mx-auto flex h-[calc(100dvh-4rem)] min-h-0 max-w-6xl flex-col gap-6">
-      {/* Header */}
-      <div className="space-y-2">
-        <Link
-          to={`/trips/${id}`}
-          className="text-muted-foreground hover:text-primary inline-flex items-center gap-2 text-xs font-semibold transition-colors"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Trip workspace
-        </Link>
-        <h1 className="text-foreground font-headline text-2xl font-extrabold tracking-tight sm:text-3xl">
-          {activeMeta.heading}
-        </h1>
-        <p className="text-muted-foreground text-sm">{activeMeta.helper}</p>
-      </div>
+      <TripPageHeader
+        backTo={`/trips/${id}`}
+        backLabel="Trip workspace"
+        title={activeMeta.heading}
+        subtitle={activeMeta.helper}
+      />
 
       {/* Tabs */}
       <div className="border-border flex items-center justify-between gap-3 border-b">
