@@ -3,11 +3,9 @@ import { ExpenseSummary, ExpenseList } from '@/components/feat/finances';
 
 export default function TripFinancesPage() {
   return (
-    <div className="h-[calc(100vh-140px)] overflow-hidden flex flex-col">
-      <TripFinancesLayout activeTab="all">
-        <TripFinancesAllContent />
-      </TripFinancesLayout>
-    </div>
+    <TripFinancesLayout activeTab="all">
+      <TripFinancesAllContent />
+    </TripFinancesLayout>
   );
 }
 
@@ -39,7 +37,7 @@ function TripFinancesAllContent() {
       </div>
 
       {/* 3. Recent Activity Feed */}
-      <div className="flex-1 overflow-y-auto pr-2 pb-10 min-h-0">
+      <div className="flex-1 overflow-y-auto pr-2 min-h-0">
         <ExpenseList
           expenses={finances.expenses}
           settlements={finances.settlements}
