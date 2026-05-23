@@ -1,7 +1,7 @@
 import { Check } from 'lucide-react';
 import { Skeleton } from '@trip-flow/ui/components/skeleton';
 import { cn } from '@trip-flow/ui/lib/cn';
-import { PlaceCard } from '../PlaceCard';
+import { PlaceCard } from './PlaceCard';
 import type { TripPlace } from '@/types/places';
 
 interface PlaceListProps {
