@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from '@trip-flow/ui/components/card';
 import { Palette } from 'lucide-react';
-import { ThemeToggle } from '@/components/feat/theme';
+import { ThemeToggle } from '@/components/shared/ThemeToggle';
 
 export function AppearanceCard() {
   return (

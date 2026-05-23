@@ -10,7 +10,7 @@
 import { Outlet, matchPath, useLocation } from 'react-router-dom';
 import { AuthProvider } from '@/components/feat/auth/AuthProvider';
 import { ProtectedRoute } from '@/components/feat/auth/ProtectedRoute';
-import { ThemeProvider } from '@/components/feat/theme';
+import { ThemeProvider } from '@/components/shared/ThemeProvider';
 import { GlobalLayout } from '@/components/shared/GlobalLayout';
 
 const PUBLIC_PATHS = ['/login'] as const;
