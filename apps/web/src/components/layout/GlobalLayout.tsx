@@ -9,7 +9,8 @@ import { SpinningCompass } from '@/components/SpinningCompass';
 export function GlobalLayout() {
   return (
     <div className="bg-background text-foreground flex min-h-screen flex-col antialiased">
-      <header className="border-border bg-card/80 supports-[backdrop-filter]:bg-card/60 sticky top-0 z-40 border-b backdrop-blur">
+      {/* Top Header: Hidden on mobile, sticky on desktop */}
+      <header className="border-border bg-card/80 supports-[backdrop-filter]:bg-card/60 sticky top-0 z-40 border-b backdrop-blur hidden md:block">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Link to="/trips" className="flex items-center gap-2.5">
             <div className="border-primary text-primary flex h-9 w-9 items-center justify-center rounded-full border-2">
@@ -24,7 +25,8 @@ export function GlobalLayout() {
         </div>
       </header>
 
-      <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 md:px-10">
+      {/* Main content */}
+      <main className="flex-1 px-4 py-6 md:py-8 md:px-10">
         <Outlet />
       </main>
     </div>

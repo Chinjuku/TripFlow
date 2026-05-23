@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Utensils, Car, Compass, Home, Banknote, ChevronDown, ChevronUp, ArrowRightLeft, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from '@trip-flow/ui/components/button';
 import type { HydratedExpense, HydratedSettlement, HydratedExpenseSplit } from '../types';
+import { Link, useParams, useLocation } from 'react-router-dom';
 
 interface ExpenseListProps {
   expenses: HydratedExpense[];
@@ -19,6 +20,8 @@ export function ExpenseList({
   confirmingId,
 }: ExpenseListProps) {
   const [expandedExpenseId, setExpandedExpenseId] = useState<string | null>(null);
+  const { id } = useParams<{ id: string }>();
+  const location = useLocation();
 
   const toggleExpand = (id: string) => {
     setExpandedExpenseId((prev) => (prev === id ? null : id));
@@ -63,6 +66,9 @@ export function ExpenseList({
     <div className="space-y-4">
       <div className="flex items-center justify-between border-b border-border pb-3">
         <h3 className="font-headline text-foreground text-xl font-bold tracking-tight">Recent Activity</h3>
+        {location.pathname.endsWith('/finances') && (
+          <Link to={`/trips/${id}/all-expenses`} className="text-blue-600 text-sm font-semibold hover:text-blue-700">See all</Link>
+        )}
       </div>
 
       {feedItems.length === 0 ? (
@@ -97,9 +103,9 @@ export function ExpenseList({
 
               if (isPaidByMe) {
                 const totalLent = exp.amount - (mySplit?.amount ?? 0);
-                mySplitSummary = totalLent > 0 ? `Lent $${totalLent.toFixed(2)}` : 'Self paid';
+                mySplitSummary = totalLent > 0 ? `Lent ฿${totalLent.toFixed(2)}` : 'Self paid';
               } else {
-                mySplitSummary = mySplit ? `You owe $${mySplit.amount.toFixed(2)}` : 'Not involved';
+                mySplitSummary = mySplit ? `You owe ฿${mySplit.amount.toFixed(2)}` : 'Not involved';
               }
 
               return (
@@ -131,9 +137,9 @@ export function ExpenseList({
 
                     <div className="flex items-center gap-4">
                       <div className="text-right space-y-0.5">
-                        <div className="text-foreground font-headline text-sm font-extrabold sm:text-base">
-                          ${exp.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </div>
+                        <span className="font-headline font-bold text-base text-foreground group-hover:text-primary transition-colors">
+                          ฿{exp.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
                         <div className={`text-xs font-semibold ${isPaidByMe ? 'text-emerald-600' : mySplit ? 'text-rose-600' : 'text-muted-foreground'}`}>
                           {mySplitSummary}
                         </div>
@@ -177,8 +183,8 @@ export function ExpenseList({
                                   )}
                                 </span>
                               </div>
-                              <span className="text-foreground font-bold">
-                                ${split.amount.toFixed(2)}
+                              <span className="font-headline font-bold">
+                                ฿{split.amount.toFixed(2)}
                               </span>
                             </div>
                           );

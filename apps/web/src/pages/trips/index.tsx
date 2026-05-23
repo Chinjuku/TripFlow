@@ -7,7 +7,7 @@ import {
   CreateTripDialog,
   JoinTripDialog,
   TripCard,
-} from '@/features/trips/components';
+} from '@/features/trips';
 
 export default function TripsListPage() {
   const { data: trips, error, isLoading, refresh } = useTrips();
