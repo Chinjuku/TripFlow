@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { BarChart3, ChevronDown, ChevronUp, Trophy } from 'lucide-react';
 import { cn } from '@trip-flow/ui/lib/cn';
-import { BUCKETS, bucketFor, type PlaceBucket } from '../buckets';
+import { BUCKETS, bucketFor } from '@/utils/places';
+import type { PlaceBucket } from '@/types/places';
 import type { RankDelta, TripPlace } from '@/types/places';
 
 const TROPHY_TONE: Array<{ bg: string; text: string }> = [

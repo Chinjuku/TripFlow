@@ -1,23 +1,4 @@
-/**
- * High-level groups that a candidate place falls into. Single source of
- * truth so the leaderboard, day-balance chart, and map podium all bucket
- * the same way — switching one without the others would surface
- * confusing "Top 3 cafés" lists that don't match the pie chart.
- *
- * Buckets are derived from Google Places' primary type. Anything that
- * doesn't match a curated rule falls into `other`.
- */
-export type PlaceBucket = 'food' | 'cafe' | 'stay' | 'attraction' | 'bar' | 'shopping' | 'other';
-
-export interface BucketMeta {
-  id: PlaceBucket;
-  /** Human-friendly singular label, e.g. "Restaurant". */
-  label: string;
-  /** Plural label used in headings / chart legends. */
-  plural: string;
-  /** Tailwind utility classes for the dot / bar in the day-balance chart. */
-  swatch: string;
-}
+import type { BucketMeta, PlaceBucket } from '@/types/places';
 
 export const BUCKETS: Record<PlaceBucket, BucketMeta> = {
   food: { id: 'food', label: 'Restaurant', plural: 'food', swatch: 'bg-rose-400' },
@@ -29,12 +10,6 @@ export const BUCKETS: Record<PlaceBucket, BucketMeta> = {
   other: { id: 'other', label: 'Other', plural: 'other', swatch: 'bg-muted-foreground/40' },
 };
 
-/**
- * Maps a raw Google Places type (e.g. "coffee_shop") to one of our high-
- * level buckets. Order of checks matters: a "cafe" inside a "restaurant"
- * chain should still bucket as café, so café/bar/stay are tested before
- * the broader food/attraction rules.
- */
 export function bucketFor(category: string | null | undefined): PlaceBucket {
   const c = (category ?? '').toLowerCase();
   if (!c) return 'other';

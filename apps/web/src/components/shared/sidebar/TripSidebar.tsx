@@ -17,7 +17,7 @@ import { Button } from '@trip-flow/ui/components/button';
 import { cn } from '@trip-flow/ui/lib/cn';
 import { SidebarUserMenu } from './SidebarUserMenu';
 import { useTrip, coverImageUrl } from '@/components/feat/trips';
-import { InviteModal } from '@/components/feat/trips';
+import { InviteModal } from '@/components/feat/overview';
 
 const COLLAPSE_KEY = 'sidebar-collapsed';
 

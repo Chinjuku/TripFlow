@@ -3,7 +3,8 @@ import { Clock, Heart, MapPin, Star, Trash2 } from 'lucide-react';
 import { Button } from '@trip-flow/ui/components/button';
 import { cn } from '@trip-flow/ui/lib/cn';
 import { getInitials } from '@/components/feat/trips';
-import { removePlace, setLike, type TripPlace } from '@/components/feat/places';
+import { removePlace, setLike } from '@/api/places';
+import type { TripPlace } from '@/types/places';
 
 interface PlaceCardProps {
   place: TripPlace;

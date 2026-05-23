@@ -5,16 +5,15 @@ export { listPlaces, addPlace, removePlace, setLike } from '@/api/places';
 export { useTripPlaces } from '@/hooks/usePlaces';
 
 // * Types
-export type { TripPlace, AddPlacePayload, FilterKey, SortKey, PlanTab, RankDelta } from '@/types/places';
+export type { TripPlace, AddPlacePayload, FilterKey, SortKey, PlanTab, RankDelta, PlaceBucket, BucketMeta } from '@/types/places';
 
-// * Buckets
-export { bucketFor, BUCKETS } from './buckets';
-export type { PlaceBucket, BucketMeta } from './buckets';
+// * Utils
+export { bucketFor, BUCKETS } from '@/utils/places';
 
 // * Components
-export { PlaceCard } from './components/PlaceCard';
-export { PlacesMap } from './components/PlacesMap';
-export type { PoiPreview } from './components/PlacesMap';
+export { PlaceCard } from './PlaceCard';
+export { PlacesMap } from './PlacesMap';
+export type { PoiPreview } from './PlacesMap';
 
 // * Plan page components
 export { PlaceList } from './plan/PlaceList';
