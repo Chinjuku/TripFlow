@@ -81,3 +81,15 @@
     display: none;
   }
 }
+
+/* Google Maps InfoWindow — disable the auto scroll wrapper so the POI
+   preview card sizes to its content. Without this, Google injects a
+   `max-height` + `overflow: auto` based on viewport heuristics, which
+   adds a scrollbar even when the card would otherwise fit. */
+.gm-style-iw-d {
+  overflow: visible !important;
+  max-height: none !important;
+}
+.gm-style-iw-c {
+  max-height: none !important;
+}
