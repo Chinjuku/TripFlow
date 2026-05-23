@@ -29,6 +29,15 @@ export interface AddPlacePayload {
   stayMinutes?: number | null;
 }
 
+export type PlaceBucket = 'food' | 'cafe' | 'stay' | 'attraction' | 'bar' | 'shopping' | 'other';
+
+export interface BucketMeta {
+  id: PlaceBucket;
+  label: string;
+  plural: string;
+  swatch: string;
+}
+
 export type FilterKey = 'all' | 'voted' | 'mine' | 'photos';
 export type SortKey = 'votes' | 'name' | 'recent';
 export type PlanTab = 'plan' | 'vote';

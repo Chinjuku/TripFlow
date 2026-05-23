@@ -3,13 +3,13 @@ import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Map, Share2 } from 'lucide-react';
 import { Button } from '@trip-flow/ui/components/button';
 import { useAuth } from '@/hooks/useAuth';
+import { useTrip } from '@/components/feat/trips';
 import {
-  useTrip,
   TripBoardSkeleton,
   InviteModal,
   TripOverviewCard,
   CollaboratorsPanel,
-} from '@/components/feat/trips';
+} from '@/components/feat/overview';
 
 export default function TripBoardPage() {
   const { id } = useParams<{ id: string }>();

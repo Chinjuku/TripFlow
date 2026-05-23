@@ -27,7 +27,8 @@ import {
 import { Button } from '@trip-flow/ui/components/button';
 import { Input } from '@trip-flow/ui/components/input';
 import { cn } from '@trip-flow/ui/lib/cn';
-import { bucketFor, type TripPlace } from '@/components/feat/places';
+import { bucketFor } from '@/utils/places';
+import type { TripPlace } from '@/types/places';
 
 interface PlacesMapProps {
   /** Picked places — rendered as our own branded markers. */
