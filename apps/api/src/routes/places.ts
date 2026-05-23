@@ -13,24 +13,23 @@
 
 import { Elysia, t } from 'elysia';
 import { requireAuth } from '../middleware/auth';
-import * as placesService from '../services/places';
+import {
+  handleListPlaces,
+  handleAddPlace,
+  handleRemovePlace,
+  handleSetLike,
+} from '../controllers/places';
 
 export const placesRoute = new Elysia()
   .use(requireAuth)
   .get(
     '/trips/:id/places',
-    async ({ user, params }) => {
-      const places = await placesService.listPlaces(user.sub, params.id);
-      return { places };
-    },
+    handleListPlaces,
     { params: t.Object({ id: t.String({ format: 'uuid' }) }) },
   )
   .post(
     '/trips/:id/places',
-    async ({ user, params, body }) => {
-      const place = await placesService.addPlace(user.sub, params.id, body);
-      return { place };
-    },
+    handleAddPlace,
     {
       params: t.Object({ id: t.String({ format: 'uuid' }) }),
       body: t.Object({
@@ -49,10 +48,7 @@ export const placesRoute = new Elysia()
   )
   .delete(
     '/trips/:id/places/:placeId',
-    async ({ user, params }) => {
-      await placesService.removePlace(user.sub, params.id, params.placeId);
-      return { ok: true };
-    },
+    handleRemovePlace,
     {
       params: t.Object({
         id: t.String({ format: 'uuid' }),
@@ -62,15 +58,7 @@ export const placesRoute = new Elysia()
   )
   .put(
     '/trips/:id/places/:placeId/like',
-    async ({ user, params, body }) => {
-      const place = await placesService.setLike(
-        user.sub,
-        params.id,
-        params.placeId,
-        body.liked,
-      );
-      return { place };
-    },
+    handleSetLike,
     {
       params: t.Object({
         id: t.String({ format: 'uuid' }),
