@@ -12,12 +12,14 @@ export type Path =
   | `/trips/:id/finances`
   | `/trips/:id/plan`
   | `/trips/:id/schedule`
+  | `/trips/:id/to-receive`
 
 export type Params = {
   '/trips/:id': { id: string }
   '/trips/:id/finances': { id: string }
   '/trips/:id/plan': { id: string }
   '/trips/:id/schedule': { id: string }
+  '/trips/:id/to-receive': { id: string }
 }
 
 export type ModalPath = never
