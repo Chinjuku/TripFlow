@@ -14,10 +14,8 @@ export { bucketFor, BUCKETS } from '@/utils/places';
 export { PlaceCard } from './PlaceCard';
 export { PlacesMap } from './PlacesMap';
 export type { PoiPreview } from './PlacesMap';
-
-// * Plan page components
-export { PlaceList } from './plan/PlaceList';
-export { ListToolbar } from './plan/ListToolbar';
-export { CategoryTabs } from './plan/CategoryTabs';
-export { TopRanking } from './plan/TopRanking';
-export { PlanEmptyState } from './plan/PlanEmptyState';
+export { PlaceList } from './PlaceList';
+export { ListToolbar } from './ListToolbar';
+export { CategoryTabs } from './CategoryTabs';
+export { TopRanking } from './TopRanking';
+export { PlanEmptyState } from './PlanEmptyState';

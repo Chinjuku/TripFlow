@@ -1,10 +1,6 @@
 import { useResource } from '@/hooks/useResource';
-import { listSchedule } from './api';
+import { listSchedule } from '@/api/schedule';
 
-/**
- * Loads every scheduled item for a trip across all days. Single fetch
- * keeps day-switching instant — the page filters in memory.
- */
 export function useSchedule(tripId: string | undefined) {
   return useResource(
     () => {

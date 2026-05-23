@@ -37,3 +37,14 @@ export interface UpdateSchedulePayload {
   durationMinutes?: number;
   notes?: string | null;
 }
+
+export interface DayInfo {
+  index: number;
+  date: Date;
+  label: string;
+  subLabel: string;
+}
+
+export type DragPayload =
+  | { kind: 'new'; tripPlaceId: string }
+  | { kind: 'existing'; scheduleId: string };

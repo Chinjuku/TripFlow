@@ -1,5 +1,5 @@
 import { api } from '@/lib/api';
-import type { AddSchedulePayload, ScheduleItem, UpdateSchedulePayload } from './types';
+import type { AddSchedulePayload, ScheduleItem, UpdateSchedulePayload } from '@/types/schedule';
 
 function unwrap<T>(value: { data: T | null; error: unknown }): T {
   if (value.error) {
