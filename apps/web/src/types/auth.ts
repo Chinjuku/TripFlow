@@ -1,3 +1,5 @@
+import type { LucideIcon } from 'lucide-react';
+
 export interface AuthUser {
   id: string;
   email: string;
@@ -11,4 +13,10 @@ export interface AuthContextValue {
   isAuthenticated: boolean;
   signInWithGoogle: () => void;
   signOut: () => Promise<void>;
+}
+
+export interface LoginStep {
+  icon: LucideIcon;
+  title: string;
+  desc: string;
 }
