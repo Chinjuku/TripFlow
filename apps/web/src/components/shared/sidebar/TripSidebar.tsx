@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import {
-  ArrowLeft,
   Calendar,
   ChevronLeft,
   ChevronRight,
@@ -127,18 +126,6 @@ export function TripSidebar({ tripId, open, onOpenChange }: TripSidebarProps) {
           </Button>
         </div>
 
-        {/* Back-to-trips link */}
-        {!collapsed && (
-          <Link
-            to="/trips"
-            onClick={close}
-            className="text-muted-foreground hover:text-foreground mx-6 mt-6 inline-flex items-center gap-2 text-xs font-semibold"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
-            All trips
-          </Link>
-        )}
-
         {/* Nav */}
         <nav className="mt-4 flex-1 space-y-2 overflow-y-auto overflow-x-hidden px-3 py-2">
           {navItems.map((item) => {
@@ -177,7 +164,7 @@ export function TripSidebar({ tripId, open, onOpenChange }: TripSidebarProps) {
 
         {/* Trip Info & Invite Section */}
         {trip && (
-          <div className={cn('px-4 py-3 border-t border-border/50', collapsed && 'px-2 py-3 flex justify-center')}>
+          <div className={cn('px-4 py-3', collapsed && 'px-2 py-3 flex justify-center')}>
             {collapsed ? (
               <button
                 type="button"
