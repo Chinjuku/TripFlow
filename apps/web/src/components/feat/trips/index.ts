@@ -1,5 +1,5 @@
 // * API
-export { listTrips, createTrip, joinTrip, getTrip } from './api';
+export { listTrips, createTrip, joinTrip, getTrip } from '@/api/trips';
 
 // * Hook
 export { useTrips, useTrip } from '@/hooks/useTrips';
@@ -19,3 +19,6 @@ export { TripCard } from './TripCard';
 export { OtpInput } from './OtpInput';
 export { CollaboratorRow } from './CollaboratorRow';
 export { TripBoardSkeleton } from './TripBoardSkeleton';
+export { StartJourneyCard } from './StartJourneyCard';
+export { TripOverviewCard } from './TripOverviewCard';
+export { CollaboratorsPanel } from './CollaboratorsPanel';

@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { Plus, KeyRound } from 'lucide-react';
 import { Button } from '@trip-flow/ui/components/button';
 import { Skeleton } from '@trip-flow/ui/components/skeleton';
-import { useTrips } from '@/components/feat/trips';
 import {
+  useTrips,
   CreateTripDialog,
   JoinTripDialog,
   TripCard,
+  StartJourneyCard,
 } from '@/components/feat/trips';
 
 export default function TripsListPage() {
@@ -25,8 +26,6 @@ export default function TripsListPage() {
             Plan, collaborate, and explore together.
           </p>
         </div>
-
-        {/* Desktop: inline button. Mobile: hidden — replaced by FAB below. */}
         <Button
           onClick={() => setJoinOpen(true)}
           className="hidden gap-2 self-start sm:inline-flex sm:self-auto"
@@ -44,13 +43,12 @@ export default function TripsListPage() {
 
       <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
         <StartJourneyCard onClick={() => setCreateOpen(true)} />
-
         {isLoading && trips === null
           ? [0, 1, 2].map((i) => <Skeleton key={i} className="h-72 rounded-2xl sm:h-[22rem]" />)
           : (trips ?? []).map((trip) => <TripCard key={trip.id} trip={trip} />)}
       </div>
 
-      {/* Mobile-only FAB stack: Join (secondary) + Create (primary). */}
+      {/* Mobile FAB */}
       <div className="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3 sm:hidden">
         <button
           type="button"
@@ -73,41 +71,13 @@ export default function TripsListPage() {
       <CreateTripDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        onCreated={() => {
-          setCreateOpen(false);
-          void refresh();
-        }}
+        onCreated={() => { setCreateOpen(false); void refresh(); }}
       />
       <JoinTripDialog
         open={joinOpen}
         onOpenChange={setJoinOpen}
-        onJoined={() => {
-          setJoinOpen(false);
-          void refresh();
-        }}
+        onJoined={() => { setJoinOpen(false); void refresh(); }}
       />
     </div>
-  );
-}
-
-function StartJourneyCard({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="border-border hover:border-primary/60 hover:bg-muted/40 focus-visible:ring-ring group hidden h-full min-h-[18rem] flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-8 text-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 sm:flex sm:min-h-[22rem]"
-    >
-      <div className="border-primary/40 text-primary group-hover:border-primary group-hover:bg-primary/5 flex h-14 w-14 items-center justify-center rounded-full border-2 transition-colors">
-        <Plus className="h-6 w-6" strokeWidth={2} />
-      </div>
-      <h3 className="font-headline text-foreground text-xl font-bold leading-tight">
-        Start a New
-        <br />
-        Journey
-      </h3>
-      <p className="text-muted-foreground max-w-[14rem] text-sm">
-        Invite friends, vote on destinations, and plan together.
-      </p>
-    </button>
   );
 }

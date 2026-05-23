@@ -1,10 +1,15 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Map, Share2 } from 'lucide-react';
+import { ArrowLeft, Map, Share2 } from 'lucide-react';
 import { Button } from '@trip-flow/ui/components/button';
-import { useTrip, formatDateRange } from '@/components/feat/trips';
-import { CollaboratorRow, TripBoardSkeleton, InviteModal } from '@/components/feat/trips';
 import { useAuth } from '@/hooks/useAuth';
+import {
+  useTrip,
+  TripBoardSkeleton,
+  InviteModal,
+  TripOverviewCard,
+  CollaboratorsPanel,
+} from '@/components/feat/trips';
 
 export default function TripBoardPage() {
   const { id } = useParams<{ id: string }>();
@@ -29,17 +34,12 @@ export default function TripBoardPage() {
     );
   }
 
-  if (!trip) {
-    return <TripBoardSkeleton />;
-  }
+  if (!trip) return <TripBoardSkeleton />;
 
   const owner = trip.members.find((m) => m.role === 'owner');
-  const ownerName = owner?.name ?? 'Unknown';
-  const { range, duration } = formatDateRange(trip.startsOn, trip.endsOn);
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-8">
-      {/* Workspace Navigation Header */}
       <div className="border-border flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <Link
@@ -54,10 +54,9 @@ export default function TripBoardPage() {
           </h1>
           <p className="text-muted-foreground text-sm">
             Invite code: <span className="font-mono">{trip.inviteCode}</span> — Created by{' '}
-            {ownerName}
+            {owner?.name ?? 'Unknown'}
           </p>
         </div>
-
         <div className="flex flex-wrap gap-3">
           <Button variant="outline" className="gap-2" onClick={() => setInviteOpen(true)}>
             <Share2 className="h-4 w-4" />
@@ -73,58 +72,17 @@ export default function TripBoardPage() {
         </div>
       </div>
 
-      {/* Two columns: trip summary + collaborators */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <h3 className="text-foreground font-headline text-lg font-bold">Trip overview</h3>
-          <div className="border-border bg-card rounded-2xl border p-6">
-            <dl className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div>
-                <dt className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
-                  Dates
-                </dt>
-                <dd className="text-foreground mt-1 text-base font-semibold">{range}</dd>
-                <dd className="text-muted-foreground text-sm">{duration}</dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
-                  Members
-                </dt>
-                <dd className="text-foreground mt-1 text-base font-semibold">
-                  {trip.members.length}{' '}
-                  {trip.members.length === 1 ? 'traveller' : 'travellers'}
-                </dd>
-              </div>
-            </dl>
-
-            <Link
-              to={`/trips/${trip.id}/plan`}
-              className="border-border hover:border-primary/40 hover:bg-muted/40 mt-6 flex items-center justify-between gap-3 rounded-xl border p-4 transition-colors"
-            >
-              <div>
-                <p className="text-foreground text-sm font-semibold">Suggest & vote on places</p>
-                <p className="text-muted-foreground mt-0.5 text-xs">
-                  Pick spots from the map and let your group rank them.
-                </p>
-              </div>
-              <ArrowRight className="text-muted-foreground h-4 w-4 shrink-0" strokeWidth={2} />
-            </Link>
-          </div>
+          <TripOverviewCard trip={trip} />
         </div>
-
         <div className="space-y-6">
           <h3 className="text-foreground font-headline text-lg font-bold">Board Collaborators</h3>
-          <div className="border-border bg-card space-y-4 rounded-2xl border p-6">
-            {trip.members.map((member) => (
-              <CollaboratorRow
-                key={member.userId}
-                member={member}
-                isCurrentUser={member.userId === user?.id}
-              />
-            ))}
-          </div>
+          <CollaboratorsPanel members={trip.members} currentUserId={user?.id} />
         </div>
       </div>
+
       <InviteModal open={inviteOpen} onOpenChange={setInviteOpen} trip={trip} />
     </div>
   );

@@ -1,5 +1,5 @@
 import { useResource } from './useResource';
-import { getTrip, listTrips } from '@/components/feat/trips/api';
+import { getTrip, listTrips } from '@/api/trips';
 
 export function useTrips() {
   return useResource(() => listTrips(), []);
