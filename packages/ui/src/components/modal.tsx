@@ -54,18 +54,20 @@ export function Modal({
       }}
       className={cn(
         'bg-card text-card-foreground p-0 shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm border-none outline-none',
-        // Mobile bottom sheet: full width, anchored to viewport bottom,
-        // rounded only on top. `fixed bottom-0 inset-x-0 m-0` ensures it is
-        // perfectly flush with the bottom screen edge with no gaps.
-        'max-sm:fixed max-sm:bottom-0 max-sm:inset-x-0 max-sm:m-0 max-sm:w-full max-sm:max-w-none max-sm:rounded-b-none max-sm:rounded-t-2xl',
-        'max-h-[90dvh] overflow-hidden',
+        // Mobile bottom sheet: the native <dialog> UA stylesheet sets
+        // `position:fixed; top:0; bottom:0; max-height:calc(100%-6px-2em); margin:auto`.
+        // We must use !important to override these high-specificity UA rules
+        // so the sheet sits flush at the viewport bottom.
+        'max-sm:!fixed max-sm:!bottom-0 max-sm:!top-auto max-sm:!inset-x-0 max-sm:!m-0 max-sm:!max-h-[85dvh]',
+        'max-sm:w-full max-sm:max-w-none max-sm:rounded-b-none max-sm:rounded-t-2xl',
+        'overflow-hidden',
         // Desktop centered card: restore centering + max width.
         'sm:my-auto sm:mx-auto sm:w-[calc(100vw-1.5rem)] sm:max-w-md sm:rounded-2xl sm:border sm:border-border sm:max-h-[calc(100dvh-3rem)]',
         'open:animate-in open:fade-in-0 open:slide-in-from-bottom-4 sm:open:slide-in-from-bottom-0 sm:open:zoom-in-95',
         className,
       )}
     >
-      <div className="flex max-h-[90dvh] flex-col sm:max-h-[calc(100dvh-3rem)]">
+      <div className="flex max-h-[85dvh] flex-col sm:max-h-[calc(100dvh-3rem)]">
         {/* Drag handle — visual affordance for mobile bottom sheet, hidden on desktop. */}
         <div className="flex justify-center pt-2 sm:hidden" aria-hidden>
           <span className="bg-muted-foreground/30 h-1 w-10 rounded-full" />

@@ -42,12 +42,12 @@ export function ExpenseSummary({
       {/* Main 3-Card Grid */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {/* Card 1: Total Group Cost */}
-        <Card className="rounded-2xl border-border bg-white shadow-sm overflow-hidden relative group transition-all duration-300 hover:shadow-md dark:bg-card">
+        <Card className="rounded-2xl border-border bg-card shadow-sm overflow-hidden relative group transition-all duration-300 hover:shadow-md">
           <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:scale-110 transition-transform duration-300">
             <Wallet className="w-32 h-32 text-foreground" />
           </div>
           <CardContent className="p-6 space-y-6">
-            <div className="flex items-center gap-2 text-muted-foreground text-[10px] font-bold tracking-wider uppercase">
+            <div className="flex items-center gap-2 text-muted-foreground text-[10px] font-bold tracking-wider uppercase font-label">
               <Wallet className="h-4 w-4" />
               Total Group Trip Cost
             </div>
@@ -73,12 +73,12 @@ export function ExpenseSummary({
             <div className="space-y-2 pt-2">
               <div className="bg-muted h-2.5 w-full rounded-full overflow-hidden">
                 <div
-                  className="bg-emerald-600 h-full rounded-full transition-all duration-500 ease-out"
+                  className="bg-primary h-full rounded-full transition-all duration-500 ease-out"
                   style={{ width: `${budgetAmount > 0 ? progressPercent : 0}%` }}
                 />
               </div>
               <div className="flex justify-between items-center text-xs">
-                <span className="text-emerald-700 font-semibold dark:text-emerald-400">
+                <span className="text-primary font-semibold">
                   {budgetAmount > 0
                     ? `${progressPercent}% of ${formattedBudget} budget`
                     : 'No budget set yet'}
@@ -95,17 +95,17 @@ export function ExpenseSummary({
         </Card>
 
         {/* Card 2: Who Owes You */}
-        <Card className="rounded-2xl border-blue-100 bg-gradient-to-b from-blue-50/30 to-blue-50/70 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md dark:border-blue-950/20 dark:from-slate-900/30 dark:to-slate-900/50 dark:bg-card">
+        <Card className="rounded-2xl border-primary/10 bg-gradient-to-b from-primary/[0.03] to-primary/[0.08] shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md dark:border-primary/20 dark:from-primary/[0.01] dark:to-primary/[0.04] bg-card">
           <CardContent className="p-6 flex flex-col h-full min-h-[14rem]">
             <button
-              className="flex items-center gap-2 bg-blue-600 text-white text-[10px] font-bold tracking-wider uppercase hover:bg-blue-700 px-4 py-2 rounded-full transition-all w-fit shadow-md border border-blue-500/20 active:scale-95"
+              className="flex items-center gap-2 bg-primary text-primary-foreground text-[10px] font-bold tracking-wider uppercase hover:bg-primary/90 px-4 py-2 rounded-full transition-all w-fit shadow-md border border-primary/20 active:scale-95 font-label"
               onClick={() => window.open('https://www.youtube.com', '_blank')}
             >
               <ArrowDownLeft className="h-4 w-4" />
               Who owes you
             </button>
 
-            <div className="font-headline text-blue-800 dark:text-blue-300 text-3xl font-extrabold sm:text-4xl mt-3 mb-4">
+            <div className="font-headline text-primary text-3xl font-extrabold sm:text-4xl mt-3 mb-4">
               ฿
               {totalOwedToUser.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
@@ -122,7 +122,7 @@ export function ExpenseSummary({
                 {whoOwesYou.map((debt: DebtRelation) => (
                   <div
                     key={debt.userId}
-                    className="flex items-center justify-between py-1 border-b border-blue-100/30 last:border-0 dark:border-slate-800/40"
+                    className="flex items-center justify-between py-1 border-b border-primary/10 last:border-0 dark:border-primary/20"
                   >
                     <div className="flex items-center gap-2.5">
                       {debt.avatarUrl ? (
@@ -132,13 +132,13 @@ export function ExpenseSummary({
                           className="w-7 h-7 rounded-full object-cover shadow-sm"
                         />
                       ) : (
-                        <div className="w-7 h-7 rounded-full bg-blue-500/10 text-blue-600 font-bold flex items-center justify-center text-xs dark:bg-blue-500/20 dark:text-blue-300">
+                        <div className="w-7 h-7 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs dark:bg-primary/20 dark:text-primary">
                           {debt.name.charAt(0)}
                         </div>
                       )}
                       <span className="text-foreground text-xs font-semibold">{debt.name}</span>
                     </div>
-                    <span className="text-emerald-600 dark:text-emerald-400 text-xs font-bold">
+                    <span className="text-primary text-xs font-bold">
                       +฿{debt.amount.toFixed(2)}
                     </span>
                   </div>
@@ -149,17 +149,17 @@ export function ExpenseSummary({
         </Card>
 
         {/* Card 3: What You Owe */}
-        <Card className="rounded-2xl border-rose-100 bg-gradient-to-b from-rose-50/30 to-rose-50/70 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md dark:border-rose-950/20 dark:from-slate-900/30 dark:to-rose-900/50 dark:bg-card">
+        <Card className="rounded-2xl border-destructive/15 bg-gradient-to-b from-destructive/[0.03] to-destructive/[0.08] shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md dark:border-destructive/20 dark:from-destructive/[0.01] dark:to-destructive/[0.04] bg-card">
           <CardContent className="p-6 flex flex-col h-full min-h-[14rem]">
             <button
-              className="flex items-center gap-2 bg-rose-600 text-white text-[10px] font-bold tracking-wider uppercase hover:bg-rose-700 px-4 py-2 rounded-full transition-all w-fit shadow-md border border-rose-500/20 active:scale-95"
+              className="flex items-center gap-2 bg-destructive text-destructive-foreground text-[10px] font-bold tracking-wider uppercase hover:bg-destructive/90 px-4 py-2 rounded-full transition-all w-fit shadow-md border border-destructive/20 active:scale-95 font-label"
               onClick={() => window.open('https://www.youtube.com', '_blank')}
             >
               <ArrowUpRight className="h-4 w-4" />
               What you owe
             </button>
 
-            <div className="font-headline text-rose-800 dark:text-rose-300 text-3xl font-extrabold sm:text-4xl mt-3 mb-4">
+            <div className="font-headline text-destructive text-3xl font-extrabold sm:text-4xl mt-3 mb-4">
               ฿
               {totalUserOwes.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
@@ -177,7 +177,7 @@ export function ExpenseSummary({
                   {whatYouOwe.map((debt: DebtRelation) => (
                     <div
                       key={debt.userId}
-                      className="flex items-center justify-between py-1 border-b border-rose-100/30 last:border-0 dark:border-slate-800/40"
+                      className="flex items-center justify-between py-1 border-b border-destructive/10 last:border-0 dark:border-destructive/20"
                     >
                       <div className="flex items-center gap-2.5">
                         {debt.avatarUrl ? (
@@ -187,19 +187,19 @@ export function ExpenseSummary({
                             className="w-7 h-7 rounded-full object-cover shadow-sm"
                           />
                         ) : (
-                          <div className="w-7 h-7 rounded-full bg-rose-500/10 text-rose-600 font-bold flex items-center justify-center text-xs dark:bg-rose-500/20 dark:text-rose-400">
+                          <div className="w-7 h-7 rounded-full bg-destructive/10 text-destructive font-bold flex items-center justify-center text-xs dark:bg-destructive/20 dark:text-destructive-foreground">
                             {debt.name.charAt(0)}
                           </div>
                         )}
                         <span className="text-foreground text-xs font-semibold">{debt.name}</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-rose-600 dark:text-rose-400 text-xs font-bold">
+                        <span className="text-destructive text-xs font-bold">
                           -฿{debt.amount.toFixed(2)}
                         </span>
                         <button
                           onClick={() => onSettleUp(debt)}
-                          className="bg-rose-600 text-white hover:bg-rose-700 text-[10px] font-bold px-2 py-0.5 rounded transition-colors"
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-[10px] font-bold px-2 py-0.5 rounded transition-colors font-label"
                         >
                           Settle Up
                         </button>

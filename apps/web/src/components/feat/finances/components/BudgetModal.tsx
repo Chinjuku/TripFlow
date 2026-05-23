@@ -39,7 +39,7 @@ export function BudgetModal({
       <form onSubmit={handleSubmit} className="space-y-4 pt-2">
         <div className="space-y-1">
           <Label htmlFor="budget-amount" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Budget Limit (USD)
+            Budget Limit (THB)
           </Label>
           <div className="relative">
             <Input
@@ -69,7 +69,7 @@ export function BudgetModal({
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="bg-emerald-600 text-white hover:bg-emerald-700 text-xs h-9 px-5 rounded-xl font-bold shadow-sm shadow-emerald-600/10 transition-colors"
+            className="bg-primary/90 text-white hover:bg-emerald-700 text-xs h-9 px-5 rounded-xl font-bold shadow-sm shadow-emerald-600/10 transition-colors"
           >
             {isSubmitting ? 'Saving...' : 'Save Budget'}
           </Button>

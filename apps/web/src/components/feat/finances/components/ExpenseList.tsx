@@ -39,11 +39,11 @@ export function ExpenseList({
 
   // Category styling helpers
   const categoryStyles = {
-    food: { icon: Utensils, bg: 'bg-purple-100/70 text-purple-700', badge: 'bg-purple-50 border-purple-200 text-purple-700' },
-    transport: { icon: Car, bg: 'bg-emerald-100/70 text-emerald-700', badge: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
-    activity: { icon: Compass, bg: 'bg-amber-100/70 text-amber-700', badge: 'bg-amber-50 border-amber-200 text-amber-700' },
-    lodging: { icon: Home, bg: 'bg-sky-100/70 text-sky-700', badge: 'bg-sky-50 border-sky-200 text-sky-700' },
-    other: { icon: Banknote, bg: 'bg-slate-100/70 text-slate-700', badge: 'bg-slate-50 border-slate-200 text-slate-700' },
+    food: { icon: Utensils, bg: 'bg-purple-100/70 text-purple-700 dark:bg-purple-950/30 dark:text-purple-300', badge: 'bg-purple-50/50 border-purple-200/50 text-purple-700 dark:border-purple-900/30 dark:text-purple-300' },
+    transport: { icon: Car, bg: 'bg-primary/10 text-primary', badge: 'bg-primary/5 border-primary/20 text-primary' },
+    activity: { icon: Compass, bg: 'bg-warning/10 text-warning', badge: 'bg-warning/5 border-warning/20 text-warning' },
+    lodging: { icon: Home, bg: 'bg-sky-100/70 text-sky-700 dark:bg-sky-950/30 dark:text-sky-300', badge: 'bg-sky-50/50 border-sky-200/50 text-sky-700 dark:border-sky-900/30 dark:text-sky-300' },
+    other: { icon: Banknote, bg: 'bg-muted text-muted-foreground', badge: 'bg-muted border-border text-muted-foreground' },
   };
 
   // Human date formatter
@@ -67,7 +67,7 @@ export function ExpenseList({
       <div className="flex items-center justify-between border-b border-border pb-3">
         <h3 className="font-headline text-foreground text-xl font-bold tracking-tight">Recent Activity</h3>
         {location.pathname.endsWith('/finances') && (
-          <Link to={`/trips/${id}/all-expenses`} className="text-blue-600 text-sm font-semibold hover:text-blue-700">See all</Link>
+          <Link to={`/trips/${id}/all-expenses`} className="text-primary text-sm font-semibold hover:text-primary/80 hover:underline">See all</Link>
         )}
       </div>
 
@@ -140,7 +140,7 @@ export function ExpenseList({
                         <span className="font-headline font-bold text-base text-foreground group-hover:text-primary transition-colors">
                           ฿{exp.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
-                        <div className={`text-xs font-semibold ${isPaidByMe ? 'text-emerald-600' : mySplit ? 'text-rose-600' : 'text-muted-foreground'}`}>
+                        <div className={`text-xs font-semibold ${isPaidByMe ? 'text-primary' : mySplit ? 'text-destructive' : 'text-muted-foreground'}`}>
                           {mySplitSummary}
                         </div>
                       </div>
@@ -153,7 +153,7 @@ export function ExpenseList({
                   {/* Expanded Split Breakdown */}
                   {isExpanded && (
                     <div className="bg-muted/30 border-t border-border px-5 py-4 space-y-3">
-                      <div className="flex justify-between items-center text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                      <div className="flex justify-between items-center text-[10px] font-bold tracking-wider text-muted-foreground uppercase font-label">
                         <span>Split Breakdown ({splitLabel})</span>
                         <span>Share</span>
                       </div>
@@ -203,11 +203,11 @@ export function ExpenseList({
               return (
                 <div
                   key={`settlement-${set.id}`}
-                  className="bg-emerald-50/20 border border-emerald-100/50 rounded-2xl p-4 sm:p-5 flex items-center justify-between shadow-sm transition-all duration-200 dark:bg-emerald-950/5 dark:border-emerald-950/20"
+                  className="bg-primary/[0.03] border border-primary/10 rounded-2xl p-4 sm:p-5 flex items-center justify-between shadow-sm transition-all duration-200 dark:bg-primary/[0.01] dark:border-primary/20"
                 >
                   <div className="flex items-center gap-4">
                     <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 shadow-sm ${
-                      set.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                      set.status === 'completed' ? 'bg-primary/10 text-primary' : 'bg-warning/10 text-warning'
                     }`}>
                       {set.status === 'completed' ? <CheckCircle2 className="w-5 h-5" /> : <ArrowRightLeft className="w-5 h-5" />}
                     </div>
@@ -217,10 +217,10 @@ export function ExpenseList({
                         <span className="text-foreground text-sm font-bold sm:text-base leading-tight">
                           {isPayerMe ? 'You' : set.payerName} settled with {isPayeeMe ? 'you' : set.payeeName}
                         </span>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border font-label ${
                           set.status === 'completed' 
-                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
-                            : 'bg-amber-50 border-amber-200 text-amber-700'
+                            ? 'bg-primary/10 border-primary/20 text-primary' 
+                            : 'bg-warning/10 border-warning/20 text-warning'
                         }`}>
                           {set.status === 'completed' ? 'Paid' : 'Pending Confirmation'}
                         </span>
@@ -233,14 +233,14 @@ export function ExpenseList({
 
                   <div className="text-right flex items-center gap-4">
                     <div className="space-y-0.5">
-                      <div className="text-emerald-700 dark:text-emerald-400 font-headline text-sm font-extrabold sm:text-base">
-                        ${set.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      <div className="text-primary font-headline text-sm font-extrabold sm:text-base">
+                        ฿{set.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
                       {set.status === 'pending' && isPayeeMe && (
                         <Button
                           disabled={confirmingId === set.id}
                           onClick={() => onConfirmSettlement(set.id)}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] px-2.5 py-1 h-auto rounded mt-1 shadow-sm shrink-0"
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-[10px] px-2.5 py-1 h-auto rounded mt-1 shadow-sm shrink-0 font-label"
                         >
                           {confirmingId === set.id ? 'Confirming...' : 'Confirm Paid'}
                         </Button>
