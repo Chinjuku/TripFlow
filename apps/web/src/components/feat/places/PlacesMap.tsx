@@ -278,25 +278,19 @@ function MapBody({
       setPoiLoading(true);
       try {
         const place = new placesLib.Place({ id: placeId });
-        await place.fetchFields({
-          fields: [
-            'id',
-            'displayName',
-            'formattedAddress',
-            'location',
-            'rating',
-            'regularOpeningHours',
-            'photos',
-            'types',
-          ],
-        });
-        // A newer click has superseded this fetch — drop the result.
-        if (reqId !== poiRequestRef.current) return;
 
+        // Step 1 — essentials only. These belong to the Place Details
+        // Essentials SKU which returns in ~100-200ms, so the popup can show
+        // a usable preview right away.
+        await place.fetchFields({
+          fields: ['id', 'displayName', 'formattedAddress', 'location', 'types'],
+        });
+        if (reqId !== poiRequestRef.current) return;
         if (!place.location) {
           setPoi(null);
           return;
         }
+
         const preview: PoiPreview = {
           placeId: place.id ?? placeId,
           name: place.displayName ?? 'Unknown place',
@@ -304,17 +298,37 @@ function MapBody({
           category: place.types?.[0] ?? null,
           lat: place.location.lat(),
           lng: place.location.lng(),
-          photoUrl: place.photos?.[0]?.getURI({ maxWidth: 480 }) ?? null,
-          rating: place.rating ?? null,
-          openingHoursText: openingHoursSummary(place.regularOpeningHours ?? null),
+          photoUrl: null,
+          rating: null,
+          openingHoursText: null,
         };
         setPoi(preview);
+        setPoiLoading(false);
         centerOnPoi(map, preview.lat, preview.lng);
+
+        // Step 2 — Pro/Enterprise fields (photos, rating, hours). These
+        // are slower and pricier; fetch them only after the popup is
+        // already on screen so the user never waits on them.
+        await place.fetchFields({
+          fields: ['rating', 'regularOpeningHours', 'photos'],
+        });
+        if (reqId !== poiRequestRef.current) return;
+        setPoi((current) =>
+          current && current.placeId === preview.placeId
+            ? {
+                ...current,
+                photoUrl: place.photos?.[0]?.getURI({ maxWidth: 480 }) ?? null,
+                rating: place.rating ?? null,
+                openingHoursText: openingHoursSummary(place.regularOpeningHours ?? null),
+              }
+            : current,
+        );
       } catch (err) {
         console.error('[places-map] failed to load POI', err);
-        if (reqId === poiRequestRef.current) setPoi(null);
-      } finally {
-        if (reqId === poiRequestRef.current) setPoiLoading(false);
+        if (reqId === poiRequestRef.current) {
+          setPoi(null);
+          setPoiLoading(false);
+        }
       }
     },
     [placesLib, map],
