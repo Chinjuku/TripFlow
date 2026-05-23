@@ -1,5 +1,5 @@
 import { api } from '@/lib/api';
-import type { CreateTripPayload, TripDetail, TripSummary } from './types';
+import type { CreateTripPayload, TripDetail, TripSummary } from '@/types/trips';
 
 /**
  * Thin wrappers around the Eden client so React components don't have to
