@@ -189,7 +189,8 @@ export default function TripFinancesPage() {
           </h1>
           {trip ? (
             <p className="text-muted-foreground text-sm">
-              Managing costs for <b>{trip.title}</b> ({formatDateRange(trip.startsOn, trip.endsOn).range})
+              Managing costs for <b>{trip.title}</b> (
+              {formatDateRange(trip.startsOn, trip.endsOn).range})
             </p>
           ) : (
             <Skeleton className="h-4 w-48" />

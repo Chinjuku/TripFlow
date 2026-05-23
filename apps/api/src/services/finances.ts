@@ -1,4 +1,17 @@
-import { db, expenses, expenseSplits, settlements, tripBudgets, userPaymentDetails, tripMembers, type Expense, type ExpenseSplit, type Settlement, type TripBudget, type UserPaymentDetail } from '@trip-flow/db/server';
+import {
+  db,
+  expenses,
+  expenseSplits,
+  settlements,
+  tripBudgets,
+  userPaymentDetails,
+  tripMembers,
+  type Expense,
+  type ExpenseSplit,
+  type Settlement,
+  type TripBudget,
+  type UserPaymentDetail,
+} from '@trip-flow/db/server';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { NotFoundError, ForbiddenError } from '../errors/domain';
 import { getUserById } from './auth';
@@ -89,9 +102,10 @@ export async function getFinancesByTripId(
     .orderBy(desc(expenses.expense_date), desc(expenses.created_at));
 
   const expenseIds = rawExpenses.map((e) => e.id);
-  const rawSplits = expenseIds.length > 0 
-    ? await db.select().from(expenseSplits).where(inArray(expenseSplits.expense_id, expenseIds))
-    : [];
+  const rawSplits =
+    expenseIds.length > 0
+      ? await db.select().from(expenseSplits).where(inArray(expenseSplits.expense_id, expenseIds))
+      : [];
 
   const splitsByExpense = new Map<string, ExpenseSplit[]>();
   for (const s of rawSplits) {
@@ -104,7 +118,7 @@ export async function getFinancesByTripId(
   const hydratedExpenses: HydratedExpense[] = rawExpenses.map((exp) => {
     const payer = memberMap.get(exp.paid_by_id);
     const expSplits = splitsByExpense.get(exp.id) ?? [];
-    
+
     const hydratedSplits: HydratedExpenseSplit[] = expSplits.map((split) => {
       const splitUser = memberMap.get(split.user_id);
       return {
@@ -149,9 +163,13 @@ export async function getFinancesByTripId(
     .limit(1);
 
   // 5. Load Payment Details for members
-  const paymentRows = memberUserIds.length > 0
-    ? await db.select().from(userPaymentDetails).where(inArray(userPaymentDetails.user_id, memberUserIds))
-    : [];
+  const paymentRows =
+    memberUserIds.length > 0
+      ? await db
+          .select()
+          .from(userPaymentDetails)
+          .where(inArray(userPaymentDetails.user_id, memberUserIds))
+      : [];
 
   const paymentDetailsRecord: Record<string, UserPaymentDetail> = {};
   for (const row of paymentRows) {
@@ -218,13 +236,13 @@ export async function getFinancesByTripId(
     // Keep loop safe from floating point infinite loops using an epsilon
     let iterations = 0;
     const maxIterations = balances.length * balances.length;
-    
+
     // We will compute all optimized transfers
     const transfers: { debtorId: string; creditorId: string; amount: number }[] = [];
 
     while (iterations < maxIterations) {
       balances.sort((a, b) => a.amount - b.amount); // Ascending (debtors first, then creditors)
-      
+
       const debtor = balances[0];
       const creditor = balances[balances.length - 1];
 
@@ -309,7 +327,7 @@ export async function getFinancesByTripId(
         if (!m2) continue;
         const u1 = m1.userId;
         const u2 = m2.userId;
-        
+
         const d1 = pairwiseDebt[u1];
         const d2 = pairwiseDebt[u2];
         if (!d1 || !d2) continue;
@@ -407,7 +425,10 @@ export interface CreateExpenseInput {
 /**
  * Creates an expense and splits inside a transaction.
  */
-export async function createExpense(userId: string, input: CreateExpenseInput): Promise<HydratedExpense> {
+export async function createExpense(
+  userId: string,
+  input: CreateExpenseInput,
+): Promise<HydratedExpense> {
   await ensureTripMember(userId, input.tripId);
 
   if (input.splits.length === 0) {
@@ -430,7 +451,9 @@ export async function createExpense(userId: string, input: CreateExpenseInput): 
         paid_by_id: input.paidById,
         category: input.category,
         split_method: input.splitMethod,
-        expense_date: input.expenseDate ? new Date(input.expenseDate).toISOString() : new Date().toISOString(),
+        expense_date: input.expenseDate
+          ? new Date(input.expenseDate).toISOString()
+          : new Date().toISOString(),
       })
       .returning();
 
@@ -453,7 +476,10 @@ export async function createExpense(userId: string, input: CreateExpenseInput): 
   const memberMap = new Map(members.map((m) => [m.userId, m]));
   const payer = memberMap.get(hydrated.paid_by_id);
 
-  const splits = await db.select().from(expenseSplits).where(eq(expenseSplits.expense_id, hydrated.id));
+  const splits = await db
+    .select()
+    .from(expenseSplits)
+    .where(eq(expenseSplits.expense_id, hydrated.id));
   const hydratedSplits = splits.map((s) => {
     const splitUser = memberMap.get(s.user_id);
     return {
@@ -480,7 +506,10 @@ export interface CreateSettlementInput {
 /**
  * Creates a pending settlement transaction.
  */
-export async function createSettlement(userId: string, input: CreateSettlementInput): Promise<HydratedSettlement> {
+export async function createSettlement(
+  userId: string,
+  input: CreateSettlementInput,
+): Promise<HydratedSettlement> {
   await ensureTripMember(userId, input.tripId);
   await ensureTripMember(input.payeeId, input.tripId);
 
@@ -518,8 +547,15 @@ export async function createSettlement(userId: string, input: CreateSettlementIn
 /**
  * Confirms a settlement as completed (marks as paid).
  */
-export async function confirmSettlement(userId: string, settlementId: string): Promise<HydratedSettlement> {
-  const [settlement] = await db.select().from(settlements).where(eq(settlements.id, settlementId)).limit(1);
+export async function confirmSettlement(
+  userId: string,
+  settlementId: string,
+): Promise<HydratedSettlement> {
+  const [settlement] = await db
+    .select()
+    .from(settlements)
+    .where(eq(settlements.id, settlementId))
+    .limit(1);
 
   if (!settlement) {
     throw new NotFoundError('Settlement not found');
@@ -560,7 +596,10 @@ export interface UpdateTripBudgetInput {
 /**
  * Upserts a global budget for the trip.
  */
-export async function updateTripBudget(userId: string, input: UpdateTripBudgetInput): Promise<TripBudget> {
+export async function updateTripBudget(
+  userId: string,
+  input: UpdateTripBudgetInput,
+): Promise<TripBudget> {
   await ensureTripMember(userId, input.tripId);
 
   // Check if a budget already exists
@@ -604,7 +643,10 @@ export interface SavePaymentDetailsInput {
 /**
  * Saves payment details for the user.
  */
-export async function saveUserPaymentDetails(userId: string, input: SavePaymentDetailsInput): Promise<UserPaymentDetail> {
+export async function saveUserPaymentDetails(
+  userId: string,
+  input: SavePaymentDetailsInput,
+): Promise<UserPaymentDetail> {
   const [existing] = await db
     .select()
     .from(userPaymentDetails)
@@ -624,20 +666,33 @@ export async function saveUserPaymentDetails(userId: string, input: SavePaymentD
     }
 
     // Compute final values to perform validation
-    const finalPromptpayId = input.promptpayId !== undefined ? input.promptpayId : existing.promptpay_id;
+    const finalPromptpayId =
+      input.promptpayId !== undefined ? input.promptpayId : existing.promptpay_id;
     const finalQrCodeUrl = input.qrCodeUrl !== undefined ? input.qrCodeUrl : existing.qr_code_url;
     const finalBankName = input.bankName !== undefined ? input.bankName : existing.bank_name;
-    const finalBankAccountNumber = input.bankAccountNumber !== undefined ? input.bankAccountNumber : existing.bank_account_number;
-    const finalBankAccountName = input.bankAccountName !== undefined ? input.bankAccountName : existing.bank_account_name;
+    const finalBankAccountNumber =
+      input.bankAccountNumber !== undefined
+        ? input.bankAccountNumber
+        : existing.bank_account_number;
+    const finalBankAccountName =
+      input.bankAccountName !== undefined ? input.bankAccountName : existing.bank_account_name;
 
     const hasPromptPay = !!(finalPromptpayId?.trim() || finalQrCodeUrl?.trim());
-    const hasBank = !!(finalBankName?.trim() && finalBankAccountNumber?.trim() && finalBankAccountName?.trim());
+    const hasBank = !!(
+      finalBankName?.trim() &&
+      finalBankAccountNumber?.trim() &&
+      finalBankAccountName?.trim()
+    );
 
     if (nextShowPromptpay && !hasPromptPay) {
-      throw new Error('Cannot set PromptPay as preferred channel because no PromptPay ID or QR Code image is provided.');
+      throw new Error(
+        'Cannot set PromptPay as preferred channel because no PromptPay ID or QR Code image is provided.',
+      );
     }
     if (nextShowMobileBanking && !hasBank) {
-      throw new Error('Cannot set Mobile Banking as preferred channel because bank account details are incomplete. Please fill in Bank Name, Account Number, and Account Holder Name.');
+      throw new Error(
+        'Cannot set Mobile Banking as preferred channel because bank account details are incomplete. Please fill in Bank Name, Account Number, and Account Holder Name.',
+      );
     }
 
     const [updated] = await db
@@ -646,8 +701,12 @@ export async function saveUserPaymentDetails(userId: string, input: SavePaymentD
         promptpay_id: input.promptpayId !== undefined ? input.promptpayId : existing.promptpay_id,
         qr_code_url: input.qrCodeUrl !== undefined ? input.qrCodeUrl : existing.qr_code_url,
         bank_name: input.bankName !== undefined ? input.bankName : existing.bank_name,
-        bank_account_number: input.bankAccountNumber !== undefined ? input.bankAccountNumber : existing.bank_account_number,
-        bank_account_name: input.bankAccountName !== undefined ? input.bankAccountName : existing.bank_account_name,
+        bank_account_number:
+          input.bankAccountNumber !== undefined
+            ? input.bankAccountNumber
+            : existing.bank_account_number,
+        bank_account_name:
+          input.bankAccountName !== undefined ? input.bankAccountName : existing.bank_account_name,
         is_show_mobile_banking: nextShowMobileBanking,
         is_show_promptpay: nextShowPromptpay,
         updated_at: new Date().toISOString(),
@@ -676,13 +735,21 @@ export async function saveUserPaymentDetails(userId: string, input: SavePaymentD
     const finalBankAccountName = input.bankAccountName || null;
 
     const hasPromptPay = !!(finalPromptpayId?.trim() || finalQrCodeUrl?.trim());
-    const hasBank = !!(finalBankName?.trim() && finalBankAccountNumber?.trim() && finalBankAccountName?.trim());
+    const hasBank = !!(
+      finalBankName?.trim() &&
+      finalBankAccountNumber?.trim() &&
+      finalBankAccountName?.trim()
+    );
 
     if (nextShowPromptpay && !hasPromptPay) {
-      throw new Error('Cannot set PromptPay as preferred channel because no PromptPay ID or QR Code image is provided.');
+      throw new Error(
+        'Cannot set PromptPay as preferred channel because no PromptPay ID or QR Code image is provided.',
+      );
     }
     if (nextShowMobileBanking && !hasBank) {
-      throw new Error('Cannot set Mobile Banking as preferred channel because bank account details are incomplete. Please fill in Bank Name, Account Number, and Account Holder Name.');
+      throw new Error(
+        'Cannot set Mobile Banking as preferred channel because bank account details are incomplete. Please fill in Bank Name, Account Number, and Account Holder Name.',
+      );
     }
 
     const [created] = await db
@@ -714,4 +781,3 @@ export async function getUserPaymentDetails(userId: string): Promise<UserPayment
     .limit(1);
   return details ?? null;
 }
-

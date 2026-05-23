@@ -24,7 +24,10 @@ import { Label } from '@trip-flow/ui/components/label';
 
 // Zod schema for validation
 const createExpenseSchema = z.object({
-  description: z.string().min(1, 'Merchant/Description is required').max(120, 'Merchant name is too long'),
+  description: z
+    .string()
+    .min(1, 'Merchant/Description is required')
+    .max(120, 'Merchant name is too long'),
   amount: z.number().min(0.01, 'Amount must be greater than 0'),
   paidById: z.string().uuid('Please select who paid'),
   category: z.enum(['food', 'transport', 'activity', 'lodging', 'other']),
@@ -36,7 +39,7 @@ const createExpenseSchema = z.object({
       amount: z.number().min(0),
       itemPaid: z.string().max(100).nullable().optional(),
       checked: z.boolean(),
-    })
+    }),
   ),
 });
 
@@ -159,7 +162,11 @@ export function CreateExpenseForm({
         }
 
         // Set default itemPaid to merchant description for the payer if it's empty or needs to match
-        if (watchDescription && (!watchSplits[payerIndex]?.itemPaid || watchSplits[payerIndex]?.itemPaid === lastDescriptionRef.current)) {
+        if (
+          watchDescription &&
+          (!watchSplits[payerIndex]?.itemPaid ||
+            watchSplits[payerIndex]?.itemPaid === lastDescriptionRef.current)
+        ) {
           setValue(`splits.${payerIndex}.itemPaid`, watchDescription);
         }
       }
@@ -193,13 +200,15 @@ export function CreateExpenseForm({
     if (watchSplitMethod === 'exact_amount' && idx === exactPayerIndex) {
       return sum + calculatedPayerAmount;
     }
-    return sum + (s.checked ? (Number(s.amount) || 0) : 0);
+    return sum + (s.checked ? Number(s.amount) || 0 : 0);
   }, 0);
   const isExactMismatch =
     watchSplitMethod === 'exact_amount' && Math.abs(exactSplitSum - watchAmount) > 0.05;
 
   // Simulate receipt upload & OCR parsing
-  const handleReceiptUpload = (e: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>) => {
+  const handleReceiptUpload = (
+    e: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>,
+  ) => {
     let file: File | null = null;
 
     if ('files' in e.target && e.target.files) {
@@ -245,15 +254,9 @@ export function CreateExpenseForm({
     setIsAddPersonOpen(false);
   };
 
-  const handleAddAllExceptMe = () => {
-    fields.forEach((field, index) => {
-      if (field.userId === currentUserId) {
-        setValue(`splits.${index}.checked`, false);
-        setValue(`splits.${index}.amount`, 0);
-        setValue(`splits.${index}.itemPaid`, '');
-      } else {
-        setValue(`splits.${index}.checked`, true);
-      }
+  const handleAddAll = () => {
+    fields.forEach((_, index) => {
+      setValue(`splits.${index}.checked`, true);
     });
     setIsAddPersonOpen(false);
   };
@@ -268,9 +271,10 @@ export function CreateExpenseForm({
       })
       .map((s) => ({
         userId: s.userId,
-        amount: data.splitMethod === 'exact_amount' && s.userId === data.paidById 
-          ? calculatedPayerAmount 
-          : s.amount,
+        amount:
+          data.splitMethod === 'exact_amount' && s.userId === data.paidById
+            ? calculatedPayerAmount
+            : s.amount,
         itemPaid: data.splitMethod === 'exact_amount' ? s.itemPaid || null : null,
       }));
 
@@ -350,7 +354,10 @@ export function CreateExpenseForm({
         </button>
       </div>
 
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="flex-1 overflow-y-auto p-6 space-y-6">
+      <form
+        onSubmit={handleSubmit(handleFormSubmit)}
+        className="flex-1 overflow-y-auto p-6 space-y-6"
+      >
         {/* OCR Dropzone */}
         <div
           onDragOver={handleDragOver}
@@ -416,26 +423,35 @@ export function CreateExpenseForm({
           {/* Merchant & Date */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="description" className="text-xs font-bold text-slate-500 dark:text-slate-400">
+              <Label
+                htmlFor="description"
+                className="text-xs font-bold text-slate-500 dark:text-slate-400"
+              >
                 Merchant
               </Label>
               <div className="relative">
                 <Input
                   id="description"
                   placeholder="e.g. Nara Thai Cuisine"
-                  className={`pl-9 h-11 border-slate-200/80 dark:border-slate-800 dark:bg-slate-950 rounded-xl focus-visible:ring-emerald-500 text-sm ${errors.description ? 'border-red-500 dark:border-red-950' : ''
-                    }`}
+                  className={`pl-9 h-11 border-slate-200/80 dark:border-slate-800 dark:bg-slate-950 rounded-xl focus-visible:ring-emerald-500 text-sm ${
+                    errors.description ? 'border-red-500 dark:border-red-950' : ''
+                  }`}
                   {...register('description')}
                 />
                 <Store className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400 dark:text-slate-500" />
               </div>
               {errors.description && (
-                <p className="text-red-500 dark:text-red-400 text-[11px] mt-0.5">{errors.description.message}</p>
+                <p className="text-red-500 dark:text-red-400 text-[11px] mt-0.5">
+                  {errors.description.message}
+                </p>
               )}
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="expenseDate" className="text-xs font-bold text-slate-500 dark:text-slate-400">
+              <Label
+                htmlFor="expenseDate"
+                className="text-xs font-bold text-slate-500 dark:text-slate-400"
+              >
                 Date
               </Label>
               <div className="relative">
@@ -448,14 +464,19 @@ export function CreateExpenseForm({
                 <Calendar className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400 dark:text-slate-500" />
               </div>
               {errors.expenseDate && (
-                <p className="text-red-500 dark:text-red-400 text-[11px] mt-0.5">{errors.expenseDate.message}</p>
+                <p className="text-red-500 dark:text-red-400 text-[11px] mt-0.5">
+                  {errors.expenseDate.message}
+                </p>
               )}
             </div>
           </div>
 
           {/* Total Amount (THB) */}
           <div className="space-y-1.5">
-            <Label htmlFor="amount" className="text-xs font-bold text-slate-500 dark:text-slate-400">
+            <Label
+              htmlFor="amount"
+              className="text-xs font-bold text-slate-500 dark:text-slate-400"
+            >
               Total Amount (THB)
             </Label>
             <div className="relative flex items-center">
@@ -464,8 +485,9 @@ export function CreateExpenseForm({
                 type="number"
                 step="0.01"
                 placeholder="0.00"
-                className={`pl-14 h-14 border-slate-200/80 dark:border-slate-800 dark:bg-slate-950 rounded-xl focus-visible:ring-emerald-500 text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-100 ${errors.amount ? 'border-red-500 dark:border-red-950' : ''
-                  }`}
+                className={`pl-14 h-14 border-slate-200/80 dark:border-slate-800 dark:bg-slate-950 rounded-xl focus-visible:ring-emerald-500 text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-100 ${
+                  errors.amount ? 'border-red-500 dark:border-red-950' : ''
+                }`}
                 {...register('amount', { valueAsNumber: true })}
               />
               <div className="absolute left-4 flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
@@ -474,13 +496,18 @@ export function CreateExpenseForm({
               </div>
             </div>
             {errors.amount && (
-              <p className="text-red-500 dark:text-red-400 text-[11px] mt-0.5">{errors.amount.message}</p>
+              <p className="text-red-500 dark:text-red-400 text-[11px] mt-0.5">
+                {errors.amount.message}
+              </p>
             )}
           </div>
 
           {/* Category */}
           <div className="space-y-1.5">
-            <Label htmlFor="category" className="text-xs font-bold text-slate-500 dark:text-slate-400">
+            <Label
+              htmlFor="category"
+              className="text-xs font-bold text-slate-500 dark:text-slate-400"
+            >
               Category
             </Label>
             <div className="relative">
@@ -498,13 +525,18 @@ export function CreateExpenseForm({
               <Tag className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400 dark:text-slate-500" />
             </div>
             {errors.category && (
-              <p className="text-red-500 dark:text-red-400 text-[11px] mt-0.5">{errors.category.message}</p>
+              <p className="text-red-500 dark:text-red-400 text-[11px] mt-0.5">
+                {errors.category.message}
+              </p>
             )}
           </div>
 
           {/* Paid By Selection */}
           <div className="space-y-1.5">
-            <Label htmlFor="paidById" className="text-xs font-bold text-slate-500 dark:text-slate-400">
+            <Label
+              htmlFor="paidById"
+              className="text-xs font-bold text-slate-500 dark:text-slate-400"
+            >
               Paid By
             </Label>
             <select
@@ -530,20 +562,22 @@ export function CreateExpenseForm({
             <button
               type="button"
               onClick={() => setValue('splitMethod', 'equally')}
-              className={`flex-1 text-center py-2.5 text-xs font-bold rounded-full transition-all duration-200 ${watchSplitMethod === 'equally'
-                ? 'bg-white shadow-sm text-emerald-700 dark:bg-slate-950 dark:text-emerald-400 font-extrabold'
-                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-                }`}
+              className={`flex-1 text-center py-2.5 text-xs font-bold rounded-full transition-all duration-200 ${
+                watchSplitMethod === 'equally'
+                  ? 'bg-white shadow-sm text-emerald-700 dark:bg-slate-950 dark:text-emerald-400 font-extrabold'
+                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+              }`}
             >
               Equally
             </button>
             <button
               type="button"
               onClick={() => setValue('splitMethod', 'exact_amount')}
-              className={`flex-1 text-center py-2.5 text-xs font-bold rounded-full transition-all duration-200 ${watchSplitMethod === 'exact_amount'
-                ? 'bg-white shadow-sm text-emerald-700 dark:bg-slate-950 dark:text-emerald-400 font-extrabold'
-                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-                }`}
+              className={`flex-1 text-center py-2.5 text-xs font-bold rounded-full transition-all duration-200 ${
+                watchSplitMethod === 'exact_amount'
+                  ? 'bg-white shadow-sm text-emerald-700 dark:bg-slate-950 dark:text-emerald-400 font-extrabold'
+                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+              }`}
             >
               By Exact Amount
             </button>
@@ -560,8 +594,16 @@ export function CreateExpenseForm({
             <div className="bg-rose-50 border border-rose-100 text-rose-700 p-3.5 rounded-2xl text-[11px] font-semibold flex items-start gap-2.5 dark:bg-rose-950/20 dark:border-rose-900/30 dark:text-rose-400">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-500" />
               <span>
-                Total splits (฿{exactSplitSum.toLocaleString(undefined, { minimumFractionDigits: 2 })}) must sum to total amount (฿{watchAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}). Difference:{' '}
-                <b className="font-extrabold">฿{(watchAmount - exactSplitSum).toLocaleString(undefined, { minimumFractionDigits: 2 })}</b>
+                Total splits (฿
+                {exactSplitSum.toLocaleString(undefined, { minimumFractionDigits: 2 })}) must sum to
+                total amount (฿{watchAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                ). Difference:{' '}
+                <b className="font-extrabold">
+                  ฿
+                  {(watchAmount - exactSplitSum).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                  })}
+                </b>
               </span>
             </div>
           )}
@@ -575,7 +617,11 @@ export function CreateExpenseForm({
 
               return (
                 <div key={field.id}>
-                  <input type="hidden" defaultValue={field.userId} {...register(`splits.${index}.userId`)} />
+                  <input
+                    type="hidden"
+                    defaultValue={field.userId}
+                    {...register(`splits.${index}.userId`)}
+                  />
                   <input
                     type="checkbox"
                     className="hidden"
@@ -584,9 +630,7 @@ export function CreateExpenseForm({
                   />
 
                   {isChecked && (
-                    <div
-                      className="group relative border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 rounded-2xl shadow-sm transition-all duration-200 hover:shadow-md animate-slide-down"
-                    >
+                    <div className="group relative border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 rounded-2xl shadow-sm transition-all duration-200 hover:shadow-md animate-slide-down">
                       {/* Close button X (excludes traveler) — hidden for current user and payer */}
                       {field.userId !== currentUserId && field.userId !== watchPaidById && (
                         <button
@@ -608,13 +652,17 @@ export function CreateExpenseForm({
                               className="w-9 h-9 rounded-full object-cover shadow-sm ring-1 ring-slate-100 dark:ring-slate-800"
                             />
                           ) : (
-                            <div className={`w-9 h-9 rounded-full font-bold flex items-center justify-center text-xs ${getAvatarBgColor(member?.name || '')}`}>
+                            <div
+                              className={`w-9 h-9 rounded-full font-bold flex items-center justify-center text-xs ${getAvatarBgColor(member?.name || '')}`}
+                            >
                               {member?.name.charAt(0).toUpperCase()}
                             </div>
                           )}
                           <div>
                             <span className="text-slate-800 dark:text-slate-100 text-sm font-semibold leading-none block">
-                              {member?.userId === currentUserId ? `${member?.name} (Me)` : member?.name}
+                              {member?.userId === currentUserId
+                                ? `${member?.name} (Me)`
+                                : member?.name}
                             </span>
                           </div>
                         </div>
@@ -631,7 +679,10 @@ export function CreateExpenseForm({
                       {watchSplitMethod === 'exact_amount' && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 border-t border-slate-50 dark:border-slate-900 pt-3 animate-slide-down">
                           <div className="space-y-1">
-                            <Label htmlFor={`splits.${index}.itemPaid`} className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center h-4">
+                            <Label
+                              htmlFor={`splits.${index}.itemPaid`}
+                              className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center h-4"
+                            >
                               Item Paid
                             </Label>
                             <Input
@@ -644,7 +695,10 @@ export function CreateExpenseForm({
                           </div>
 
                           <div className="space-y-1">
-                            <Label htmlFor={`splits.${index}.amount`} className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center justify-between h-4">
+                            <Label
+                              htmlFor={`splits.${index}.amount`}
+                              className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center justify-between h-4"
+                            >
                               <span>Amount (THB)</span>
                               {field.userId === watchPaidById && (
                                 <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-extrabold normal-case leading-none">
@@ -659,13 +713,17 @@ export function CreateExpenseForm({
                                 step="0.01"
                                 placeholder="0.00"
                                 readOnly={field.userId === watchPaidById}
-                                value={field.userId === watchPaidById ? calculatedPayerAmount : undefined}
+                                value={
+                                  field.userId === watchPaidById ? calculatedPayerAmount : undefined
+                                }
                                 className={`h-9 pl-6 pr-2 text-xs font-bold border-slate-200/80 dark:border-slate-800 rounded-xl focus-visible:ring-emerald-500 text-right ${
                                   field.userId === watchPaidById
                                     ? 'bg-slate-100/80 dark:bg-slate-900/80 text-slate-500 cursor-not-allowed select-none'
                                     : 'text-slate-700 dark:text-slate-200'
                                 }`}
-                                {...(field.userId === watchPaidById ? {} : register(`splits.${index}.amount`, { valueAsNumber: true }))}
+                                {...(field.userId === watchPaidById
+                                  ? {}
+                                  : register(`splits.${index}.amount`, { valueAsNumber: true }))}
                               />
                               <span className="absolute left-2.5 top-2.5 text-[10px] font-bold text-slate-400">
                                 ฿
@@ -706,13 +764,13 @@ export function CreateExpenseForm({
                   {excludedTravelers.length > 1 && (
                     <button
                       type="button"
-                      onClick={handleAddAllExceptMe}
+                      onClick={handleAddAll}
                       className="flex items-center gap-2.5 p-2 rounded-xl text-left bg-emerald-50/50 hover:bg-emerald-50 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-bold transition-all border border-emerald-100/30 w-full"
                     >
                       <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-700 dark:text-emerald-300">
                         <Users className="w-3.5 h-3.5" />
                       </div>
-                      <span className="text-xs">Everyone except me</span>
+                      <span className="text-xs">Everyone</span>
                     </button>
                   )}
                   {excludedTravelers.map((field) => {
@@ -731,7 +789,9 @@ export function CreateExpenseForm({
                             className="w-6 h-6 rounded-full object-cover"
                           />
                         ) : (
-                          <div className={`w-6 h-6 rounded-full font-bold flex items-center justify-center text-[10px] ${getAvatarBgColor(member?.name || '')}`}>
+                          <div
+                            className={`w-6 h-6 rounded-full font-bold flex items-center justify-center text-[10px] ${getAvatarBgColor(member?.name || '')}`}
+                          >
                             {member?.name.charAt(0).toUpperCase()}
                           </div>
                         )}
