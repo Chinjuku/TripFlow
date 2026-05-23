@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
-import { Utensils, Car, Compass, Home, Banknote, ChevronDown, ChevronUp, ArrowRightLeft, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import {
+  Utensils,
+  Car,
+  Compass,
+  Home,
+  Banknote,
+  ChevronDown,
+  ArrowRightLeft,
+  CheckCircle2,
+  AlertCircle,
+} from 'lucide-react';
 import { Button } from '@trip-flow/ui/components/button';
 import type { HydratedExpense, HydratedSettlement, HydratedExpenseSplit } from '../types';
 
@@ -9,6 +20,7 @@ interface ExpenseListProps {
   currentUserId: string;
   onConfirmSettlement: (id: string) => Promise<void>;
   confirmingId: string | null;
+  seeAllLink?: string;
 }
 
 export function ExpenseList({
@@ -17,6 +29,7 @@ export function ExpenseList({
   currentUserId,
   onConfirmSettlement,
   confirmingId,
+  seeAllLink,
 }: ExpenseListProps) {
   const [expandedExpenseId, setExpandedExpenseId] = useState<string | null>(null);
 
@@ -30,17 +43,36 @@ export function ExpenseList({
     | { type: 'settlement'; date: string; data: HydratedSettlement };
 
   const feedItems: FeedItem[] = [
-    ...expenses.map((e) => ({ type: 'expense' as const, date: e.expense_date || e.created_at, data: e })),
+    ...expenses.map((e) => ({
+      type: 'expense' as const,
+      date: e.expense_date || e.created_at,
+      data: e,
+    })),
     ...settlements.map((s) => ({ type: 'settlement' as const, date: s.created_at, data: s })),
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   // Category styling helpers
   const categoryStyles = {
-    food: { icon: Utensils, bg: 'bg-purple-100/70 text-purple-700', badge: 'bg-purple-50 border-purple-200 text-purple-700' },
-    transport: { icon: Car, bg: 'bg-emerald-100/70 text-emerald-700', badge: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
-    activity: { icon: Compass, bg: 'bg-amber-100/70 text-amber-700', badge: 'bg-amber-50 border-amber-200 text-amber-700' },
-    lodging: { icon: Home, bg: 'bg-sky-100/70 text-sky-700', badge: 'bg-sky-50 border-sky-200 text-sky-700' },
-    other: { icon: Banknote, bg: 'bg-slate-100/70 text-slate-700', badge: 'bg-slate-50 border-slate-200 text-slate-700' },
+    food: {
+      icon: Utensils,
+      bg: 'bg-primary text-primary-foreground',
+    },
+    transport: {
+      icon: Car,
+      bg: 'bg-secondary text-secondary-foreground',
+    },
+    activity: {
+      icon: Compass,
+      bg: 'bg-tertiary text-tertiary-foreground',
+    },
+    lodging: {
+      icon: Home,
+      bg: 'bg-warning/10 text-warning',
+    },
+    other: {
+      icon: Banknote,
+      bg: 'bg-muted text-muted-foreground',
+    },
   };
 
   // Human date formatter
@@ -62,7 +94,17 @@ export function ExpenseList({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between border-b border-border pb-3">
-        <h3 className="font-headline text-foreground text-xl font-bold tracking-tight">Recent Activity</h3>
+        <h3 className="font-headline text-foreground text-xl font-bold tracking-tight">
+          Recent Activity
+        </h3>
+        {seeAllLink && (
+          <Link
+            to={seeAllLink}
+            className="text-primary hover:text-primary/80 text-xs font-bold tracking-wide uppercase transition-colors"
+          >
+            See All
+          </Link>
+        )}
       </div>
 
       {feedItems.length === 0 ? (
@@ -84,8 +126,10 @@ export function ExpenseList({
               const CatIcon = cat.icon;
 
               const isPaidByMe = exp.paid_by_id === currentUserId;
-              const mySplit = exp.splits.find((s: HydratedExpenseSplit) => s.user_id === currentUserId);
-              
+              const mySplit = exp.splits.find(
+                (s: HydratedExpenseSplit) => s.user_id === currentUserId,
+              );
+
               // Calculate split summary label
               let splitLabel = '';
               let mySplitSummary = '';
@@ -105,7 +149,7 @@ export function ExpenseList({
               return (
                 <div
                   key={`expense-${exp.id}`}
-                  className="bg-card hover:bg-card/75 border border-border rounded-2xl transition-all duration-200 overflow-hidden shadow-sm hover:shadow"
+                  className="bg-white border border-[#e8eaed] rounded-2xl transition-all duration-200 overflow-hidden shadow-sm hover:shadow-md"
                 >
                   <div
                     onClick={() => toggleExpand(exp.id)}
@@ -113,16 +157,22 @@ export function ExpenseList({
                   >
                     <div className="flex items-center gap-4">
                       {/* Category Rounded Icon */}
-                      <div className={`w-11 h-11 rounded-full flex items-center justify-center shadow-sm shrink-0 ${cat.bg}`}>
+                      <div
+                        className={`w-11 h-11 rounded-full flex items-center justify-center shadow-sm shrink-0 ${cat.bg}`}
+                      >
                         <CatIcon className="w-5 h-5" />
                       </div>
-                      
+
                       <div className="space-y-0.5">
                         <h4 className="text-foreground text-sm font-bold sm:text-base leading-tight">
                           {exp.description}
                         </h4>
-                        <div className="text-muted-foreground text-xs flex flex-wrap items-center gap-1">
+                        <div className="text-muted-foreground text-xs flex flex-wrap items-center gap-1.5">
                           <span>Paid by {isPaidByMe ? 'You' : exp.payerName}</span>
+                          <span className="opacity-40">•</span>
+                          <span className="bg-tertiary/50 text-tertiary-foreground px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border border-tertiary">
+                            {exp.split_method === 'equally' ? 'Equally' : 'Exact'}
+                          </span>
                           <span className="opacity-40">•</span>
                           <span>{formatDate(exp.expense_date)}</span>
                         </div>
@@ -132,52 +182,83 @@ export function ExpenseList({
                     <div className="flex items-center gap-4">
                       <div className="text-right space-y-0.5">
                         <div className="text-foreground font-headline text-sm font-extrabold sm:text-base">
-                          ${exp.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          $
+                          {exp.amount.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
                         </div>
-                        <div className={`text-xs font-semibold ${isPaidByMe ? 'text-emerald-600' : mySplit ? 'text-rose-600' : 'text-muted-foreground'}`}>
+                        <div
+                          className={`text-xs font-semibold ${isPaidByMe ? 'text-emerald-600' : mySplit ? 'text-rose-600' : 'text-muted-foreground'}`}
+                        >
                           {mySplitSummary}
                         </div>
                       </div>
                       <div className="text-muted-foreground hidden sm:block">
-                        {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                        <ChevronDown
+                          className={`w-5 h-5 transition-transform ${isExpanded ? 'rotate-180 text-foreground' : ''}`}
+                        />
                       </div>
                     </div>
                   </div>
 
                   {/* Expanded Split Breakdown */}
                   {isExpanded && (
-                    <div className="bg-muted/30 border-t border-border px-5 py-4 space-y-3">
-                      <div className="flex justify-between items-center text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
-                        <span>Split Breakdown ({splitLabel})</span>
-                        <span>Share</span>
+                    <div className="bg-[#f8f9fa] border-t border-[#e8eaed] px-5 py-4 space-y-4">
+                      <div className="flex justify-between items-center text-[10px] font-bold tracking-widest text-[#5f6368] uppercase">
+                        <span>Split Details ({exp.splits.length} People)</span>
                       </div>
                       <div className="space-y-2">
                         {exp.splits.map((split: HydratedExpenseSplit) => {
                           const isSplitMe = split.user_id === currentUserId;
+                          const isPayer = split.user_id === exp.paid_by_id;
+                          const initials = split.userName
+                            .split(' ')
+                            .map((n) => n[0])
+                            .join('')
+                            .toUpperCase()
+                            .slice(0, 2);
+
                           return (
-                            <div key={split.id} className="flex items-center justify-between text-xs py-1">
-                              <div className="flex items-center gap-2">
+                            <div
+                              key={split.id}
+                              className="flex items-center justify-between bg-white p-3 rounded-xl border border-[#e8eaed] shadow-sm"
+                            >
+                              <div className="flex items-center gap-3">
                                 {split.avatarUrl ? (
                                   <img
                                     src={split.avatarUrl}
                                     alt={split.userName}
-                                    className="w-5 h-5 rounded-full object-cover shadow-sm"
+                                    className="w-8 h-8 rounded-full object-cover border border-[#e8eaed]"
                                   />
                                 ) : (
-                                  <div className="w-5 h-5 rounded-full bg-muted-foreground/10 text-muted-foreground font-bold flex items-center justify-center text-[10px]">
-                                    {split.userName.charAt(0)}
+                                  <div
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-inner ${
+                                      isPayer ? 'bg-[#005f42]' : 'bg-[#5f6368]'
+                                    }`}
+                                  >
+                                    {initials}
                                   </div>
                                 )}
-                                <span className={`font-medium ${isSplitMe ? 'text-primary font-semibold' : 'text-foreground'}`}>
-                                  {isSplitMe ? 'You' : split.userName}
+                                <div className="flex flex-col">
+                                  <span
+                                    className={`font-bold text-sm ${isSplitMe ? 'text-primary' : 'text-foreground'}`}
+                                  >
+                                    {isSplitMe ? 'You' : split.userName}
+                                    {isPayer && (
+                                      <span className="text-[#5f6368] font-medium text-[11px] ml-2">
+                                        (Payer)
+                                      </span>
+                                    )}
+                                  </span>
                                   {split.item_paid && (
-                                    <span className="text-muted-foreground text-[10px] italic ml-1.5 font-normal">
-                                      ({split.item_paid})
+                                    <span className="text-muted-foreground text-[10px] italic font-normal">
+                                      {split.item_paid}
                                     </span>
                                   )}
-                                </span>
+                                </div>
                               </div>
-                              <span className="text-foreground font-bold">
+                              <span className="text-foreground font-bold text-sm">
                                 ${split.amount.toFixed(2)}
                               </span>
                             </div>
@@ -200,35 +281,48 @@ export function ExpenseList({
                   className="bg-emerald-50/20 border border-emerald-100/50 rounded-2xl p-4 sm:p-5 flex items-center justify-between shadow-sm transition-all duration-200 dark:bg-emerald-950/5 dark:border-emerald-950/20"
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 shadow-sm ${
-                      set.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                    }`}>
-                      {set.status === 'completed' ? <CheckCircle2 className="w-5 h-5" /> : <ArrowRightLeft className="w-5 h-5" />}
+                    <div
+                      className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 shadow-sm ${
+                        set.status === 'completed'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : 'bg-amber-100 text-amber-700'
+                      }`}
+                    >
+                      {set.status === 'completed' ? (
+                        <CheckCircle2 className="w-5 h-5" />
+                      ) : (
+                        <ArrowRightLeft className="w-5 h-5" />
+                      )}
                     </div>
 
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-foreground text-sm font-bold sm:text-base leading-tight">
-                          {isPayerMe ? 'You' : set.payerName} settled with {isPayeeMe ? 'you' : set.payeeName}
+                          {isPayerMe ? 'You' : set.payerName} settled with{' '}
+                          {isPayeeMe ? 'you' : set.payeeName}
                         </span>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                          set.status === 'completed' 
-                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
-                            : 'bg-amber-50 border-amber-200 text-amber-700'
-                        }`}>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                            set.status === 'completed'
+                              ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                              : 'bg-amber-50 border-amber-200 text-amber-700'
+                          }`}
+                        >
                           {set.status === 'completed' ? 'Paid' : 'Pending Confirmation'}
                         </span>
                       </div>
-                      <p className="text-muted-foreground text-xs">
-                        {formatDate(set.created_at)}
-                      </p>
+                      <p className="text-muted-foreground text-xs">{formatDate(set.created_at)}</p>
                     </div>
                   </div>
 
                   <div className="text-right flex items-center gap-4">
                     <div className="space-y-0.5">
                       <div className="text-emerald-700 dark:text-emerald-400 font-headline text-sm font-extrabold sm:text-base">
-                        ${set.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        $
+                        {set.amount.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </div>
                       {set.status === 'pending' && isPayeeMe && (
                         <Button

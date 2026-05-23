@@ -209,7 +209,7 @@ export default function TripFinancesPage() {
 
           <Button
             onClick={() => setCreateOpen(true)}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-2 rounded-xl shadow-sm shadow-emerald-600/10 transition-colors h-10 shrink-0"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-2 rounded-full shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] h-10 shrink-0 px-6"
           >
             <Plus className="h-4 w-4" />
             Record Expense
@@ -259,6 +259,7 @@ export default function TripFinancesPage() {
             currentUserId={user?.id || ''}
             onConfirmSettlement={handleConfirmSettlementReceived}
             confirmingId={confirmingSettlementId}
+            seeAllLink={`/trips/${id}/all-expense`}
           />
 
           {/* Modals & Forms */}
