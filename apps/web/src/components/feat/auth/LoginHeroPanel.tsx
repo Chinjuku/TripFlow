@@ -1,12 +1,6 @@
-import { MapPin, Users, Zap } from 'lucide-react';
 import { SpinningCompass } from '@/components/ui/SpinningCompass';
+import { HERO_COORDINATES, LOGIN_STEPS } from '@/utils/auth';
 import { TopoPattern } from './TopoPattern';
-
-const STEPS = [
-  { icon: MapPin, title: 'Add places', desc: 'Drop pins' },
-  { icon: Users, title: 'Vote together', desc: 'Pick favourites' },
-  { icon: Zap, title: 'Drag to plan', desc: 'Build the day' },
-] as const;
 
 export function LoginHeroPanel() {
   return (
@@ -14,10 +8,10 @@ export function LoginHeroPanel() {
       <TopoPattern />
 
       <span className="text-muted-foreground/40 absolute left-6 top-6 font-mono text-[10px] tracking-widest">
-        13.7563° N · 100.5018° E
+        {HERO_COORDINATES.topLeft}
       </span>
       <span className="text-muted-foreground/40 absolute bottom-6 right-6 font-mono text-[10px] tracking-widest">
-        18.7883° N · 98.9853° E
+        {HERO_COORDINATES.bottomRight}
       </span>
 
       <div className="relative z-10 flex flex-1 flex-col justify-center px-14 py-12 xl:px-20">
@@ -46,7 +40,7 @@ export function LoginHeroPanel() {
               aria-hidden
               className="border-primary/25 absolute left-[16%] right-[16%] top-[2.25rem] border-t border-dashed"
             />
-            {STEPS.map((step, idx) => (
+            {LOGIN_STEPS.map((step, idx) => (
               <li
                 key={step.title}
                 className="bg-card border-border relative flex flex-col items-center rounded-2xl border p-4 text-center"
