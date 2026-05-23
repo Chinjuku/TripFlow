@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Plus, KeyRound } from 'lucide-react';
 import { Button } from '@trip-flow/ui/components/button';
-import { Skeleton } from '@trip-flow/ui/components/skeleton';
 import {
   useTrips,
   CreateTripDialog,
   JoinTripDialog,
   TripCard,
   StartJourneyCard,
+  TripListSkeleton,
 } from '@/components/feat/trips';
 
 export default function TripsListPage() {
@@ -44,7 +44,7 @@ export default function TripsListPage() {
       <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
         <StartJourneyCard onClick={() => setCreateOpen(true)} />
         {isLoading && trips === null
-          ? [0, 1, 2].map((i) => <Skeleton key={i} className="h-72 rounded-2xl sm:h-[22rem]" />)
+          ? <TripListSkeleton />
           : (trips ?? []).map((trip) => <TripCard key={trip.id} trip={trip} />)}
       </div>
 
