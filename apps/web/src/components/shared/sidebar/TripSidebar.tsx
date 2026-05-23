@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import {
-  ArrowLeft,
   Calendar,
   ChevronLeft,
   ChevronRight,
@@ -165,7 +164,7 @@ export function TripSidebar({ tripId, open, onOpenChange }: TripSidebarProps) {
 
         {/* Trip Info & Invite Section */}
         {trip && (
-          <div className={cn('px-4 py-3 border-t border-border/50', collapsed && 'px-2 py-3 flex justify-center')}>
+          <div className={cn('px-4 py-3', collapsed && 'px-2 py-3 flex justify-center')}>
             {collapsed ? (
               <button
                 type="button"

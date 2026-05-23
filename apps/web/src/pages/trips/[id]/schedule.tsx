@@ -315,6 +315,7 @@ export default function TripSchedulePage() {
           backTo={`/trips/${id}`}
           backLabel="Trip workspace"
           title="Trip Schedule"
+          subtitle="Drag voted places onto the timeline to build each day."
           withBorder
         />
 

@@ -128,6 +128,7 @@ function PlacesMapInner(props: PlacesMapProps) {
           gestureHandling="greedy"
           clickableIcons
           disableDefaultUI
+          disableDoubleClickZoom
         >
           <MapBody {...props} />
           {/* Map-type toggle sits in the bottom-right corner, outside MapBody
@@ -177,6 +178,8 @@ function MapBody({
 
   const [poi, setPoi] = useState<PoiPreview | null>(null);
   const [poiLoading, setPoiLoading] = useState(false);
+  /** Monotonic counter so a slow fetch can't overwrite a newer one. */
+  const poiRequestRef = useRef(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchHits, setSearchHits] = useState<SearchHit[]>([]);
   const [searching, setSearching] = useState(false);
@@ -242,6 +245,23 @@ function MapBody({
         return;
       }
       e.stop?.();
+      // Show a placeholder popup at the click location immediately so the
+      // user sees feedback while we fetch details. Without this, slow
+      // network calls feel like the click was ignored.
+      const latLng = e.latLng;
+      if (latLng) {
+        setPoi({
+          placeId,
+          name: 'Loading…',
+          address: null,
+          category: null,
+          lat: latLng.lat(),
+          lng: latLng.lng(),
+          photoUrl: null,
+          rating: null,
+          openingHoursText: null,
+        });
+      }
       void loadPoi(placeId);
     });
     return () => listener.remove();
@@ -254,8 +274,8 @@ function MapBody({
   const loadPoi = useCallback(
     async (placeId: string) => {
       if (!placesLib || !map) return;
+      const reqId = ++poiRequestRef.current;
       setPoiLoading(true);
-      setPoi(null);
       try {
         const place = new placesLib.Place({ id: placeId });
         await place.fetchFields({
@@ -270,6 +290,8 @@ function MapBody({
             'types',
           ],
         });
+        // A newer click has superseded this fetch — drop the result.
+        if (reqId !== poiRequestRef.current) return;
 
         if (!place.location) {
           setPoi(null);
@@ -287,13 +309,12 @@ function MapBody({
           openingHoursText: openingHoursSummary(place.regularOpeningHours ?? null),
         };
         setPoi(preview);
-        // Recenter so the popup is fully visible.
-        map.panTo({ lat: preview.lat, lng: preview.lng });
+        centerOnPoi(map, preview.lat, preview.lng);
       } catch (err) {
         console.error('[places-map] failed to load POI', err);
-        setPoi(null);
+        if (reqId === poiRequestRef.current) setPoi(null);
       } finally {
-        setPoiLoading(false);
+        if (reqId === poiRequestRef.current) setPoiLoading(false);
       }
     },
     [placesLib, map],
@@ -876,6 +897,8 @@ function PoiPreviewCard({ poi, loading, alreadyPicked, onAdd }: PoiPreviewCardPr
               <Check className="h-4 w-4" strokeWidth={2.5} />
               Already added
             </>
+          ) : loading ? (
+            'Loading…'
           ) : adding ? (
             'Adding…'
           ) : (
@@ -893,6 +916,25 @@ function PoiPreviewCard({ poi, loading, alreadyPicked, onAdd }: PoiPreviewCardPr
 /* ------------------------------------------------------------------------ */
 /*  Helpers                                                                 */
 /* ------------------------------------------------------------------------ */
+
+/**
+ * Pan so the InfoWindow that anchors on (lat, lng) ends up vertically centred
+ * in the viewport. Google's InfoWindow grows upward from its anchor, so we
+ * push the POI itself toward the lower-middle of the viewport — the popup
+ * then lands near the visual centre.
+ */
+function centerOnPoi(map: google.maps.Map, lat: number, lng: number) {
+  map.panTo({ lat, lng });
+  window.setTimeout(() => {
+    const viewportH = map.getDiv()?.clientHeight ?? 0;
+    // Offset clamped so very short maps don't over-shift.
+    const offset = Math.min(Math.max(viewportH * 0.2, 80), 160);
+    // panBy(0, -y) moves the map's centre up → markers move down in the
+    // viewport. We want the POI in the lower half so the upward-growing
+    // InfoWindow lands near the visual centre.
+    map.panBy(0, -offset);
+  }, 0);
+}
 
 function openingHoursSummary(hours: google.maps.places.OpeningHours | null): string | null {
   if (!hours) return null;

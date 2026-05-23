@@ -100,7 +100,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   if (error) {
     return (
       <div className="mx-auto max-w-6xl">
-        <BackLink to="/trips" label="All trips" className="mb-6" />
+        <BackLink to={`/trips/${id}`} label="Trip workspace" className="mb-6" />
         <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border p-4 text-sm flex items-center gap-2">
           <AlertCircle className="w-5 h-5 shrink-0" />
           <span>{error.message}</span>
@@ -223,8 +223,8 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-8 h-full">
         <TripPageHeader
-          backTo="/trips"
-          backLabel="All trips"
+          backTo={`/trips/${id}`}
+          backLabel="Trip workspace"
           title="Trip Finances"
           subtitle={
             trip ? (
