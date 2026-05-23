@@ -20,7 +20,7 @@ export interface TripSummary {
 
 export interface CreateTripPayload {
   title: string;
-  startsOn: string; // ISO datetime
+  startsOn: string;
   endsOn: string;
 }
 

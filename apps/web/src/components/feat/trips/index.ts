@@ -1,21 +1,27 @@
 // * API
-export { listTrips, createTrip, joinTrip, getTrip } from './api';
+export { listTrips, createTrip, joinTrip, getTrip } from '@/api/trips';
 
 // * Hook
-export { useTrips, useTrip } from './hooks';
+export { useTrips, useTrip } from '@/hooks/useTrips';
 
 // * Type
-export type { TripSummary, CreateTripPayload, TripDetail, TripMemberProfile } from './types';
+export type { TripSummary, CreateTripPayload, TripDetail, TripMemberProfile } from '@/types/trips';
 
 // * Format
-export { deriveTripStatus, formatDateRange, coverImageUrl, getInitials } from './format';
-export type { TripStatus, DateRangeDisplay } from './format';
+export { deriveTripStatus, formatDateRange, coverImageUrl, getInitials } from '@/utils/trips';
+export type { TripStatus, DateRangeDisplay } from '@/utils/trips';
 
-// * Component
-export { CreateTripDialog } from './components/CreateTripDialog';
-export { JoinTripDialog } from './components/JoinTripDialog';
-export { InviteModal } from './components/InviteModal';
-export { TripCard } from './components/TripCard';
-export { OtpInput } from './components/OtpInput';
-export { CollaboratorRow } from './components/CollaboratorRow';
-export { TripBoardSkeleton } from './components/TripBoardSkeleton';
+// * List page components
+export { TripCard } from './list/TripCard';
+export { TripListSkeleton } from './list/TripListSkeleton';
+export { StartJourneyCard } from './list/StartJourneyCard';
+export { CreateTripDialog } from './list/CreateTripDialog';
+export { JoinTripDialog } from './list/JoinTripDialog';
+export { OtpInput } from './list/OtpInput';
+
+// * Detail page components
+export { TripBoardSkeleton } from './detail/TripBoardSkeleton';
+export { TripOverviewCard } from './detail/TripOverviewCard';
+export { CollaboratorsPanel } from './detail/CollaboratorsPanel';
+export { CollaboratorRow } from './detail/CollaboratorRow';
+export { InviteModal } from './detail/InviteModal';
