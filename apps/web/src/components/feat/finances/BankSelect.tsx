@@ -26,7 +26,7 @@ export function BankSelect({
   className,
   compact,
 }: BankSelectProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   
   const actualPlaceholder = placeholder === 'Search or select a bank…' 
     ? t('finances.searchOrSelectBank') 
@@ -41,6 +41,10 @@ export function BankSelect({
 
   const filtered = filterBanks(query);
   const selectedBank = findBank(value);
+
+  const displayValue = selectedBank
+    ? (i18n.language.startsWith('th') ? selectedBank.thaiName : selectedBank.niceName)
+    : value || '';
 
   // Sync external value changes
   useEffect(() => {
@@ -129,7 +133,7 @@ export function BankSelect({
           aria-autocomplete="list"
           aria-controls="bank-listbox"
           autoComplete="off"
-          value={isOpen ? query : value || ''}
+          value={isOpen ? query : displayValue}
           placeholder={actualPlaceholder}
           className={`flex w-full rounded-xl border border-border bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pr-8 ${inputHeight} ${
             selectedBank && !isOpen ? 'pl-8' : 'pl-3'

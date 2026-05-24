@@ -57,13 +57,26 @@ trip-flow/
 - **Node ≥ 20** — see `.nvmrc`
 - A Supabase project (URL + anon key + service-role key)
 
-### Install & configure
+- **Bun ≥ 1.3** 
+  Mac&OS
+  — `curl -fsSL https://bun.sh/install | bash`
+  Windows
+  — `powershell -c "irm bun.sh/install.ps1|iex"`
+- **Node ≥ 20** — see `.nvmrc`
+- A Supabase project (URL + anon key + service-role key)
 
+### Install & configure
+Mac&OS
 ```bash
 bun install
 cp .env.example .env
 # edit .env with your Supabase values
 ```
+Windows
+```bash
+bun install
+copy .env.example .env
+# edit .env with your Supabase values
 
 ### Run everything
 

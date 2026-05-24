@@ -10,7 +10,8 @@ import {
     Car,
     Home,
     Compass,
-    ShoppingBag
+    ShoppingBag,
+    CheckCircle
 } from 'lucide-react';
 import { TripFinancesLayout, useTripFinancesContext } from '@/components/feat/finances/components/TripFinancesLayout';
 import type { DebtRelation, HydratedExpense, HydratedSettlement } from '@/components/feat/finances';
@@ -32,6 +33,8 @@ interface Debtor {
     avatar: string;
     amountOwed: number;
     transactions: Transaction[];
+    hasPendingSettlement: boolean; // เพิ่มฟิลด์นี้สำหรับเช็กว่าเขากดจ่ายมาหรือยัง
+    pendingSettlementId: string | null; // ฟิลด์สำหรับใช้อัปเดตและยืนยันการรับเงิน
 }
 
 function buildDebtorsList(
@@ -128,12 +131,22 @@ function buildDebtorsList(
       ? [...positiveTxs, ...negativeTxs, ...incomingSettlements, ...outgoingSettlements]
       : [...positiveTxs, ...incomingSettlements];
 
+    // ตรวจสอบว่ามีรายการที่อีกฝั่งกดจ่ายมาแล้ว และกำลังรอเรายืนยัน (pending) หรือไม่
+    const pendingSettlement = settlements.find(
+      (set) =>
+        set.payer_id === debtor.userId &&
+        set.payee_id === currentUserId &&
+        set.status === 'pending'
+    );
+
     return {
       id: debtor.userId,
       name: debtor.name,
       avatar: debtor.avatarUrl || '',
       amountOwed: debtor.amount,
       transactions: allTxs,
+      hasPendingSettlement: !!pendingSettlement, // ส่งค่ามาให้ UI นำไปใช้สลับปุ่ม
+      pendingSettlementId: pendingSettlement?.id || null,
     };
   });
 }
@@ -147,7 +160,7 @@ export default function TripToReceivePage() {
 }
 
 function TripToReceiveContent() {
-    const { finances, user, isOptimized } = useTripFinancesContext();
+    const { finances, user, isOptimized, handleConfirmSettlementReceived, confirmingSettlementId } = useTripFinancesContext();
 
     // Interactive states
     const [remindedList, setRemindedList] = useState<Record<string, boolean>>({});
@@ -290,26 +303,44 @@ function TripToReceiveContent() {
                                             </div>
                                         </div>
 
-                                        {/* Remind Button */}
-                                        <button
-                                            onClick={() => handleRemind(debtor.name, debtor.id)}
-                                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-xs transition-all font-label ${isReminded
-                                                ? 'bg-primary/10 text-primary dark:bg-primary/20'
-                                                : 'bg-muted hover:bg-accent text-primary'
-                                                }`}
-                                        >
-                                            {isReminded ? (
-                                                <>
-                                                    <Check className="w-3.5 h-3.5" />
-                                                    {t('finances.reminded')}
-                                                </>
+                                        {/* Action Buttons: สลับตามเงื่อนไข hasPendingSettlement */}
+                                        <div className="flex items-center gap-2 shrink-0">
+                                            {debtor.hasPendingSettlement ? (
+                                                <button
+                                                    onClick={async () => {
+                                                        if (debtor.pendingSettlementId) {
+                                                            await handleConfirmSettlementReceived(debtor.pendingSettlementId);
+                                                            triggerToast(t('finances.toastConfirmPaid', { name: debtor.name, defaultValue: `ยืนยันการรับเงินจาก ${debtor.name} เรียบร้อยแล้ว` }));
+                                                        }
+                                                    }}
+                                                    disabled={confirmingSettlementId === debtor.pendingSettlementId}
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-xs bg-[#059669] text-white hover:bg-[#047857] transition-all font-label shadow-sm dark:bg-[#10B981]/20 dark:text-[#34D399] dark:border dark:border-[#10B981]/30 dark:hover:bg-[#10B981]/30 animate-in fade-in disabled:opacity-50 disabled:pointer-events-none"
+                                                >
+                                                    <CheckCircle className="w-3.5 h-3.5" />
+                                                    {confirmingSettlementId === debtor.pendingSettlementId ? t('finances.confirming', 'กำลังยืนยัน...') : t('finances.confirmPaid', 'รับเงินแล้ว')}
+                                                </button>
                                             ) : (
-                                                <>
-                                                    <Bell className="w-3.5 h-3.5" />
-                                                    {t('finances.remind')}
-                                                </>
+                                                <button
+                                                    onClick={() => handleRemind(debtor.name, debtor.id)}
+                                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-xs transition-all font-label animate-in fade-in ${isReminded
+                                                        ? 'bg-primary/10 text-primary dark:bg-primary/20'
+                                                        : 'bg-muted hover:bg-accent text-primary'
+                                                        }`}
+                                                >
+                                                    {isReminded ? (
+                                                        <>
+                                                            <Check className="w-3.5 h-3.5" />
+                                                            {t('finances.reminded')}
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Bell className="w-3.5 h-3.5" />
+                                                            {t('finances.remind')}
+                                                        </>
+                                                    )}
+                                                </button>
                                             )}
-                                        </button>
+                                        </div>
                                     </div>
 
                                     {/* Accordion Divider & Toggle Button */}
