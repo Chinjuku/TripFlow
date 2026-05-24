@@ -1,10 +1,13 @@
 import { Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface StartJourneyCardProps {
   onClick: () => void;
 }
 
 export function StartJourneyCard({ onClick }: StartJourneyCardProps) {
+  const { t } = useTranslation();
+
   return (
     <button
       type="button"
@@ -15,12 +18,10 @@ export function StartJourneyCard({ onClick }: StartJourneyCardProps) {
         <Plus className="h-6 w-6" strokeWidth={2} />
       </div>
       <h3 className="font-headline text-foreground text-xl font-bold leading-tight">
-        Start a New
-        <br />
-        Journey
+        {t('trips.startNewJourney')}
       </h3>
       <p className="text-muted-foreground max-w-[14rem] text-sm">
-        Invite friends, vote on destinations, and plan together.
+        {t('trips.startNewJourneyDesc')}
       </p>
     </button>
   );

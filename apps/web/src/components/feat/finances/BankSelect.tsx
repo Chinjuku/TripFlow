@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { filterBanks, findBank, type ThaiBank } from '@/utils/thai-banks';
 import { ChevronDown } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface BankSelectProps {
   value: string;
@@ -25,6 +26,12 @@ export function BankSelect({
   className,
   compact,
 }: BankSelectProps) {
+  const { t } = useTranslation();
+  
+  const actualPlaceholder = placeholder === 'Search or select a bank…' 
+    ? t('finances.searchOrSelectBank') 
+    : placeholder;
+
   const [query, setQuery] = useState(value);
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
@@ -123,7 +130,7 @@ export function BankSelect({
           aria-controls="bank-listbox"
           autoComplete="off"
           value={isOpen ? query : value || ''}
-          placeholder={placeholder}
+          placeholder={actualPlaceholder}
           className={`flex w-full rounded-xl border border-border bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pr-8 ${inputHeight} ${
             selectedBank && !isOpen ? 'pl-8' : 'pl-3'
           }`}
@@ -156,7 +163,7 @@ export function BankSelect({
         >
           {filtered.length === 0 ? (
             <li className="px-3 py-3 text-xs text-muted-foreground text-center">
-              No banks found for "{query}"
+              {t('finances.noBanksFoundFor', { query })}
             </li>
           ) : (
             filtered.map((bank, i) => (

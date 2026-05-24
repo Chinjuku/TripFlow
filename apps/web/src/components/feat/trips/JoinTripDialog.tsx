@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { ArrowRight, UserPlus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@trip-flow/ui/components/button';
 import { Modal } from '@trip-flow/ui/components/modal';
 import { joinTrip } from '@/components/feat/trips';
@@ -17,6 +18,7 @@ export function JoinTripDialog({ open, onOpenChange, onJoined }: JoinTripDialogP
   const [code, setCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   function reset() {
     setCode('');
@@ -26,7 +28,7 @@ export function JoinTripDialog({ open, onOpenChange, onJoined }: JoinTripDialogP
 
   async function submit() {
     if (code.length !== CODE_LENGTH) {
-      setError('Enter the full invite code');
+      setError(t('trips.enterFullCode'));
       return;
     }
     setSubmitting(true);
@@ -36,7 +38,7 @@ export function JoinTripDialog({ open, onOpenChange, onJoined }: JoinTripDialogP
       reset();
       onJoined();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to join trip');
+      setError(err instanceof Error ? err.message : t('trips.failedJoin'));
       setSubmitting(false);
     }
   }
@@ -53,7 +55,7 @@ export function JoinTripDialog({ open, onOpenChange, onJoined }: JoinTripDialogP
         if (!next) reset();
         onOpenChange(next);
       }}
-      title="Join a Trip"
+      title={t('trips.joinTrip')}
       hideHeader
       className="overflow-hidden"
     >
@@ -64,10 +66,10 @@ export function JoinTripDialog({ open, onOpenChange, onJoined }: JoinTripDialogP
             <UserPlus className="h-5 w-5" strokeWidth={1.75} />
           </div>
           <h2 className="font-headline text-foreground text-lg font-bold sm:text-xl">
-            Join a Trip
+            {t('trips.joinTrip')}
           </h2>
           <p className="text-muted-foreground max-w-xs text-sm leading-relaxed">
-            Enter the {CODE_LENGTH}-character invite code provided by your group organizer.
+            {t('trips.joinTripDesc', { count: CODE_LENGTH })}
           </p>
         </div>
 
@@ -94,7 +96,7 @@ export function JoinTripDialog({ open, onOpenChange, onJoined }: JoinTripDialogP
         {/* Actions */}
         <div className="space-y-2 px-5 pb-5 sm:px-6 sm:pb-6">
           <Button type="submit" disabled={submitting || code.length !== CODE_LENGTH} className="h-11 w-full gap-2">
-            {submitting ? 'Joining…' : 'Join Trip'}
+            {submitting ? t('trips.joining') : t('trips.joinTrip')}
             {!submitting && <ArrowRight className="h-4 w-4" strokeWidth={2} />}
           </Button>
           <Button
@@ -102,14 +104,14 @@ export function JoinTripDialog({ open, onOpenChange, onJoined }: JoinTripDialogP
             onClick={() => onOpenChange(false)}
             className="bg-tertiary text-tertiary-foreground hover:bg-tertiary/80 h-11 w-full"
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
         </div>
 
         {/* Footer */}
         <div className="bg-muted/50 border-border text-muted-foreground border-t px-5 py-4 text-center text-sm sm:px-6">
-          Don't have a code?{' '}
-          <span className="text-foreground font-medium">Ask the friend who set up the trip.</span>
+          {t('trips.dontHaveCode')}{' '}
+          <span className="text-foreground font-medium">{t('trips.askFriend')}</span>
         </div>
       </form>
     </Modal>

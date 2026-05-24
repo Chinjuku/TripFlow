@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Settings as SettingsIcon, type LucideIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@trip-flow/ui/lib/cn';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -11,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 export function SidebarUserMenu({ collapsed }: { collapsed: boolean }) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -46,7 +48,7 @@ export function SidebarUserMenu({ collapsed }: { collapsed: boolean }) {
         {!collapsed && (
           <div className="min-w-0 flex-1">
             <p className="text-foreground truncate text-sm font-semibold">
-              {user?.name ?? 'Traveller'}
+              {user?.name ?? t('common.traveller')}
             </p>
             <p className="text-muted-foreground truncate text-xs">{user?.email ?? ''}</p>
           </div>
@@ -66,7 +68,7 @@ export function SidebarUserMenu({ collapsed }: { collapsed: boolean }) {
             <Avatar user={user} size="lg" />
             <div className="min-w-0 flex-1">
               <p className="text-foreground truncate text-sm font-semibold">
-                {user?.name ?? 'Traveller'}
+                {user?.name ?? t('common.traveller')}
               </p>
               <p className="text-muted-foreground truncate text-xs">{user?.email ?? ''}</p>
             </div>
@@ -75,7 +77,7 @@ export function SidebarUserMenu({ collapsed }: { collapsed: boolean }) {
           <div className="p-1">
             <MenuItem
               icon={SettingsIcon}
-              label="Settings"
+              label={t('nav.settings')}
               onClick={() => {
                 setOpen(false);
                 navigate('/settings');
@@ -83,7 +85,7 @@ export function SidebarUserMenu({ collapsed }: { collapsed: boolean }) {
             />
             <MenuItem
               icon={LogOut}
-              label="Sign out"
+              label={t('auth.signOut')}
               variant="destructive"
               onClick={() => {
                 setOpen(false);

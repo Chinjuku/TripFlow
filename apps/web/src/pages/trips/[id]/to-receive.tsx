@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { TripFinancesLayout, useTripFinancesContext } from '@/components/feat/finances/components/TripFinancesLayout';
 import type { DebtRelation, HydratedExpense, HydratedSettlement } from '@/components/feat/finances';
+import { useTranslation } from 'react-i18next';
 
 // Explicit interfaces for types
 interface Transaction {
@@ -36,7 +37,8 @@ function buildDebtorsList(
   currentUserId: string,
   whoOwesYou: DebtRelation[],
   expenses: HydratedExpense[],
-  settlements: HydratedSettlement[]
+  settlements: HydratedSettlement[],
+  t: (key: string) => string
 ): Debtor[] {
   return whoOwesYou.map((debtor) => {
     // Reconstruct contributing transactions between debtor and currentUserId.
@@ -52,7 +54,7 @@ function buildDebtorsList(
             month: 'short',
             day: 'numeric',
             year: 'numeric',
-          }) : 'Unknown date',
+          }) : t('finances.unknownDate'),
           amount: split.amount,
           category: exp.category as any,
         };
@@ -71,7 +73,7 @@ function buildDebtorsList(
             month: 'short',
             day: 'numeric',
             year: 'numeric',
-          }) : 'Unknown date',
+          }) : t('finances.unknownDate'),
           amount: -split.amount,
           category: exp.category as any,
         };
@@ -82,12 +84,12 @@ function buildDebtorsList(
       .filter((set) => set.payer_id === debtor.userId && set.payee_id === currentUserId && set.status === 'completed')
       .map((set) => ({
         id: `set-${set.id}`,
-        description: 'Repayment Received',
+        description: t('finances.repaymentReceived'),
         date: set.created_at ? new Date(set.created_at).toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric',
           year: 'numeric',
-        }) : 'Unknown date',
+        }) : t('finances.unknownDate'),
         amount: -set.amount,
         category: 'other' as const,
       }));
@@ -96,12 +98,12 @@ function buildDebtorsList(
       .filter((set) => set.payer_id === currentUserId && set.payee_id === debtor.userId && set.status === 'completed')
       .map((set) => ({
         id: `set-${set.id}`,
-        description: 'Repayment Sent',
+        description: t('finances.repaymentSent'),
         date: set.created_at ? new Date(set.created_at).toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric',
           year: 'numeric',
-        }) : 'Unknown date',
+        }) : t('finances.unknownDate'),
         amount: set.amount,
         category: 'other' as const,
       }));
@@ -120,7 +122,7 @@ function buildDebtorsList(
 
 export default function TripToReceivePage() {
   return (
-    <TripFinancesLayout activeTab="who-owes-you">
+    <TripFinancesLayout activeTab="settlements">
       <TripToReceiveContent />
     </TripFinancesLayout>
   );
@@ -135,13 +137,15 @@ function TripToReceiveContent() {
     const [showSuccessToast, setShowSuccessToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
     const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
+    const { t } = useTranslation();
 
     // Reconstruct debtors list from context
     const debtors = buildDebtorsList(
         user.id,
         finances.summary.whoOwesYou,
         finances.expenses,
-        finances.settlements
+        finances.settlements,
+        t
     );
 
     const totalYouAreOwed = debtors.reduce((sum, d) => sum + d.amountOwed, 0);
@@ -150,7 +154,7 @@ function TripToReceiveContent() {
     const handleRemind = (name: string, id: string) => {
         if (remindedList[id]) return;
         setRemindedList(prev => ({ ...prev, [id]: true }));
-        triggerToast(`Sent payment reminder to ${name}!`);
+        triggerToast(t('finances.toastRemind', { name }));
     };
 
     // Handle requesting payment from everyone
@@ -161,7 +165,7 @@ function TripToReceiveContent() {
 
         setTimeout(() => {
             setIsRequestingAll(false);
-            triggerToast(`Sent payment requests to ${debtorNames || 'everyone'}!`);
+            triggerToast(t('finances.toastRequestAll', { names: debtorNames || t('finances.everyone') }));
         }, 1200);
     };
 
@@ -202,7 +206,7 @@ function TripToReceiveContent() {
             <div className="bg-primary text-primary-foreground p-6 md:p-8 rounded-2xl shadow-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 transition-all duration-300 transform hover:scale-[1.01] shrink-0">
                 <div className="space-y-1.5">
                     <span className="text-primary-foreground/85 text-xs font-bold uppercase tracking-wider font-label">
-                        Total You Are Owed
+                        {t('finances.totalYouAreOwed')}
                     </span>
                     <div className="text-4xl md:text-5xl font-headline font-extrabold tracking-tight">
                         ฿{totalYouAreOwed.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -213,7 +217,7 @@ function TripToReceiveContent() {
                     disabled={isRequestingAll || totalYouAreOwed === 0}
                     className="bg-white dark:bg-card text-primary font-bold text-xs md:text-sm px-5 py-3 rounded-xl shadow-sm transition-all w-full sm:w-auto text-center cursor-pointer disabled:opacity-50 disabled:pointer-events-none active:scale-95 font-label"
                 >
-                    {isRequestingAll ? 'Requesting...' : 'Request All'}
+                    {isRequestingAll ? t('finances.requesting') : t('finances.requestAll')}
                 </button>
             </div>
 
@@ -226,9 +230,9 @@ function TripToReceiveContent() {
                                 <Check className="h-6 w-6" strokeWidth={2.25} />
                             </div>
                             <div className="space-y-1">
-                                <p className="text-foreground text-base font-bold">All Settled!</p>
+                                <p className="text-foreground text-base font-bold">{t('finances.allSettled')}</p>
                                 <p className="text-muted-foreground mx-auto max-w-xs text-sm leading-relaxed">
-                                    No one owes you money right now. Happy travels!
+                                    {t('finances.noOneOwesYou')}
                                 </p>
                             </div>
                         </div>
@@ -262,7 +266,7 @@ function TripToReceiveContent() {
                                                     {debtor.name}
                                                 </h3>
                                                 <p className="text-primary text-xs font-semibold mt-0.5 font-label">
-                                                    Owes you ฿{debtor.amountOwed.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    {t('finances.owesYou')} ฿{debtor.amountOwed.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </p>
                                             </div>
                                         </div>
@@ -278,12 +282,12 @@ function TripToReceiveContent() {
                                             {isReminded ? (
                                                 <>
                                                     <Check className="w-3.5 h-3.5" />
-                                                    Reminded
+                                                    {t('finances.reminded')}
                                                 </>
                                             ) : (
                                                 <>
                                                     <Bell className="w-3.5 h-3.5" />
-                                                    Remind
+                                                    {t('finances.remind')}
                                                 </>
                                             )}
                                         </button>
@@ -297,8 +301,8 @@ function TripToReceiveContent() {
                                         >
                                             <span>
                                                 {isOptimized 
-                                                    ? `View underlying pairwise splits (${debtor.transactions.length})`
-                                                    : `View ${debtor.transactions.length} Transactions`
+                                                    ? t('finances.viewUnderlyingSplits', { count: debtor.transactions.length })
+                                                    : t('finances.viewTransactions', { count: debtor.transactions.length })
                                                 }
                                             </span>
                                             {isExpanded ? (
@@ -312,7 +316,7 @@ function TripToReceiveContent() {
                                         {isExpanded && (
                                             <div className="px-5 pb-5 pt-1 space-y-2 bg-card animate-in slide-in-from-top-2 duration-200">
                                                 {debtor.transactions.length === 0 ? (
-                                                    <p className="text-muted-foreground text-xs py-2 italic font-label">No transaction records found.</p>
+                                                    <p className="text-muted-foreground text-xs py-2 italic font-label">{t('finances.noTransactionRecords')}</p>
                                                 ) : (
                                                     debtor.transactions.map((tx) => (
                                                         <div
@@ -332,8 +336,8 @@ function TripToReceiveContent() {
                                                                     </p>
                                                                 </div>
                                                             </div>
-                                                            <span className={`font-headline font-bold text-xs whitespace-nowrap ${tx.amount > 0 ? 'text-primary' : 'text-muted-foreground'}`}>
-                                                                {tx.amount > 0 ? '+' : ''}฿{Math.abs(tx.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            <span className={`font-headline font-bold text-xs whitespace-nowrap ${tx.amount > 0 ? 'text-primary' : 'text-destructive'}`}>
+                                                                {tx.amount > 0 ? '+' : '-'}฿{Math.abs(tx.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                             </span>
                                                         </div>
                                                     ))
@@ -352,10 +356,9 @@ function TripToReceiveContent() {
             <div className="bg-primary/[0.03] border border-primary/10 rounded-2xl p-5 flex gap-3 text-xs md:text-sm shadow-sm shrink-0">
                 <AlertCircle className="w-5 h-5 text-primary shrink-0" />
                 <div className="space-y-1">
-                    <h4 className="font-bold text-foreground font-headline">About Automatic Settlements</h4>
+                    <h4 className="font-bold text-foreground font-headline">{t('finances.aboutAutomaticSettlements')}</h4>
                     <p className="font-medium text-muted-foreground leading-relaxed">
-                        All transactions listed are calculated based on your group expenses inside this trip workspace.
-                        Clicking "Remind" sends a clean instant push notification.
+                        {t('finances.automaticSettlementsDesc')}
                     </p>
                 </div>
             </div>

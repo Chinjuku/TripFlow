@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Plus, KeyRound } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@trip-flow/ui/components/button';
 import {
   useTrips,
@@ -14,16 +15,17 @@ export default function TripsListPage() {
   const { data: trips, error, isLoading, refresh } = useTrips();
   const [createOpen, setCreateOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 sm:gap-8">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div>
           <h1 className="font-headline text-foreground text-3xl font-extrabold tracking-tight sm:text-4xl">
-            Your Group Trips
+            {t('trips.title')}
           </h1>
           <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-            Plan, collaborate, and explore together.
+            {t('trips.subtitle')}
           </p>
         </div>
         <Button
@@ -31,7 +33,7 @@ export default function TripsListPage() {
           className="hidden gap-2 self-start sm:inline-flex sm:self-auto"
         >
           <KeyRound className="h-4 w-4" strokeWidth={2} />
-          Join Trip Using Code
+          {t('trips.joinUsingCode')}
         </Button>
       </header>
 
@@ -53,7 +55,7 @@ export default function TripsListPage() {
         <button
           type="button"
           onClick={() => setJoinOpen(true)}
-          aria-label="Join trip using code"
+          aria-label={t('trips.joinUsingCode')}
           className="bg-card text-foreground border-border focus-visible:ring-ring inline-flex h-12 w-12 items-center justify-center rounded-full border shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
         >
           <KeyRound className="h-5 w-5" strokeWidth={2} />
@@ -61,7 +63,7 @@ export default function TripsListPage() {
         <button
           type="button"
           onClick={() => setCreateOpen(true)}
-          aria-label="Start a new trip"
+          aria-label={t('trips.startNewJourney')}
           className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring inline-flex h-12 w-12 items-center justify-center rounded-full shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
         >
           <Plus className="h-5 w-5" strokeWidth={2.5} />

@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Plane, PlusCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@trip-flow/ui/components/button';
 import { Input } from '@trip-flow/ui/components/input';
 import { Label } from '@trip-flow/ui/components/label';
@@ -21,6 +22,7 @@ export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDi
   const [endsOn, setEndsOn] = useState<Date | undefined>(undefined);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const duration =
     startsOn && endsOn && endsOn >= startsOn
@@ -45,11 +47,11 @@ export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDi
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!title.trim() || !startsOn || !endsOn) {
-      setError('Please fill in every field');
+      setError(t('trips.fillAllFields'));
       return;
     }
     if (endsOn < startsOn) {
-      setError('End date cannot be before the start date');
+      setError(t('trips.endBeforeStart'));
       return;
     }
 
@@ -64,7 +66,7 @@ export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDi
       reset();
       onCreated();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create trip');
+      setError(err instanceof Error ? err.message : t('trips.failedCreate'));
       setSubmitting(false);
     }
   }
@@ -76,11 +78,11 @@ export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDi
         if (!next) reset();
         onOpenChange(next);
       }}
-      title="Create Group Trip"
+      title={t('trips.createGroupTrip')}
     >
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="trip-title">Trip Name</Label>
+          <Label htmlFor="trip-title">{t('trips.tripName')}</Label>
           <div className="relative">
             <Plane
               className="text-muted-foreground pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2"
@@ -90,7 +92,7 @@ export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDi
               id="trip-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Summer Alps Retreat"
+              placeholder={t('trips.tripNamePlaceholder')}
               autoFocus
               maxLength={120}
               required
@@ -100,28 +102,28 @@ export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDi
         </div>
 
         <div className="space-y-2">
-          <Label>Dates</Label>
+          <Label>{t('trips.dates')}</Label>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <DatePicker
               id="trip-start"
               value={startsOn}
               onChange={handleStartChange}
-              placeholder="Departure"
+              placeholder={t('trips.departure')}
             />
             <DatePicker
               id="trip-end"
               value={endsOn}
               onChange={setEndsOn}
               minDate={startsOn ?? undefined}
-              placeholder="Return"
+              placeholder={t('trips.return')}
             />
           </div>
         </div>
 
         <div className="bg-muted/40 border-border rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs font-medium">Calculated Duration</p>
+          <p className="text-muted-foreground text-xs font-medium">{t('trips.calculatedDuration')}</p>
           <p className="text-foreground mt-1 text-base font-semibold">
-            {duration !== null ? `${duration} day${duration === 1 ? '' : 's'}` : '— days'}
+            {duration !== null ? t('common.days', { count: duration }) : t('trips.daysPlaceholder')}
           </p>
         </div>
 
@@ -131,7 +133,7 @@ export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDi
 
         <Button type="submit" disabled={submitting} className="h-12 w-full gap-2">
           {!submitting && <PlusCircle className="h-5 w-5" strokeWidth={2} />}
-          {submitting ? 'Creating…' : 'Create Trip'}
+          {submitting ? t('trips.creating') : t('trips.createTrip')}
         </Button>
       </form>
     </Modal>

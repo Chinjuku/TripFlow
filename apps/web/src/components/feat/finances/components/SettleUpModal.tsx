@@ -3,6 +3,7 @@ import { Modal } from '@trip-flow/ui/components/modal';
 import { Button } from '@trip-flow/ui/components/button';
 import { Check, Copy, QrCode, CreditCard, CheckCircle2 } from 'lucide-react';
 import type { DebtRelation, UserPaymentDetail } from '../types';
+import { useTranslation, Trans } from 'react-i18next';
 
 interface SettleUpModalProps {
   open: boolean;
@@ -23,6 +24,7 @@ export function SettleUpModal({
 }: SettleUpModalProps) {
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [method, setMethod] = useState<'qr_image' | 'promptpay_id' | 'bank' | null>(null);
+  const { t } = useTranslation();
 
   // Compute active methods based on mutually exclusive visibility flags
   const activeMethods: ('qr_image' | 'promptpay_id' | 'bank')[] = [];
@@ -80,8 +82,8 @@ export function SettleUpModal({
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      title="Settle Up Debt"
-      description={`Pay off your balance with ${payee.name}.`}
+      title={t('finances.settleUpDebt')}
+      description={t('finances.payOffBalance', { name: payee.name })}
       className="sm:max-w-md"
     >
       <div className="space-y-5 pt-2">
@@ -100,12 +102,12 @@ export function SettleUpModal({
               </div>
             )}
             <div>
-              <span className="text-muted-foreground text-xs block">Sending Repayment To</span>
+              <span className="text-muted-foreground text-xs block">{t('finances.sendingRepaymentTo')}</span>
               <span className="text-foreground text-sm font-bold">{payee.name}</span>
             </div>
           </div>
           <div className="text-right">
-            <span className="text-muted-foreground text-xs block">Amount Due</span>
+            <span className="text-muted-foreground text-xs block">{t('finances.amountDue')}</span>
             <span className="text-rose-600 font-headline text-lg font-extrabold">
               ${payee.amount.toFixed(2)}
             </span>
@@ -126,7 +128,7 @@ export function SettleUpModal({
                 }`}
               >
                 <QrCode className="w-3.5 h-3.5 animate-in fade-in zoom-in duration-300" />
-                QR Image
+                {t('finances.qrImage')}
               </button>
             )}
             {activeMethods.includes('promptpay_id') && (
@@ -140,7 +142,7 @@ export function SettleUpModal({
                 }`}
               >
                 <QrCode className="w-3.5 h-3.5 animate-in fade-in zoom-in duration-300" />
-                PromptPay ID
+                {t('finances.promptPayId')}
               </button>
             )}
             {activeMethods.includes('bank') && (
@@ -154,7 +156,7 @@ export function SettleUpModal({
                 }`}
               >
                 <CreditCard className="w-3.5 h-3.5 animate-in fade-in zoom-in duration-300" />
-                Bank Transfer
+                {t('finances.bankTransfer')}
               </button>
             )}
           </div>
@@ -170,11 +172,11 @@ export function SettleUpModal({
                 className="w-48 h-48 object-contain"
               />
               <div className="absolute inset-x-0 bottom-0 bg-emerald-600 text-white text-[8px] font-bold text-center py-0.5 uppercase tracking-widest">
-                PromptPay QR Image
+                {t('finances.promptPayQrImage')}
               </div>
             </div>
             <p className="text-muted-foreground text-[10px] text-center max-w-xs leading-normal">
-              Scan this QR image using your bank app to transfer the payment.
+              {t('finances.scanQrApp')}
             </p>
           </div>
         )}
@@ -190,7 +192,7 @@ export function SettleUpModal({
                   className="w-48 h-48 object-contain"
                 />
                 <div className="absolute inset-x-0 bottom-0 bg-blue-600 text-white text-[8px] font-bold text-center py-0.5 uppercase tracking-widest">
-                  PromptPay Dynamic QR
+                  {t('finances.promptPayDynamicQr')}
                 </div>
               </div>
             )}
@@ -198,7 +200,7 @@ export function SettleUpModal({
             {promptPayId && (
               <div className="flex items-center gap-2 bg-blue-50/50 border border-blue-100 rounded-xl px-3 py-1.5 dark:bg-slate-900/40 dark:border-blue-950/20">
                 <span className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase">
-                  PromptPay ID:
+                  {t('finances.promptPayId')}:
                 </span>
                 <span className="text-foreground text-xs font-bold font-mono">{promptPayId}</span>
                 <button
@@ -215,7 +217,11 @@ export function SettleUpModal({
               </div>
             )}
             <p className="text-muted-foreground text-[10px] text-center max-w-xs leading-normal">
-              Scan the QR using any Thai Mobile Banking app to transfer exactly <b>฿{payee.amount.toFixed(2)}</b>.
+              <Trans
+                i18nKey="finances.scanQrAnyApp"
+                values={{ amount: payee.amount.toFixed(2) }}
+                components={{ 1: <b /> }}
+              />
             </p>
           </div>
         )}
@@ -224,17 +230,17 @@ export function SettleUpModal({
         {method === 'bank' && (
           <div className="space-y-3 bg-muted/20 border border-border rounded-xl p-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="flex items-center justify-between border-b border-border pb-2 last:border-0">
-              <span className="text-muted-foreground text-xs font-semibold">Bank Name</span>
+              <span className="text-muted-foreground text-xs font-semibold">{t('finances.bankName')}</span>
               <span className="text-foreground text-xs font-bold uppercase">{paymentDetails?.bank_name}</span>
             </div>
 
             <div className="flex items-center justify-between border-b border-border pb-2 last:border-0">
-              <span className="text-muted-foreground text-xs font-semibold">Account Name</span>
+              <span className="text-muted-foreground text-xs font-semibold">{t('finances.bankAccountName')}</span>
               <span className="text-foreground text-xs font-bold">{paymentDetails?.bank_account_name || payee.name}</span>
             </div>
 
             <div className="flex items-center justify-between py-1 last:border-0">
-              <span className="text-muted-foreground text-xs font-semibold">Account Number</span>
+              <span className="text-muted-foreground text-xs font-semibold">{t('finances.accountNumber')}</span>
               <div className="flex items-center gap-2">
                 <span className="text-foreground text-xs font-bold font-mono">{paymentDetails?.bank_account_number}</span>
                 <button
@@ -257,11 +263,10 @@ export function SettleUpModal({
         {activeMethods.length === 0 && (
           <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl text-xs space-y-1.5 dark:bg-amber-950/20 dark:border-amber-900/30 dark:text-amber-300 animate-in fade-in duration-300">
             <h4 className="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-200">
-              No payment details provided
+              {t('finances.noPaymentDetails')}
             </h4>
             <p className="leading-relaxed">
-              {payee.name} hasn't registered a PromptPay QR, PromptPay ID, or Bank Account yet. Please settle up offline, then click
-              "Mark as Paid" below to record the payment.
+              {t('finances.noPaymentDetailsDesc', { name: payee.name })}
             </p>
           </div>
         )}
@@ -274,7 +279,7 @@ export function SettleUpModal({
             className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-10 rounded-xl shadow-sm shadow-emerald-600/10 flex items-center justify-center gap-1.5 transition-colors"
           >
             <CheckCircle2 className="w-4 h-4" />
-            {isSubmitting ? 'Recording Repayment...' : 'Mark as Paid'}
+            {isSubmitting ? t('finances.recordingRepayment') : t('finances.markAsPaid')}
           </Button>
           <Button
             type="button"
@@ -282,7 +287,7 @@ export function SettleUpModal({
             onClick={() => onOpenChange(false)}
             className="w-full text-xs h-9 rounded-xl border border-border hover:bg-muted font-bold transition-colors"
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
         </div>
       </div>

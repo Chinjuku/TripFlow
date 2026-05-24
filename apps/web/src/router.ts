@@ -14,7 +14,7 @@ export type Path =
   | `/trips/:id/monitoring`
   | `/trips/:id/plan`
   | `/trips/:id/schedule`
-  | `/trips/:id/to-paid`
+  | `/trips/:id/to-pay`
   | `/trips/:id/to-receive`
 
 export type Params = {
@@ -24,7 +24,7 @@ export type Params = {
   '/trips/:id/monitoring': { id: string }
   '/trips/:id/plan': { id: string }
   '/trips/:id/schedule': { id: string }
-  '/trips/:id/to-paid': { id: string }
+  '/trips/:id/to-pay': { id: string }
   '/trips/:id/to-receive': { id: string }
 }
 

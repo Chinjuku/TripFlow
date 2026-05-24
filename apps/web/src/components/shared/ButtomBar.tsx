@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { Map, Calendar, Compass, Wallet, Settings } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@trip-flow/ui/lib/cn';
 
 interface ButtomBarProps {
@@ -8,6 +9,7 @@ interface ButtomBarProps {
 
 export function ButtomBar({ tripId }: ButtomBarProps) {
   const location = useLocation();
+  const { t } = useTranslation();
   const isFinancesActive = 
     location.pathname.includes('/finances') || 
     location.pathname.includes('/all-expenses') || 
@@ -28,7 +30,7 @@ export function ButtomBar({ tripId }: ButtomBarProps) {
         }
       >
         <Map className="h-5 w-5" strokeWidth={2} />
-        <span className="text-[9px] mt-0.5 tracking-wider">Plan</span>
+        <span className="text-[9px] mt-0.5 tracking-wider">{t('nav.plan')}</span>
       </NavLink>
 
       {/* 2. Schedule */}
@@ -42,7 +44,7 @@ export function ButtomBar({ tripId }: ButtomBarProps) {
         }
       >
         <Calendar className="h-5 w-5" strokeWidth={2} />
-        <span className="text-[9px] mt-0.5 tracking-wider">Schedule</span>
+        <span className="text-[9px] mt-0.5 tracking-wider">{t('nav.schedule')}</span>
       </NavLink>
 
       {/* 3. Overview (Floating Primary Color Circle in Center) */}
@@ -74,7 +76,7 @@ export function ButtomBar({ tripId }: ButtomBarProps) {
         }
       >
         <Wallet className="h-5 w-5" strokeWidth={2} />
-        <span className="text-[9px] mt-0.5 tracking-wider">Finances</span>
+        <span className="text-[9px] mt-0.5 tracking-wider">{t('nav.finances')}</span>
       </NavLink>
 
       {/* 5. Settings */}
@@ -88,7 +90,7 @@ export function ButtomBar({ tripId }: ButtomBarProps) {
         }
       >
         <Settings className="h-5 w-5" strokeWidth={2} />
-        <span className="text-[9px] mt-0.5 tracking-wider">Settings</span>
+        <span className="text-[9px] mt-0.5 tracking-wider">{t('nav.settings')}</span>
       </NavLink>
     </nav>
   );

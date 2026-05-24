@@ -3,6 +3,7 @@ import { Utensils, Car, Compass, Home, Banknote, ChevronDown, ChevronUp, ArrowRi
 import { Button } from '@trip-flow/ui/components/button';
 import type { HydratedExpense, HydratedSettlement, HydratedExpenseSplit } from '../types';
 import { Link, useParams, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface ExpenseListProps {
   expenses: HydratedExpense[];
@@ -22,6 +23,7 @@ export function ExpenseList({
   const [expandedExpenseId, setExpandedExpenseId] = useState<string | null>(null);
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const toggleExpand = (id: string) => {
     setExpandedExpenseId((prev) => (prev === id ? null : id));
@@ -54,9 +56,9 @@ export function ExpenseList({
     yesterday.setDate(yesterday.getDate() - 1);
 
     if (d.toDateString() === today.toDateString()) {
-      return 'Today';
+      return t('common.today');
     } else if (d.toDateString() === yesterday.toDateString()) {
-      return 'Yesterday';
+      return t('common.yesterday');
     } else {
       return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
     }
@@ -65,18 +67,18 @@ export function ExpenseList({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between border-b border-border pb-3">
-        <h3 className="font-headline text-foreground text-xl font-bold tracking-tight">Recent Activity</h3>
+        <h3 className="font-headline text-foreground text-xl font-bold tracking-tight">{t('finances.recentActivity')}</h3>
         {location.pathname.endsWith('/finances') && (
-          <Link to={`/trips/${id}/all-expenses`} className="text-primary text-sm font-semibold hover:text-primary/80 hover:underline">See all</Link>
+          <Link to={`/trips/${id}/all-expenses`} className="text-primary text-sm font-semibold hover:text-primary/80 hover:underline">{t('finances.seeAll')}</Link>
         )}
       </div>
 
       {feedItems.length === 0 ? (
         <div className="border border-dashed border-border rounded-2xl p-12 text-center text-muted-foreground flex flex-col items-center justify-center gap-2">
           <Banknote className="w-12 h-12 text-muted-foreground/30" />
-          <h4 className="font-bold text-foreground text-sm">No transactions yet</h4>
+          <h4 className="font-bold text-foreground text-sm">{t('finances.noTransactionsYet')}</h4>
           <p className="text-xs max-w-xs">
-            Start tracking trip costs by using the "Record Expense" button at the top.
+            {t('finances.noTransactionsDesc')}
           </p>
         </div>
       ) : (
@@ -96,16 +98,16 @@ export function ExpenseList({
               let splitLabel = '';
               let mySplitSummary = '';
               if (exp.split_method === 'equally') {
-                splitLabel = `Split ${exp.splits.length} ways`;
+                splitLabel = t('finances.splitNways', { count: exp.splits.length });
               } else {
-                splitLabel = 'Exact Amount';
+                splitLabel = t('finances.exactAmount');
               }
 
               if (isPaidByMe) {
                 const totalLent = exp.amount - (mySplit?.amount ?? 0);
-                mySplitSummary = totalLent > 0 ? `Lent ฿${totalLent.toFixed(2)}` : 'Self paid';
+                mySplitSummary = totalLent > 0 ? `${t('finances.lent')} ฿${totalLent.toFixed(2)}` : t('finances.selfPaid');
               } else {
-                mySplitSummary = mySplit ? `You owe ฿${mySplit.amount.toFixed(2)}` : 'Not involved';
+                mySplitSummary = mySplit ? `${t('finances.youOwe')} ฿${mySplit.amount.toFixed(2)}` : t('finances.notInvolved');
               }
 
               return (
@@ -128,7 +130,7 @@ export function ExpenseList({
                           {exp.description}
                         </h4>
                         <div className="text-muted-foreground text-xs flex flex-wrap items-center gap-1">
-                          <span>Paid by {isPaidByMe ? 'You' : exp.payerName}</span>
+                          <span>{t('finances.paidBy')} {isPaidByMe ? t('common.you') : exp.payerName}</span>
                           <span className="opacity-40">•</span>
                           <span>{formatDate(exp.expense_date)}</span>
                         </div>
@@ -154,8 +156,8 @@ export function ExpenseList({
                   {isExpanded && (
                     <div className="bg-muted/30 border-t border-border px-5 py-4 space-y-3">
                       <div className="flex justify-between items-center text-[10px] font-bold tracking-wider text-muted-foreground uppercase font-label">
-                        <span>Split Breakdown ({splitLabel})</span>
-                        <span>Share</span>
+                        <span>{t('finances.splitBreakdown')} ({splitLabel})</span>
+                        <span>{t('finances.share')}</span>
                       </div>
                       <div className="space-y-2">
                         {exp.splits.map((split: HydratedExpenseSplit) => {
@@ -175,7 +177,7 @@ export function ExpenseList({
                                   </div>
                                 )}
                                 <span className={`font-medium ${isSplitMe ? 'text-primary font-semibold' : 'text-foreground'}`}>
-                                  {isSplitMe ? 'You' : split.userName}
+                                  {isSplitMe ? t('common.you') : split.userName}
                                   {split.item_paid && (
                                     <span className="text-muted-foreground text-[10px] italic ml-1.5 font-normal">
                                       ({split.item_paid})
@@ -215,14 +217,14 @@ export function ExpenseList({
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-foreground text-sm font-bold sm:text-base leading-tight">
-                          {isPayerMe ? 'You' : set.payerName} settled with {isPayeeMe ? 'you' : set.payeeName}
+                          {isPayerMe ? t('common.you') : set.payerName} {t('finances.settledWith')} {isPayeeMe ? t('common.you') : set.payeeName}
                         </span>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border font-label ${
                           set.status === 'completed' 
                             ? 'bg-primary/10 border-primary/20 text-primary' 
                             : 'bg-warning/10 border-warning/20 text-warning'
                         }`}>
-                          {set.status === 'completed' ? 'Paid' : 'Pending Confirmation'}
+                          {set.status === 'completed' ? t('finances.paid') : t('finances.pendingConfirmation')}
                         </span>
                       </div>
                       <p className="text-muted-foreground text-xs">
@@ -242,7 +244,7 @@ export function ExpenseList({
                           onClick={() => onConfirmSettlement(set.id)}
                           className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-[10px] px-2.5 py-1 h-auto rounded mt-1 shadow-sm shrink-0 font-label"
                         >
-                          {confirmingId === set.id ? 'Confirming...' : 'Confirm Paid'}
+                          {confirmingId === set.id ? t('finances.confirming') : t('finances.confirmPaid')}
                         </Button>
                       )}
                     </div>

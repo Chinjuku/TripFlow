@@ -1,6 +1,7 @@
-import React, { useState, createContext, useContext } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, createContext, useContext, useMemo } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Plus, CreditCard, AlertCircle, Sparkles } from 'lucide-react';
+import { useTranslation, Trans } from 'react-i18next';
 import { Button } from '@trip-flow/ui/components/button';
 import { Skeleton } from '@trip-flow/ui/components/skeleton';
 import { cn } from '@trip-flow/ui/lib/cn';
@@ -24,15 +25,7 @@ import {
   type DebtRelation,
 } from '@/components/feat/finances';
 
-const TABS = [
-  { id: 'all', label: 'All', path: 'finances' },
-  { id: 'all-expense', label: 'All Expenses', path: 'all-expenses' },
-  { id: 'who-owes-you', label: 'Who Owes You', path: 'to-receive' },
-  { id: 'who-you-owes', label: 'Who You Owes', path: 'to-paid' },
-  { id: 'monitoring', label: 'Monitoring', path: 'monitoring' },
-] as const;
-
-type TabId = (typeof TABS)[number]['id'];
+type TabId = 'all' | 'all-expense' | 'settlements' | 'monitoring';
 
 interface TripFinancesContextType {
   trip: any;
@@ -66,6 +59,16 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { t } = useTranslation();
+  const isToReceive = location.pathname.endsWith('/to-receive');
+
+  const TABS = useMemo(() => [
+    { id: 'all' as TabId, label: t('common.all'), path: 'finances' },
+    { id: 'all-expense' as TabId, label: t('finances.allExpenses'), path: 'all-expenses' },
+    { id: 'settlements' as TabId, label: t('finances.settlements'), path: 'to-receive' },
+    { id: 'monitoring' as TabId, label: t('finances.monitoring'), path: 'monitoring' },
+  ], [t]);
 
   // Local state for modals & debt optimization
   const [isOptimized, setIsOptimized] = useState(false);
@@ -100,7 +103,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   if (error) {
     return (
       <div className="mx-auto max-w-6xl">
-        <BackLink to={`/trips/${id}`} label="Trip workspace" className="mb-6" />
+        <BackLink to={`/trips/${id}`} label={t('overview.tripOverview')} className="mb-6" />
         <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border p-4 text-sm flex items-center gap-2">
           <AlertCircle className="w-5 h-5 shrink-0" />
           <span>{error.message}</span>
@@ -209,11 +212,13 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   // Dynamic header settings configuration mapping based on activeTab
   const TABS_SETTING_HEADERS: Record<TabId, { title: string; subtitle: React.ReactNode; actions: React.ReactNode }> = {
     all: {
-      title: 'Trip Finances',
+      title: t('finances.title'),
       subtitle: trip ? (
-        <>
-          Managing costs for <b>{trip.title}</b> ({formatDateRange(trip.startsOn, trip.endsOn).range})
-        </>
+        <Trans 
+          i18nKey="finances.managingCostsFor" 
+          values={{ title: trip.title, range: formatDateRange(trip.startsOn, trip.endsOn).range }}
+          components={{ b: <b /> }}
+        />
       ) : (
         <Skeleton className="h-4 w-48" />
       ),
@@ -225,7 +230,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
             className="gap-2 text-xs font-bold rounded-xl border border-border transition-colors h-10 animate-in fade-in duration-300"
           >
             <CreditCard className="h-4 w-4" />
-            Your QR & Payment Details
+            {t('finances.paymentDetails')}
           </Button>
 
           <Button
@@ -233,14 +238,14 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
             className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-2 rounded-xl shadow-sm transition-colors h-10 shrink-0 border-none"
           >
             <Plus className="h-4 w-4" />
-            Record Expense
+            {t('finances.recordExpense')}
           </Button>
         </>
       ),
     },
     'all-expense': {
-      title: 'All Expenses',
-      subtitle: 'View and audit every logged transaction in this trip workspace.',
+      title: t('finances.allExpenses'),
+      subtitle: t('finances.viewAndAudit'),
       actions: (
         <>
           <Button
@@ -249,7 +254,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
             className="gap-2 text-xs font-bold rounded-xl border border-border transition-colors h-10 animate-in fade-in duration-300"
           >
             <CreditCard className="h-4 w-4" />
-            Your QR & Payment Details
+            {t('finances.paymentDetails')}
           </Button>
 
           <Button
@@ -257,14 +262,14 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
             className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-2 rounded-xl shadow-sm transition-colors h-10 shrink-0 border-none"
           >
             <Plus className="h-4 w-4" />
-            Record Expense
+            {t('finances.recordExpense')}
           </Button>
         </>
       ),
     },
-    'who-owes-you': {
-      title: 'Settlements',
-      subtitle: 'Manage who owes you money.',
+    settlements: {
+      title: t('finances.settlements'),
+      subtitle: isToReceive ? t('finances.manageWhoOwesYou') : t('finances.trackMoneyOwe'),
       actions: (
         <div className="flex gap-3 items-center">
           {/* Debt Optimization Toggle */}
@@ -279,90 +284,41 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
               )}
             >
               <Sparkles className="w-3.5 h-3.5 shrink-0" />
-              {isOptimized ? 'Optimized Active' : 'Enable Optimization'}
+              {isOptimized ? t('finances.optimizedActive') : t('finances.enableOptimization')}
             </button>
           </div>
 
           {/* Toggle pill buttons */}
           <div className="bg-muted p-0.5 rounded-xl flex border border-border h-10 shrink-0">
             <button
-              onClick={() => navigate(`/trips/${id}/to-paid`)}
+              onClick={() => navigate(`/trips/${id}/to-pay`)}
               className={cn(
                 'px-4 py-1.5 text-xs font-bold rounded-lg transition-all h-[2.125rem] font-label',
-                activeTab === 'who-you-owes'
+                !isToReceive
                   ? 'bg-card text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
-              To Pay
+              {t('finances.toPay')}
             </button>
             <button
               onClick={() => navigate(`/trips/${id}/to-receive`)}
               className={cn(
                 'px-4 py-1.5 text-xs font-bold rounded-lg transition-all h-[2.125rem] font-label',
-                activeTab === 'who-owes-you'
+                isToReceive
                   ? 'bg-card text-primary shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
-              To Receive
-            </button>
-          </div>
-        </div>
-      ),
-    },
-    'who-you-owes': {
-      title: 'Settlements',
-      subtitle: 'Track the money you owe others.',
-      actions: (
-        <div className="flex gap-3 items-center">
-          {/* Debt Optimization Toggle */}
-          <div className="bg-muted p-0.5 rounded-xl flex items-center border border-border h-10 shrink-0">
-            <button
-              onClick={() => setIsOptimized(!isOptimized)}
-              className={cn(
-                'px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 h-[2.125rem] font-label',
-                isOptimized
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              <Sparkles className="w-3.5 h-3.5 shrink-0" />
-              {isOptimized ? 'Optimized Active' : 'Enable Optimization'}
-            </button>
-          </div>
-
-          {/* Toggle pill buttons */}
-          <div className="bg-muted p-0.5 rounded-xl flex border border-border h-10 shrink-0">
-            <button
-              onClick={() => navigate(`/trips/${id}/to-paid`)}
-              className={cn(
-                'px-4 py-1.5 text-xs font-bold rounded-lg transition-all h-[2.125rem] font-label',
-                activeTab === 'who-you-owes'
-                  ? 'bg-card text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              To Pay
-            </button>
-            <button
-              onClick={() => navigate(`/trips/${id}/to-receive`)}
-              className={cn(
-                'px-4 py-1.5 text-xs font-bold rounded-lg transition-all h-[2.125rem] font-label',
-                activeTab === 'who-owes-you'
-                  ? 'bg-card text-primary shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              To Receive
+              {t('finances.toReceive')}
             </button>
           </div>
         </div>
       ),
     },
     monitoring: {
-      title: 'Finances Monitoring',
-      subtitle: 'Observe trip budget metrics and expense breakdowns.',
+      title: t('finances.financesMonitoring'),
+      subtitle: t('finances.observeBudget'),
       actions: null,
     },
   };
@@ -387,7 +343,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
       <div className="mx-auto flex max-w-6xl flex-col gap-8 h-full lg:h-[calc(100vh-5.5rem)] lg:overflow-hidden animate-in fade-in duration-300">
         <TripPageHeader
           backTo={`/trips/${id}`}
-          backLabel="Trip workspace"
+          backLabel={t('overview.tripOverview')}
           title={headerConfig.title}
           subtitle={headerConfig.subtitle}
           actions={headerConfig.actions}
@@ -427,7 +383,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
 
             {activeTab === 'all-expense' && (
               <span className="text-muted-foreground mb-2 hidden text-xs sm:inline shrink-0">
-                Tip: click 'Record Expense' to log new costs.
+                {t('finances.tipRecordExpense')}
               </span>
             )}
           </div>
@@ -439,7 +395,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
                 <TripFinancesAllSkeleton />
               ) : activeTab === 'all-expense' ? (
                 <TripFinancesAllExpensesSkeleton />
-              ) : activeTab === 'who-owes-you' || activeTab === 'who-you-owes' ? (
+              ) : activeTab === 'settlements' ? (
                 <TripFinancesRepaymentsSkeleton />
               ) : (
                 <TripFinancesFallbackSkeleton />

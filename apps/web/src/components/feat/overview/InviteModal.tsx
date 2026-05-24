@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { UserPlus, Copy, Check } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@trip-flow/ui/components/button';
 import { Modal } from '@trip-flow/ui/components/modal';
 import { cn } from '@trip-flow/ui/lib/cn';
@@ -15,6 +16,7 @@ interface InviteModalProps {
 
 export function InviteModal({ open, onOpenChange, trip }: InviteModalProps) {
   const [copied, setCopied] = useState(false);
+  const { t } = useTranslation();
 
   if (!trip) return null;
 
@@ -32,7 +34,7 @@ export function InviteModal({ open, onOpenChange, trip }: InviteModalProps) {
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      title="Invite to Trip"
+      title={t('overview.inviteFriends')}
       hideHeader
       className="overflow-hidden"
     >
@@ -43,10 +45,10 @@ export function InviteModal({ open, onOpenChange, trip }: InviteModalProps) {
             <UserPlus className="h-6 w-6" strokeWidth={2} />
           </div>
           <h2 className="font-headline text-foreground text-xl font-bold">
-            Invite Friends
+            {t('overview.inviteFriends')}
           </h2>
           <p className="text-muted-foreground max-w-xs text-sm leading-relaxed">
-            Share this unique invite code with your friends so they can join your trip <b>{trip.title}</b>.
+            {t('overview.inviteDesc', { title: trip.title })}
           </p>
         </div>
 
@@ -57,7 +59,7 @@ export function InviteModal({ open, onOpenChange, trip }: InviteModalProps) {
           <div className="bg-muted border border-border flex items-center justify-between gap-4 w-full max-w-sm rounded-2xl px-5 py-4 shadow-inner">
             <div className="flex flex-col">
               <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-0.5">
-                Invite Code
+                {t('common.inviteCode')}
               </span>
               <span className={cn(
                 "font-mono text-2xl font-black tracking-widest transition-colors duration-200 select-all",
@@ -75,12 +77,12 @@ export function InviteModal({ open, onOpenChange, trip }: InviteModalProps) {
               {copied ? (
                 <>
                   <Check className="h-4 w-4" />
-                  Copied
+                  {t('common.copied')}
                 </>
               ) : (
                 <>
                   <Copy className="h-4 w-4" />
-                  Copy
+                  {t('common.copy')}
                 </>
               )}
             </Button>
@@ -91,11 +93,11 @@ export function InviteModal({ open, onOpenChange, trip }: InviteModalProps) {
 
         {/* Steps */}
         <div className="bg-muted/50 px-5 py-5 sm:px-6 text-sm flex flex-col gap-3">
-          <h4 className="font-semibold text-foreground">How to use this code:</h4>
+          <h4 className="font-semibold text-foreground">{t('overview.howToUseCode')}</h4>
           <ol className="list-decimal list-inside text-muted-foreground text-xs space-y-2 leading-relaxed">
-            <li>Tell your friends to sign in to <b>TripFlow</b></li>
-            <li>Go to the <b>Trips</b> page and click <b>"Join Trip Using Code"</b></li>
-            <li>Paste or enter the code to instantly join</li>
+            <li>{t('overview.howToStep1')}</li>
+            <li>{t('overview.howToStep2')}</li>
+            <li>{t('overview.howToStep3')}</li>
           </ol>
         </div>
 
@@ -106,7 +108,7 @@ export function InviteModal({ open, onOpenChange, trip }: InviteModalProps) {
             onClick={() => onOpenChange(false)}
             className="bg-primary hover:bg-primary/95 text-primary-foreground h-11 w-full rounded-xl font-semibold shadow-sm"
           >
-            Done
+            {t('common.done')}
           </Button>
         </div>
       </div>
