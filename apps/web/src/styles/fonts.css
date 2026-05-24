@@ -1,0 +1,31 @@
+/**
+ * Web font setup.
+ *
+ * Variable axis fonts come bundled via `@fontsource-variable/*` so we
+ * never block on Google Fonts. Thai is served via `@fontsource/noto-sans-thai`
+ * (self-hosted, subset, font-display: swap) and only kicks in when the
+ * document is in Thai (see `:lang(th)` overrides below).
+ */
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/manrope';
+@import '@fontsource-variable/jetbrains-mono';
+
+/* Noto Sans Thai — Thai subset, regular + bold weights cover headlines/labels. */
+@import '@fontsource/noto-sans-thai/400.css';
+@import '@fontsource/noto-sans-thai/500.css';
+@import '@fontsource/noto-sans-thai/700.css';
+
+/**
+ * Thai-language font overrides. Lives here (the app) rather than in
+ * `@trip-flow/ui` because the package shouldn't decide which languages
+ * the app supports. `:lang(th)` is preferred over `html[lang="th"]` so
+ * nested elements with their own `lang` attribute still resolve.
+ *
+ * The Latin fallbacks (Manrope/Inter) stay identical to the base
+ * tokens — only Noto Sans Thai is prepended to render Thai glyphs.
+ */
+:lang(th) {
+  --font-headline: 'Noto Sans Thai', 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Noto Sans Thai', 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-label: 'Noto Sans Thai', 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+}

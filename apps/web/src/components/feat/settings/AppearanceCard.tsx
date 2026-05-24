@@ -8,14 +8,11 @@ import {
 import { Globe, Palette } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
-
-const LANGUAGES = [
-  { code: 'en', label: 'English', flag: '🇺🇸' },
-  { code: 'th', label: 'ไทย', flag: '🇹🇭' },
-] as const;
+import { useLocale } from '@/lib/i18n/useLocale';
 
 export function AppearanceCard() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { locale, locales, meta, setLocale } = useLocale();
 
   return (
     <Card>
@@ -53,22 +50,21 @@ export function AppearanceCard() {
               </div>
             </div>
             <div className="flex gap-1 rounded-xl border border-border bg-muted/50 p-1">
-              {LANGUAGES.map((lang) => {
-                const isActive = i18n.language === lang.code ||
-                  (i18n.language.startsWith(lang.code) && !LANGUAGES.some(l => l.code === i18n.language));
+              {locales.map((code) => {
+                const isActive = code === locale;
                 return (
                   <button
-                    key={lang.code}
+                    key={code}
                     type="button"
-                    onClick={() => void i18n.changeLanguage(lang.code)}
+                    onClick={() => void setLocale(code)}
                     className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
                       isActive
                         ? 'bg-card text-foreground shadow-sm border border-border'
                         : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    <span>{lang.flag}</span>
-                    {lang.label}
+                    <span>{meta[code].flag}</span>
+                    {meta[code].label}
                   </button>
                 );
               })}
