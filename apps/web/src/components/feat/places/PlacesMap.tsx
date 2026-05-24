@@ -9,6 +9,7 @@ import {
 } from '@vis.gl/react-google-maps';
 import {
   Check,
+  Clock,
   Coffee,
   History,
   Landmark,
@@ -547,12 +548,15 @@ function MapBody({
         >
           <div
             className={cn(
-              'flex h-7 w-7 items-center justify-center rounded-full border-2 shadow-md transition-transform hover:scale-110',
-              'border-primary bg-card text-primary',
+              'flex h-8 w-8 items-center justify-center rounded-full border-2 shadow-lg transition-transform hover:scale-110',
+              // Brand-coloured pin so it stays prominent on light, dark, and
+              // satellite map tiles alike. White ring lifts it off the map
+              // surface without depending on the surrounding tile colour.
+              'bg-primary border-primary-foreground text-primary-foreground ring-2 ring-primary/30',
             )}
             aria-label={hit.name}
           >
-            <MapPin className="h-3.5 w-3.5" strokeWidth={2.5} />
+            <MapPin className="h-4 w-4" strokeWidth={2.5} />
           </div>
         </AdvancedMarker>
       ))}
@@ -867,44 +871,65 @@ function PoiPreviewCard({ poi, loading, alreadyPicked, onAdd }: PoiPreviewCardPr
   }
 
   return (
-    <div className="w-[18rem] max-w-[80vw]">
-      {poi.photoUrl && (
-        <img
-          src={poi.photoUrl}
-          alt=""
-          className="-mx-3 -mt-3 mb-3 h-28 w-[calc(100%+1.5rem)] object-cover"
-          loading="lazy"
-        />
-      )}
-      <div className="space-y-2">
-        <div>
-          <h4 className="text-foreground text-sm font-bold leading-tight">{poi.name}</h4>
-          {poi.address && (
-            <p className="text-muted-foreground mt-0.5 line-clamp-2 flex items-start gap-1 text-xs">
-              <MapPin className="mt-0.5 h-3 w-3 shrink-0" strokeWidth={1.75} />
-              <span>{poi.address}</span>
-            </p>
-          )}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
+    <div className="w-[19rem] max-w-[82vw]">
+      {poi.photoUrl ? (
+        <div className="relative h-32 w-full">
+          <img
+            src={poi.photoUrl}
+            alt=""
+            className="h-full w-full object-cover"
+            loading="lazy"
+          />
+          {/* Bottom-to-top dark fade so the rating chip stays legible over
+              any photo. Hard-coded to black (not `--foreground`) because the
+              rating chip itself is light in both themes — we always need
+              darkness behind it, regardless of light/dark mode. */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           {poi.rating !== null && (
-            <span className="bg-muted text-foreground inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold">
+            <span className="bg-card/95 text-foreground absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold shadow-sm backdrop-blur">
               <Star className="h-3 w-3 fill-amber-400 text-amber-400" strokeWidth={2} />
               {poi.rating.toFixed(1)}
             </span>
           )}
-          {poi.openingHoursText && (
-            <span className="text-muted-foreground text-xs">{poi.openingHoursText}</span>
+        </div>
+      ) : (
+        // Fallback strip keeps the header visually distinct even without a photo.
+        <div className="from-primary/15 via-tertiary/10 relative h-10 w-full bg-gradient-to-br to-transparent">
+          {poi.rating !== null && (
+            <span className="bg-card/95 text-foreground absolute bottom-1.5 right-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold shadow-sm">
+              <Star className="h-3 w-3 fill-amber-400 text-amber-400" strokeWidth={2} />
+              {poi.rating.toFixed(1)}
+            </span>
           )}
         </div>
+      )}
+
+      <div className="space-y-3 p-3.5">
+        <div className="space-y-1">
+          <h4 className="font-headline text-foreground text-base font-bold leading-snug">
+            {poi.name}
+          </h4>
+          {poi.address && (
+            <p className="text-muted-foreground flex items-start gap-1.5 text-xs leading-relaxed">
+              <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
+              <span className="line-clamp-2">{poi.address}</span>
+            </p>
+          )}
+        </div>
+
+        {poi.openingHoursText && (
+          <div className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
+            <Clock className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />
+            <span className="truncate">{poi.openingHoursText}</span>
+          </div>
+        )}
 
         <Button
           type="button"
           onClick={handleAdd}
           disabled={adding || loading || alreadyPicked}
           size="sm"
-          className="w-full gap-2"
+          className="h-9 w-full gap-2 rounded-xl font-semibold"
         >
           {alreadyPicked ? (
             <>
