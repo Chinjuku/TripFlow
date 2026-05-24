@@ -233,155 +233,95 @@ export async function getFinancesByTripId(
   let whoOwesYou: DebtRelation[] = [];
   let whatYouOwe: DebtRelation[] = [];
 
+  // Direct pairwise balance
+  const pairwiseDebt: Record<string, Record<string, number>> = {};
+  for (const m1 of members) {
+    const userDebt: Record<string, number> = {};
+    pairwiseDebt[m1.userId] = userDebt;
+    for (const m2 of members) {
+      userDebt[m2.userId] = 0;
+    }
+  }
+
+  // Accumulate splits
+  for (const exp of rawExpenses) {
+    const payerId = exp.paid_by_id;
+    const expSplits = splitsByExpense.get(exp.id) ?? [];
+    for (const split of expSplits) {
+      if (split.user_id !== payerId) {
+        // split.user_id owes payerId
+        const debtorDebts = pairwiseDebt[split.user_id];
+        if (debtorDebts) {
+          debtorDebts[payerId] = (debtorDebts[payerId] ?? 0) + split.amount;
+        }
+      }
+    }
+  }
+
+  // Subtract completed settlements
+  for (const set of rawSettlements) {
+    if (set.status === 'completed') {
+      // set.payer_id paid set.payee_id, reducing what payer_id owes payee_id
+      const debtorDebts = pairwiseDebt[set.payer_id];
+      if (debtorDebts) {
+        debtorDebts[set.payee_id] = (debtorDebts[set.payee_id] ?? 0) - set.amount;
+      }
+    }
+  }
+
   if (isDebtOptimized) {
-    // Greedy transaction minimization
-    const balances = Object.entries(netBalances).map(([userId, amount]) => ({
-      userId,
-      amount,
-    }));
+    // Net the pairwise debts for all pairs of members
+    for (let i = 0; i < members.length; i++) {
+      for (let j = i + 1; j < members.length; j++) {
+        const u1 = members[i]!.userId;
+        const u2 = members[j]!.userId;
 
-    // Keep loop safe from floating point infinite loops using an epsilon
-    let iterations = 0;
-    const maxIterations = balances.length * balances.length;
+        const u1OwesU2 = pairwiseDebt[u1]?.[u2] ?? 0;
+        const u2OwesU1 = pairwiseDebt[u2]?.[u1] ?? 0;
 
-    // We will compute all optimized transfers
-    const transfers: { debtorId: string; creditorId: string; amount: number }[] = [];
-
-    while (iterations < maxIterations) {
-      balances.sort((a, b) => a.amount - b.amount); // Ascending (debtors first, then creditors)
-
-      const debtor = balances[0];
-      const creditor = balances[balances.length - 1];
-
-      if (!debtor || !creditor) break;
-      if (debtor.amount >= -0.01 || creditor.amount <= 0.01) break;
-
-      const amountToTransfer = Math.min(-debtor.amount, creditor.amount);
-      transfers.push({
-        debtorId: debtor.userId,
-        creditorId: creditor.userId,
-        amount: Number(amountToTransfer.toFixed(2)),
-      });
-
-      debtor.amount += amountToTransfer;
-      creditor.amount -= amountToTransfer;
-      iterations++;
-    }
-
-    // Filter transfers involving active user
-    for (const t of transfers) {
-      if (t.debtorId === userId) {
-        const creditorUser = memberMap.get(t.creditorId);
-        whatYouOwe.push({
-          userId: t.creditorId,
-          name: creditorUser?.name ?? 'Traveller',
-          avatarUrl: creditorUser?.avatarUrl ?? null,
-          amount: t.amount,
-        });
-      } else if (t.creditorId === userId) {
-        const debtorUser = memberMap.get(t.debtorId);
-        whoOwesYou.push({
-          userId: t.debtorId,
-          name: debtorUser?.name ?? 'Traveller',
-          avatarUrl: debtorUser?.avatarUrl ?? null,
-          amount: t.amount,
-        });
-      }
-    }
-  } else {
-    // Direct pairwise balance
-    const pairwiseDebt: Record<string, Record<string, number>> = {};
-    for (const m1 of members) {
-      const userDebt: Record<string, number> = {};
-      pairwiseDebt[m1.userId] = userDebt;
-      for (const m2 of members) {
-        userDebt[m2.userId] = 0;
-      }
-    }
-
-    // Accumulate splits
-    for (const exp of rawExpenses) {
-      const payerId = exp.paid_by_id;
-      const expSplits = splitsByExpense.get(exp.id) ?? [];
-      for (const split of expSplits) {
-        if (split.user_id !== payerId) {
-          // split.user_id owes payerId
-          const debtorDebts = pairwiseDebt[split.user_id];
-          if (debtorDebts) {
-            debtorDebts[payerId] = (debtorDebts[payerId] ?? 0) + split.amount;
+        if (u1OwesU2 > 0 || u2OwesU1 > 0) {
+          const net = u1OwesU2 - u2OwesU1;
+          if (net > 0) {
+            pairwiseDebt[u1]![u2] = net;
+            pairwiseDebt[u2]![u1] = 0;
+          } else {
+            pairwiseDebt[u1]![u2] = 0;
+            pairwiseDebt[u2]![u1] = -net;
           }
         }
       }
     }
+  }
 
-    // Subtract completed settlements
-    for (const set of rawSettlements) {
-      if (set.status === 'completed') {
-        // set.payer_id paid set.payee_id, reducing what payer_id owes payee_id
-        const debtorDebts = pairwiseDebt[set.payer_id];
-        if (debtorDebts) {
-          debtorDebts[set.payee_id] = (debtorDebts[set.payee_id] ?? 0) - set.amount;
-        }
+  // Build lists for active user
+  // "Who owes you" - active user is payee (creditor)
+  for (const m of members) {
+    if (m.userId !== userId) {
+      const debtorDebts = pairwiseDebt[m.userId];
+      const amountOwed = debtorDebts ? (debtorDebts[userId] ?? 0) : 0;
+      if (amountOwed > 0.01) {
+        whoOwesYou.push({
+          userId: m.userId,
+          name: m.name,
+          avatarUrl: m.avatarUrl,
+          amount: Number(amountOwed.toFixed(2)),
+        });
       }
     }
+  }
 
-    // Net the pairwise values: if A owes B 100, and B owes A 40, then A owes B 60.
-    for (let i = 0; i < members.length; i++) {
-      const m1 = members[i];
-      if (!m1) continue;
-      for (let j = i + 1; j < members.length; j++) {
-        const m2 = members[j];
-        if (!m2) continue;
-        const u1 = m1.userId;
-        const u2 = m2.userId;
-
-        const d1 = pairwiseDebt[u1];
-        const d2 = pairwiseDebt[u2];
-        if (!d1 || !d2) continue;
-
-        const u1OwesU2 = d1[u2] ?? 0;
-        const u2OwesU1 = d2[u1] ?? 0;
-
-        if (u1OwesU2 > u2OwesU1) {
-          d1[u2] = u1OwesU2 - u2OwesU1;
-          d2[u1] = 0;
-        } else {
-          d2[u1] = u2OwesU1 - u1OwesU2;
-          d1[u2] = 0;
-        }
-      }
-    }
-
-    // Build lists for active user
-    // "Who owes you" - active user is payee (creditor)
-    for (const m of members) {
-      if (m.userId !== userId) {
-        const debtorDebts = pairwiseDebt[m.userId];
-        const amountOwed = debtorDebts ? (debtorDebts[userId] ?? 0) : 0;
-        if (amountOwed > 0.01) {
-          whoOwesYou.push({
-            userId: m.userId,
-            name: m.name,
-            avatarUrl: m.avatarUrl,
-            amount: Number(amountOwed.toFixed(2)),
-          });
-        }
-      }
-    }
-
-    // "What you owe" - active user is payer (debtor)
-    const userDebts = pairwiseDebt[userId];
-    for (const m of members) {
-      if (m.userId !== userId) {
-        const amountOwed = userDebts ? (userDebts[m.userId] ?? 0) : 0;
-        if (amountOwed > 0.01) {
-          whatYouOwe.push({
-            userId: m.userId,
-            name: m.name,
-            avatarUrl: m.avatarUrl,
-            amount: Number(amountOwed.toFixed(2)),
-          });
-        }
+  // "What you owe" - active user is payer (debtor)
+  const userDebts = pairwiseDebt[userId];
+  for (const m of members) {
+    if (m.userId !== userId) {
+      const amountOwed = userDebts ? (userDebts[m.userId] ?? 0) : 0;
+      if (amountOwed > 0.01) {
+        whatYouOwe.push({
+          userId: m.userId,
+          name: m.name,
+          avatarUrl: m.avatarUrl,
+          amount: Number(amountOwed.toFixed(2)),
+        });
       }
     }
   }

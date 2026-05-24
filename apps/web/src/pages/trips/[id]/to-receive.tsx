@@ -39,7 +39,8 @@ function buildDebtorsList(
   whoOwesYou: DebtRelation[],
   expenses: HydratedExpense[],
   settlements: HydratedSettlement[],
-  t: TFunction
+  t: TFunction,
+  isOptimized: boolean
 ): Debtor[] {
   return whoOwesYou.map((debtor) => {
     // Reconstruct contributing transactions between debtor and currentUserId.
@@ -48,9 +49,16 @@ function buildDebtorsList(
       .map((exp) => {
         const split = exp.splits.find((s) => s.user_id === debtor.userId);
         if (!split) return null;
+
+        let displayDescription = exp.description;
+        if (exp.split_method === 'exact_amount') {
+          const ownerSplit = exp.splits.find((s) => s.user_id === exp.paid_by_id);
+          displayDescription = split.item_paid || ownerSplit?.item_paid || exp.description;
+        }
+
         return {
           id: `exp-${exp.id}`,
-          description: exp.description,
+          description: displayDescription,
           date: exp.expense_date ? new Date(exp.expense_date).toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric',
@@ -67,9 +75,16 @@ function buildDebtorsList(
       .map((exp) => {
         const split = exp.splits.find((s) => s.user_id === currentUserId);
         if (!split) return null;
+
+        let displayDescription = exp.description;
+        if (exp.split_method === 'exact_amount') {
+          const ownerSplit = exp.splits.find((s) => s.user_id === exp.paid_by_id);
+          displayDescription = split.item_paid || ownerSplit?.item_paid || exp.description;
+        }
+
         return {
           id: `exp-${exp.id}`,
-          description: exp.description,
+          description: displayDescription,
           date: exp.expense_date ? new Date(exp.expense_date).toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric',
@@ -109,7 +124,9 @@ function buildDebtorsList(
         category: 'other' as const,
       }));
 
-    const allTxs = [...positiveTxs, ...negativeTxs, ...incomingSettlements, ...outgoingSettlements];
+    const allTxs = isOptimized
+      ? [...positiveTxs, ...negativeTxs, ...incomingSettlements, ...outgoingSettlements]
+      : [...positiveTxs, ...incomingSettlements];
 
     return {
       id: debtor.userId,
@@ -146,7 +163,8 @@ function TripToReceiveContent() {
         finances.summary.whoOwesYou,
         finances.expenses,
         finances.settlements,
-        t
+        t,
+        isOptimized
     );
 
     const totalYouAreOwed = debtors.reduce((sum, d) => sum + d.amountOwed, 0);
