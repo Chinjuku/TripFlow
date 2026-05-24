@@ -1,14 +1,10 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
+import { Wallet, AlertTriangle, TrendingUp, PieChart, Target, Users } from 'lucide-react';
 import {
-  Wallet,
-  AlertTriangle,
-  TrendingUp,
-  PieChart,
-  Target,
-  Users
-} from 'lucide-react';
-import { TripFinancesLayout, useTripFinancesContext } from '@/components/feat/finances/components/TripFinancesLayout';
+  TripFinancesLayout,
+  useTripFinancesContext,
+} from '@/components/feat/finances/components/TripFinancesLayout';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@trip-flow/ui/components/card';
 import type { HydratedExpense } from '@/components/feat/finances';
@@ -41,11 +37,13 @@ function TripFinancesMonitoringContent() {
     categoryTotals[cat] = (categoryTotals[cat] || 0) + exp.amount;
   });
 
-  const categories = Object.entries(categoryTotals).map(([name, val]) => ({
-    name,
-    amount: val,
-    percent: totalCost > 0 ? (val / totalCost) * 100 : 0,
-  })).sort((a, b) => b.amount - a.amount);
+  const categories = Object.entries(categoryTotals)
+    .map(([name, val]) => ({
+      name,
+      amount: val,
+      percent: totalCost > 0 ? (val / totalCost) * 100 : 0,
+    }))
+    .sort((a, b) => b.amount - a.amount);
 
   return (
     <div className="flex flex-col flex-1 overflow-y-auto pr-2 pb-10 gap-6 h-full min-h-0 animate-in fade-in-0 duration-300">
@@ -68,10 +66,14 @@ function TripFinancesMonitoringContent() {
             </div>
             <div className="space-y-1">
               <div className="font-headline text-foreground text-3xl font-extrabold sm:text-4xl">
-                ฿{budgetAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ฿
+                {budgetAmount.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </div>
               <p className="text-muted-foreground text-xs font-semibold">
-                {budgetAmount > 0 
+                {budgetAmount > 0
                   ? t('finances.budgetDescription', { percent: Math.round(progressPercent) })
                   : t('finances.noBudgetSetYet')}
               </p>
@@ -87,11 +89,17 @@ function TripFinancesMonitoringContent() {
               {t('finances.remainingBudget')}
             </div>
             <div className="space-y-1">
-              <div className={`font-headline text-3xl font-extrabold sm:text-4xl ${isOverBudget ? 'text-destructive' : 'text-primary'}`}>
-                ฿{remainingBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              <div
+                className={`font-headline text-3xl font-extrabold sm:text-4xl ${isOverBudget ? 'text-destructive' : 'text-primary'}`}
+              >
+                ฿
+                {remainingBudget.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </div>
               <p className="text-muted-foreground text-xs font-semibold">
-                {isOverBudget 
+                {isOverBudget
                   ? t('finances.budgetDeficit', { amount: (totalCost - budgetAmount).toFixed(2) })
                   : t('finances.budgetSurplus', { amount: remainingBudget.toFixed(2) })}
               </p>
@@ -108,7 +116,11 @@ function TripFinancesMonitoringContent() {
             </div>
             <div className="space-y-1">
               <div className="font-headline text-foreground text-3xl font-extrabold sm:text-4xl">
-                ฿{averageCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ฿
+                {averageCost.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </div>
               <p className="text-muted-foreground text-xs font-semibold">
                 {t('finances.averageDescription', { count: memberCount })}
@@ -172,7 +184,8 @@ function TripFinancesMonitoringContent() {
                         {t(`finances.category.${cat.name}`, { defaultValue: cat.name })}
                       </span>
                       <span className="text-muted-foreground font-bold">
-                        ฿{cat.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} ({Math.round(cat.percent)}%)
+                        ฿{cat.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} (
+                        {Math.round(cat.percent)}%)
                       </span>
                     </div>
                     <div className="w-full bg-muted h-2 rounded-full overflow-hidden">

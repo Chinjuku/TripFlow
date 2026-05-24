@@ -8,7 +8,10 @@ import * as scheduleService from '../services/schedule';
 
 type AuthContext = { user: { sub: string } };
 
-export async function handleListSchedule({ user, params }: AuthContext & { params: { id: string } }) {
+export async function handleListSchedule({
+  user,
+  params,
+}: AuthContext & { params: { id: string } }) {
   const items = await scheduleService.listSchedule(user.sub, params.id);
   return { items };
 }
@@ -27,7 +30,12 @@ export async function handleUpdateScheduleItem({
   params,
   body,
 }: AuthContext & { params: { id: string; scheduleId: string }; body: any }) {
-  const item = await scheduleService.updateScheduleItem(user.sub, params.id, params.scheduleId, body);
+  const item = await scheduleService.updateScheduleItem(
+    user.sub,
+    params.id,
+    params.scheduleId,
+    body,
+  );
   return { item };
 }
 

@@ -22,32 +22,20 @@ import {
 export const tripsRoute = new Elysia({ prefix: '/trips' })
   .use(requireAuth)
   .get('/', handleListTripsForUser)
-  .post(
-    '/',
-    handleCreateTrip,
-    {
-      body: t.Object({
-        title: t.String({ minLength: 1, maxLength: 120 }),
-        startsOn: t.String({ format: 'date-time' }),
-        endsOn: t.String({ format: 'date-time' }),
-      }),
-    },
-  )
-  .post(
-    '/join',
-    handleJoinTripByCode,
-    {
-      body: t.Object({
-        inviteCode: t.String({ minLength: 4, maxLength: 32 }),
-      }),
-    },
-  )
-  .get(
-    '/:id',
-    handleGetTripDetail,
-    {
-      params: t.Object({
-        id: t.String({ format: 'uuid' }),
-      }),
-    },
-  );
+  .post('/', handleCreateTrip, {
+    body: t.Object({
+      title: t.String({ minLength: 1, maxLength: 120 }),
+      startsOn: t.String({ format: 'date-time' }),
+      endsOn: t.String({ format: 'date-time' }),
+    }),
+  })
+  .post('/join', handleJoinTripByCode, {
+    body: t.Object({
+      inviteCode: t.String({ minLength: 4, maxLength: 32 }),
+    }),
+  })
+  .get('/:id', handleGetTripDetail, {
+    params: t.Object({
+      id: t.String({ format: 'uuid' }),
+    }),
+  });

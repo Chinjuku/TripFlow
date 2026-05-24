@@ -31,9 +31,7 @@ export function LoginSignInPanel() {
             <h2 className="font-headline text-foreground mb-1.5 text-2xl font-bold tracking-tight">
               {t(getGreetingKey())}
             </h2>
-            <p className="text-muted-foreground text-sm">
-              {t('auth.signInToContinue')}
-            </p>
+            <p className="text-muted-foreground text-sm">{t('auth.signInToContinue')}</p>
           </div>
 
           <Button

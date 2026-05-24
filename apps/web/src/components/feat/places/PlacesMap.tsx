@@ -196,9 +196,7 @@ function MapBody({
   // Track the last text query OR active filter so "Search this area" knows
   // what to re-run. Stored together as a discriminated payload.
   const lastSearchRef = useRef<
-    | { kind: 'text'; query: string }
-    | { kind: 'filter'; filter: CategoryFilter }
-    | null
+    { kind: 'text'; query: string } | { kind: 'filter'; filter: CategoryFilter } | null
   >(null);
 
   const withCoords = useMemo(
@@ -403,10 +401,10 @@ function MapBody({
     const trimmed = query.trim();
     if (!trimmed) return;
     setRecentSearches((prev) => {
-      const next = [trimmed, ...prev.filter((q) => q.toLowerCase() !== trimmed.toLowerCase())].slice(
-        0,
-        RECENT_SEARCHES_LIMIT,
-      );
+      const next = [
+        trimmed,
+        ...prev.filter((q) => q.toLowerCase() !== trimmed.toLowerCase()),
+      ].slice(0, RECENT_SEARCHES_LIMIT);
       saveRecentSearches(next);
       return next;
     });
@@ -874,12 +872,7 @@ function PoiPreviewCard({ poi, loading, alreadyPicked, onAdd }: PoiPreviewCardPr
     <div className="w-[19rem] max-w-[82vw]">
       {poi.photoUrl ? (
         <div className="relative h-32 w-full">
-          <img
-            src={poi.photoUrl}
-            alt=""
-            className="h-full w-full object-cover"
-            loading="lazy"
-          />
+          <img src={poi.photoUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
           {/* Bottom-to-top dark fade so the rating chip stays legible over
               any photo. Hard-coded to black (not `--foreground`) because the
               rating chip itself is light in both themes — we always need

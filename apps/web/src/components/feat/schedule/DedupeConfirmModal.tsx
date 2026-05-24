@@ -28,8 +28,8 @@ export function DedupeConfirmModal({ rows, onCancel, onConfirm }: DedupeConfirmM
               <li key={r.id} className="flex items-center justify-between gap-3 text-sm">
                 <span className="text-foreground truncate font-medium">{r.place.name}</span>
                 <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
-                  Day {r.dayIndex + 1} · {String(Math.floor(r.startMinute / 60)).padStart(2, '0')}
-                  :{String(r.startMinute % 60).padStart(2, '0')}
+                  Day {r.dayIndex + 1} · {String(Math.floor(r.startMinute / 60)).padStart(2, '0')}:
+                  {String(r.startMinute % 60).padStart(2, '0')}
                 </span>
               </li>
             ))}

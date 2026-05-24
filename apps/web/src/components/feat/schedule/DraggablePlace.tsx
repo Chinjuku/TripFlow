@@ -47,9 +47,7 @@ export function PlacePill({ place, dragging }: { place: TripPlace; dragging?: bo
           <span
             className={cn(
               'inline-flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[0.65rem] font-bold',
-              place.voteCount > 0
-                ? 'bg-success/10 text-success'
-                : 'bg-muted text-muted-foreground',
+              place.voteCount > 0 ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground',
             )}
           >
             <ArrowUp className="h-2.5 w-2.5" strokeWidth={3} />
@@ -57,9 +55,7 @@ export function PlacePill({ place, dragging }: { place: TripPlace; dragging?: bo
           </span>
         </div>
         {place.openingHoursText && (
-          <p className="text-muted-foreground mt-0.5 truncate text-xs">
-            {place.openingHoursText}
-          </p>
+          <p className="text-muted-foreground mt-0.5 truncate text-xs">{place.openingHoursText}</p>
         )}
       </div>
       {dragging && (

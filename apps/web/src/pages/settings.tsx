@@ -1,7 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { ProfileCard, AppearanceCard, PaymentDetailsCard, SettingsTabs, useSettingsTab } from '@/components/feat/settings';
+import {
+  ProfileCard,
+  AppearanceCard,
+  PaymentDetailsCard,
+  SettingsTabs,
+  useSettingsTab,
+} from '@/components/feat/settings';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
@@ -24,9 +30,7 @@ export default function SettingsPage() {
           <h1 className="font-headline text-foreground text-3xl font-extrabold tracking-tight">
             {t('settings.title')}
           </h1>
-          <p className="text-muted-foreground mt-2">
-            {t('settings.subtitle')}
-          </p>
+          <p className="text-muted-foreground mt-2">{t('settings.subtitle')}</p>
         </div>
       </div>
 

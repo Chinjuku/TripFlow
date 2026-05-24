@@ -1,13 +1,13 @@
 import { api } from '@/lib/api';
-import type { 
-  FinancesData, 
-  CreateExpensePayload, 
-  CreateSettlementPayload, 
-  UpdateBudgetPayload, 
+import type {
+  FinancesData,
+  CreateExpensePayload,
+  CreateSettlementPayload,
+  UpdateBudgetPayload,
   SavePaymentDetailsPayload,
   HydratedExpense,
   HydratedSettlement,
-  UserPaymentDetail
+  UserPaymentDetail,
 } from './types';
 
 function unwrap<T>(value: { data: T | null; error: unknown }): T {
@@ -36,7 +36,9 @@ export async function createExpense(payload: CreateExpensePayload): Promise<Hydr
   return unwrap(res) as HydratedExpense;
 }
 
-export async function createSettlement(payload: CreateSettlementPayload): Promise<HydratedSettlement> {
+export async function createSettlement(
+  payload: CreateSettlementPayload,
+): Promise<HydratedSettlement> {
   const res = await api.finances.settlement.post(payload);
   return unwrap(res) as HydratedSettlement;
 }
@@ -66,4 +68,3 @@ export async function getPaymentDetails(): Promise<UserPaymentDetail | null> {
   }
   return res.data as UserPaymentDetail | null;
 }
-

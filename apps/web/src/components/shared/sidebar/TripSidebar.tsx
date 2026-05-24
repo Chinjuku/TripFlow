@@ -133,13 +133,13 @@ export function TripSidebar({ tripId, open, onOpenChange }: TripSidebarProps) {
           {navItems.map((item) => {
             const Icon = item.icon;
             const isFinancesItem = item.to.endsWith('/finances');
-            const isFinancesActive = isFinancesItem && (
-              location.pathname.includes('/finances') || 
-              location.pathname.includes('/all-expenses') || 
-              location.pathname.includes('/to-receive') || 
-              location.pathname.includes('/to-pay') || 
-              location.pathname.includes('/monitoring')
-            );
+            const isFinancesActive =
+              isFinancesItem &&
+              (location.pathname.includes('/finances') ||
+                location.pathname.includes('/all-expenses') ||
+                location.pathname.includes('/to-receive') ||
+                location.pathname.includes('/to-pay') ||
+                location.pathname.includes('/monitoring'));
             return (
               <NavLink
                 key={item.name}
@@ -193,7 +193,9 @@ export function TripSidebar({ tripId, open, onOpenChange }: TripSidebarProps) {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                   <div className="absolute bottom-2 left-3 right-3 min-w-0">
-                    <p className="text-[10px] uppercase tracking-wider font-semibold text-primary-foreground/70">{t('overview.currentTrip')}</p>
+                    <p className="text-[10px] uppercase tracking-wider font-semibold text-primary-foreground/70">
+                      {t('overview.currentTrip')}
+                    </p>
                     <h3 className="font-headline text-sm font-bold text-white truncate">
                       {trip.title}
                     </h3>
@@ -218,11 +220,7 @@ export function TripSidebar({ tripId, open, onOpenChange }: TripSidebarProps) {
       </aside>
 
       {/* Invite Modal */}
-      <InviteModal
-        open={inviteOpen}
-        onOpenChange={setInviteOpen}
-        trip={trip}
-      />
+      <InviteModal open={inviteOpen} onOpenChange={setInviteOpen} trip={trip} />
     </>
   );
 }

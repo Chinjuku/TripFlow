@@ -67,7 +67,10 @@ export default function TripPlanPage() {
       id: 'vote',
       label: t('plan.voting', 'Voting'),
       heading: t('plan.votePlaces', 'Vote for Places'),
-      helper: t('plan.votePlacesHelper', 'Help decide the itinerary by voting for your favorite spots.'),
+      helper: t(
+        'plan.votePlacesHelper',
+        'Help decide the itinerary by voting for your favorite spots.',
+      ),
     },
   ];
 
@@ -134,16 +137,22 @@ export default function TripPlanPage() {
     const list = places ?? [];
     const filtered = list.filter((p) => {
       switch (filter) {
-        case 'voted': return p.voteCount > 0;
-        case 'mine': return p.addedByUserId === user?.id;
-        case 'photos': return !!p.photoUrl;
-        default: return true;
+        case 'voted':
+          return p.voteCount > 0;
+        case 'mine':
+          return p.addedByUserId === user?.id;
+        case 'photos':
+          return !!p.photoUrl;
+        default:
+          return true;
       }
     });
     return [...filtered].sort((a, b) => {
       switch (sortKey) {
-        case 'name': return a.name.localeCompare(b.name);
-        case 'recent': return b.createdAt.localeCompare(a.createdAt);
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'recent':
+          return b.createdAt.localeCompare(a.createdAt);
         default:
           if (b.voteCount !== a.voteCount) return b.voteCount - a.voteCount;
           return a.createdAt.localeCompare(b.createdAt);
@@ -192,7 +201,11 @@ export default function TripPlanPage() {
       }
       exitBulkMode();
     } catch (err) {
-      setAddError(err instanceof Error ? err.message : t('plan.failedToRemove', 'Failed to remove some places'));
+      setAddError(
+        err instanceof Error
+          ? err.message
+          : t('plan.failedToRemove', 'Failed to remove some places'),
+      );
     } finally {
       setBulkBusy(false);
     }
@@ -220,14 +233,16 @@ export default function TripPlanPage() {
         return sortPlaces([added, ...without]);
       });
     } catch (err) {
-      setAddError(err instanceof Error ? err.message : t('plan.failedToAdd', 'Failed to add place'));
+      setAddError(
+        err instanceof Error ? err.message : t('plan.failedToAdd', 'Failed to add place'),
+      );
     }
   }
 
   if (!id) return null;
 
   return (
-    <div className="mx-auto flex h-[calc(100dvh-4rem)] min-h-0 max-w-6xl flex-col gap-6">
+    <div className="mx-auto flex h-full min-h-[calc(100dvh-4rem)] lg:h-[calc(100dvh-4rem)] lg:min-h-0 max-w-6xl flex-col gap-6 pb-6 lg:pb-0">
       <TripPageHeader
         backTo={`/trips/${id}`}
         backLabel={t('overview.tripOverview', 'Trip overview')}

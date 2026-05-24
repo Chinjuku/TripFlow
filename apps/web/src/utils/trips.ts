@@ -37,13 +37,9 @@ export interface DateRangeDisplay {
 export function formatDateRange(startIso: string, endIso: string): DateRangeDisplay {
   const start = new Date(startIso);
   const end = new Date(endIso);
-  const fmt = (d: Date) =>
-    d.toLocaleDateString(undefined, { month: 'short', day: '2-digit' });
+  const fmt = (d: Date) => d.toLocaleDateString(undefined, { month: 'short', day: '2-digit' });
 
-  const days = Math.max(
-    1,
-    Math.round((end.getTime() - start.getTime()) / DAY_MS) + 1,
-  );
+  const days = Math.max(1, Math.round((end.getTime() - start.getTime()) / DAY_MS) + 1);
 
   return {
     range: `${fmt(start)} - ${fmt(end)}`,

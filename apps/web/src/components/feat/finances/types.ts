@@ -1,9 +1,11 @@
 import { api } from '@/lib/api';
 
 // Derive exact types from the Elysia E2E schema definition
-type AppResponse<T> = T extends (...args: any[]) => Promise<{ data: infer D }> ? NonNullable<D> : never;
+type AppResponse<T> = T extends (...args: any[]) => Promise<{ data: infer D }>
+  ? NonNullable<D>
+  : never;
 
-export type FinancesData = AppResponse<typeof api['finances']['trip'][string]['get']>;
+export type FinancesData = AppResponse<(typeof api)['finances']['trip'][string]['get']>;
 
 export type FinanceSummary = FinancesData['summary'];
 export type DebtRelation = FinanceSummary['whoOwesYou'][number];

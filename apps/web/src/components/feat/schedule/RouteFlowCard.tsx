@@ -17,17 +17,14 @@ export function RouteFlowCard({ items }: { items: ScheduleItem[] }) {
 
   const activeMinutes = items.reduce((sum, it) => sum + it.durationMinutes, 0);
   const firstStart = items[0]!.startMinute;
-  const lastEnd =
-    items[items.length - 1]!.startMinute + items[items.length - 1]!.durationMinutes;
+  const lastEnd = items[items.length - 1]!.startMinute + items[items.length - 1]!.durationMinutes;
   const fullRouteUrl = buildFullDayDirectionsUrl(items);
 
   return (
     <div className="border-border bg-card rounded-2xl border p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <h3 className="text-foreground text-xs font-bold uppercase tracking-wide">
-            Route flow
-          </h3>
+          <h3 className="text-foreground text-xs font-bold uppercase tracking-wide">Route flow</h3>
           <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-[0.65rem] font-semibold">
             {items.length} {items.length === 1 ? 'stop' : 'stops'}
           </span>
@@ -83,10 +80,7 @@ function RouteFlowEmpty() {
           const isLast = idx === letters.length - 1;
           const isMobileLast = idx === 2;
           return (
-            <div
-              key={letter}
-              className={cn('flex shrink-0 items-center gap-2', visibleOn[idx])}
-            >
+            <div key={letter} className={cn('flex shrink-0 items-center gap-2', visibleOn[idx])}>
               <div className="border-border bg-muted/40 flex h-10 w-20 items-center gap-1.5 rounded-lg border px-2">
                 <span className="bg-muted text-muted-foreground inline-flex h-5 w-5 items-center justify-center rounded-full text-[0.65rem] font-bold">
                   {letter}
@@ -250,11 +244,7 @@ function RouteFlowConnector({
         strokeLinecap="round"
         aria-hidden
       >
-        <path
-          d="M2 6 H 38"
-          strokeDasharray="4 4"
-          className="animate-route-flow"
-        />
+        <path d="M2 6 H 38" strokeDasharray="4 4" className="animate-route-flow" />
         <path d="M36 2 L42 6 L36 10" strokeLinejoin="round" />
       </svg>
       <span className="mt-0.5 text-[0.6rem] tabular-nums">

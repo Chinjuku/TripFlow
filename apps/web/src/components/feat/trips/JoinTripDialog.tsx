@@ -95,7 +95,11 @@ export function JoinTripDialog({ open, onOpenChange, onJoined }: JoinTripDialogP
 
         {/* Actions */}
         <div className="space-y-2 px-5 pb-5 sm:px-6 sm:pb-6">
-          <Button type="submit" disabled={submitting || code.length !== CODE_LENGTH} className="h-11 w-full gap-2">
+          <Button
+            type="submit"
+            disabled={submitting || code.length !== CODE_LENGTH}
+            className="h-11 w-full gap-2"
+          >
             {submitting ? t('trips.joining') : t('trips.joinTrip')}
             {!submitting && <ArrowRight className="h-4 w-4" strokeWidth={2} />}
           </Button>

@@ -125,10 +125,7 @@ export async function listTripsForUser(userId: string): Promise<TripSummary[]> {
  * Wraps the trip insert + owner membership in a single transaction so a
  * partial failure can never leave an orphaned trip.
  */
-export async function createTrip(
-  ownerId: string,
-  input: CreateTripInput,
-): Promise<TripSummary> {
+export async function createTrip(ownerId: string, input: CreateTripInput): Promise<TripSummary> {
   // Retry once on the (extremely rare) collision of an 8-char code.
   for (let attempt = 0; attempt < 3; attempt++) {
     const inviteCode = generateInviteCode();

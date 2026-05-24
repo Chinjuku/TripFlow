@@ -6,13 +6,7 @@
  * `assertMember`) so routes stay thin.
  */
 
-import {
-  db,
-  tripMembers,
-  tripPlaces,
-  tripPlaceVotes,
-  type TripPlace,
-} from '@trip-flow/db/server';
+import { db, tripMembers, tripPlaces, tripPlaceVotes, type TripPlace } from '@trip-flow/db/server';
 import { and, eq, sql } from 'drizzle-orm';
 import { ForbiddenError, NotFoundError } from '../errors/domain';
 
@@ -84,10 +78,7 @@ function toRow(place: TripPlace, voteCount: number, liked: boolean): TripPlaceWi
  * Lists every candidate place for a trip, sorted by vote count desc then
  * created_at asc (oldest pick wins ties — earlier suggesters get visibility).
  */
-export async function listPlaces(
-  userId: string,
-  tripId: string,
-): Promise<TripPlaceWithVotes[]> {
+export async function listPlaces(userId: string, tripId: string): Promise<TripPlaceWithVotes[]> {
   await assertMember(userId, tripId);
 
   const rows = await db
@@ -136,9 +127,7 @@ export async function addPlace(
     const [existing] = await db
       .select()
       .from(tripPlaces)
-      .where(
-        and(eq(tripPlaces.trip_id, tripId), eq(tripPlaces.external_id, input.externalId)),
-      )
+      .where(and(eq(tripPlaces.trip_id, tripId), eq(tripPlaces.external_id, input.externalId)))
       .limit(1);
     if (!existing) throw new Error('Insert returned no row and lookup missed');
     return toRow(existing, 0, false);
@@ -147,11 +136,7 @@ export async function addPlace(
   return toRow(inserted, 0, false);
 }
 
-export async function removePlace(
-  userId: string,
-  tripId: string,
-  placeId: string,
-): Promise<void> {
+export async function removePlace(userId: string, tripId: string, placeId: string): Promise<void> {
   await assertMember(userId, tripId);
 
   const [place] = await db
@@ -197,9 +182,7 @@ export async function setLike(
   } else {
     await db
       .delete(tripPlaceVotes)
-      .where(
-        and(eq(tripPlaceVotes.trip_place_id, placeId), eq(tripPlaceVotes.user_id, userId)),
-      );
+      .where(and(eq(tripPlaceVotes.trip_place_id, placeId), eq(tripPlaceVotes.user_id, userId)));
   }
 
   const [counted] = await db
@@ -209,4 +192,3 @@ export async function setLike(
 
   return toRow(place, counted?.count ?? 0, liked);
 }
-

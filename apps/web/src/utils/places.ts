@@ -4,7 +4,12 @@ export const BUCKETS: Record<PlaceBucket, BucketMeta> = {
   food: { id: 'food', label: 'Restaurant', plural: 'food', swatch: 'bg-rose-400' },
   cafe: { id: 'cafe', label: 'Café', plural: 'cafés', swatch: 'bg-amber-400' },
   stay: { id: 'stay', label: 'Stay', plural: 'stays', swatch: 'bg-sky-400' },
-  attraction: { id: 'attraction', label: 'Attraction', plural: 'attractions', swatch: 'bg-primary' },
+  attraction: {
+    id: 'attraction',
+    label: 'Attraction',
+    plural: 'attractions',
+    swatch: 'bg-primary',
+  },
   bar: { id: 'bar', label: 'Bar', plural: 'bars', swatch: 'bg-violet-400' },
   shopping: { id: 'shopping', label: 'Shopping', plural: 'shopping', swatch: 'bg-pink-400' },
   other: { id: 'other', label: 'Other', plural: 'other', swatch: 'bg-muted-foreground/40' },

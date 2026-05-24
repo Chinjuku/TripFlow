@@ -140,7 +140,8 @@ export function PaymentDetailsCard() {
     const hasBankAccountNumber = !!trimmedBankAccountNumber;
     const hasBankAccountName = !!trimmedBankAccountName;
     const isBankComplete = hasBankName && hasBankAccountNumber && hasBankAccountName;
-    const isBankPartiallyFilled = (hasBankName || hasBankAccountNumber || hasBankAccountName) && !isBankComplete;
+    const isBankPartiallyFilled =
+      (hasBankName || hasBankAccountNumber || hasBankAccountName) && !isBankComplete;
 
     if (isBankPartiallyFilled) {
       setSaveError(t('settings.errorBankPartial'));
@@ -180,7 +181,9 @@ export function PaymentDetailsCard() {
     }
   };
 
-  const hasBankWarning = activeTab === 'banking' && !(bankName.trim() && bankAccountNumber.trim() && bankAccountName.trim());
+  const hasBankWarning =
+    activeTab === 'banking' &&
+    !(bankName.trim() && bankAccountNumber.trim() && bankAccountName.trim());
   const hasPromptpayWarning = activeTab === 'promptpay' && !(promptpayId.trim() || qrCodeUrl);
 
   return (
@@ -215,7 +218,9 @@ export function PaymentDetailsCard() {
             <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                  <span className="text-foreground text-sm font-semibold block">{t('settings.preferredChannel')}</span>
+                  <span className="text-foreground text-sm font-semibold block">
+                    {t('settings.preferredChannel')}
+                  </span>
                   <span className="text-muted-foreground text-xs leading-normal">
                     {t('settings.preferredChannelDesc')}
                   </span>
@@ -298,7 +303,10 @@ export function PaymentDetailsCard() {
                       onChange={(e) => setBankAccountName(e.target.value)}
                       className="pl-10"
                     />
-                    <User className="text-muted-foreground absolute left-3 top-2.5 h-5 w-5" strokeWidth={1.75} />
+                    <User
+                      className="text-muted-foreground absolute left-3 top-2.5 h-5 w-5"
+                      strokeWidth={1.75}
+                    />
                   </div>
                 </div>
               </div>
@@ -314,7 +322,10 @@ export function PaymentDetailsCard() {
                       onChange={(e) => setPromptpayId(e.target.value)}
                       className="pl-10"
                     />
-                    <QrCode className="text-muted-foreground absolute left-3 top-2.5 h-5 w-5" strokeWidth={1.75} />
+                    <QrCode
+                      className="text-muted-foreground absolute left-3 top-2.5 h-5 w-5"
+                      strokeWidth={1.75}
+                    />
                   </div>
                   <p className="text-muted-foreground text-xs">{t('settings.promptpayIdHint')}</p>
                 </div>
@@ -353,8 +364,12 @@ export function PaymentDetailsCard() {
                         <Upload className="h-6 w-6" />
                       </div>
                       <div>
-                        <p className="text-foreground text-sm font-semibold">{t('settings.uploadQr')}</p>
-                        <p className="text-muted-foreground text-xs mt-1">{t('settings.uploadQrHint')}</p>
+                        <p className="text-foreground text-sm font-semibold">
+                          {t('settings.uploadQr')}
+                        </p>
+                        <p className="text-muted-foreground text-xs mt-1">
+                          {t('settings.uploadQrHint')}
+                        </p>
                       </div>
                     </div>
                   )}

@@ -9,12 +9,18 @@ import {
   ExternalLink,
   Route,
   ChevronRight,
-  Sparkles
+  Sparkles,
 } from 'lucide-react';
 import type { TripDetail } from '@/types/trips';
 import type { ScheduleItem } from '@/types/schedule';
 import { useSchedule } from '@/hooks/useSchedule';
-import { buildDays, formatTime, formatDuration, categoryIconFor, buildFullDayDirectionsUrl } from '@/utils/schedule';
+import {
+  buildDays,
+  formatTime,
+  formatDuration,
+  categoryIconFor,
+  buildFullDayDirectionsUrl,
+} from '@/utils/schedule';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@trip-flow/ui/components/button';
 import { Skeleton } from '@trip-flow/ui/components/skeleton';
@@ -76,14 +82,18 @@ export function TripPlacesSummaryCard({ trip, className = '' }: TripPlacesSummar
   if (error) {
     return (
       <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-2xl border p-6 text-sm">
-        <p className="font-semibold">{t('overview.failedLoadSchedule', 'Failed to load schedule overview')}</p>
+        <p className="font-semibold">
+          {t('overview.failedLoadSchedule', 'Failed to load schedule overview')}
+        </p>
         <p className="mt-1 text-xs opacity-90">{error.message}</p>
       </div>
     );
   }
 
   return (
-    <div className={`border-border bg-card rounded-2xl border p-6 shadow-xs flex flex-col ${className}`}>
+    <div
+      className={`border-border bg-card rounded-2xl border p-6 shadow-xs flex flex-col ${className}`}
+    >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-4 mb-4 shrink-0">
         <div>
           <h4 className="text-foreground font-headline text-base font-bold flex items-center gap-2">
@@ -92,7 +102,11 @@ export function TripPlacesSummaryCard({ trip, className = '' }: TripPlacesSummar
           </h4>
           <p className="text-muted-foreground mt-0.5 text-xs">
             {totalScheduled > 0
-              ? t('overview.itineraryScheduled', '{{total}} places scheduled across {{days}} days', { total: totalScheduled, days: days.length })
+              ? t(
+                  'overview.itineraryScheduled',
+                  '{{total}} places scheduled across {{days}} days',
+                  { total: totalScheduled, days: days.length },
+                )
               : t('overview.itineraryPlan', 'Plan daily activities and routes')}
           </p>
         </div>
@@ -126,9 +140,14 @@ export function TripPlacesSummaryCard({ trip, className = '' }: TripPlacesSummar
         ) : totalScheduled === 0 ? (
           <div className="flex flex-col items-center justify-center text-center py-8 px-4 border border-dashed border-border rounded-xl bg-muted/20">
             <Calendar className="text-muted-foreground h-8 w-8 mb-2 opacity-50" />
-            <p className="text-foreground text-sm font-semibold">{t('overview.noPlacesScheduled', 'No places scheduled yet')}</p>
+            <p className="text-foreground text-sm font-semibold">
+              {t('overview.noPlacesScheduled', 'No places scheduled yet')}
+            </p>
             <p className="text-muted-foreground mt-1 text-xs max-w-sm">
-              {t('overview.noPlacesScheduledDesc', 'Drag and schedule your voted candidate places on the time grid to build a beautiful timeline.')}
+              {t(
+                'overview.noPlacesScheduledDesc',
+                'Drag and schedule your voted candidate places on the time grid to build a beautiful timeline.',
+              )}
             </p>
             <Link
               to={`/trips/${trip.id}/schedule`}
@@ -148,8 +167,9 @@ export function TripPlacesSummaryCard({ trip, className = '' }: TripPlacesSummar
               return (
                 <div
                   key={day.index}
-                  className={`border border-border rounded-xl transition-all duration-200 overflow-hidden ${isExpanded ? 'bg-muted/10' : 'bg-transparent hover:bg-muted/5'
-                    }`}
+                  className={`border border-border rounded-xl transition-all duration-200 overflow-hidden ${
+                    isExpanded ? 'bg-muted/10' : 'bg-transparent hover:bg-muted/5'
+                  }`}
                 >
                   {/* Accordion Trigger */}
                   <button
@@ -159,12 +179,20 @@ export function TripPlacesSummaryCard({ trip, className = '' }: TripPlacesSummar
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex flex-col items-center justify-center bg-primary/10 text-primary rounded-lg px-2.5 py-1.5 min-w-[3.25rem] text-center">
-                        <span className="text-[10px] font-bold uppercase tracking-wider opacity-80 leading-none">{t('overview.dayNumber', 'Day')}</span>
-                        <span className="text-base font-extrabold mt-0.5 leading-none">{day.index + 1}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider opacity-80 leading-none">
+                          {t('overview.dayNumber', 'Day')}
+                        </span>
+                        <span className="text-base font-extrabold mt-0.5 leading-none">
+                          {day.index + 1}
+                        </span>
                       </div>
                       <div>
                         <h5 className="text-foreground text-sm font-bold leading-tight">
-                          {day.date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                          {day.date.toLocaleDateString(undefined, {
+                            weekday: 'short',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
                         </h5>
                         <span className="text-muted-foreground text-xs flex items-center gap-1.5 mt-0.5">
                           <MapPin className="h-3 w-3 shrink-0" />
@@ -188,7 +216,9 @@ export function TripPlacesSummaryCard({ trip, className = '' }: TripPlacesSummar
                     <div className="px-4 pb-4 border-t border-border/40 pt-4 bg-card/40">
                       {items.length === 0 ? (
                         <div className="text-center py-5">
-                          <p className="text-muted-foreground text-xs">{t('overview.noStopsDay', 'No stops scheduled for this day.')}</p>
+                          <p className="text-muted-foreground text-xs">
+                            {t('overview.noStopsDay', 'No stops scheduled for this day.')}
+                          </p>
                           <Link
                             to={`/trips/${trip.id}/schedule?day=${day.index}`}
                             className="mt-2 text-primary hover:underline text-xs inline-flex items-center gap-1 font-semibold"
@@ -224,7 +254,8 @@ export function TripPlacesSummaryCard({ trip, className = '' }: TripPlacesSummar
                                     <div className="flex items-center gap-2 mt-1 sm:mt-0 shrink-0">
                                       <span className="bg-muted text-muted-foreground font-mono text-[10px] font-semibold px-2 py-0.5 rounded flex items-center gap-1">
                                         <Clock className="h-3 w-3" />
-                                        {formatTime(item.startMinute)} ({formatDuration(item.durationMinutes)})
+                                        {formatTime(item.startMinute)} (
+                                        {formatDuration(item.durationMinutes)})
                                       </span>
                                     </div>
                                   </div>

@@ -4,12 +4,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 
 import { en } from './locales/en';
 import { th } from './locales/th';
-import {
-  DEFAULT_LOCALE,
-  LOCALE_STORAGE_KEY,
-  SUPPORTED_LOCALES,
-  resolveLocale,
-} from './config';
+import { DEFAULT_LOCALE, LOCALE_STORAGE_KEY, SUPPORTED_LOCALES, resolveLocale } from './config';
 import './types'; // activate t() key autocompletion + type-checking
 
 /**

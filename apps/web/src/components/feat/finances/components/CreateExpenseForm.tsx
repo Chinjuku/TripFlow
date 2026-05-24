@@ -342,9 +342,7 @@ export function CreateExpenseForm({
             <h2 className="font-headline text-lg font-bold text-foreground leading-tight">
               {t('finances.recordAndSplit')}
             </h2>
-            <p className="text-xs text-muted-foreground">
-              {t('finances.recordAndSplitDesc')}
-            </p>
+            <p className="text-xs text-muted-foreground">{t('finances.recordAndSplitDesc')}</p>
           </div>
         </div>
         <button
@@ -425,10 +423,7 @@ export function CreateExpenseForm({
           {/* Merchant & Date */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label
-                htmlFor="description"
-                className="text-xs font-bold text-muted-foreground"
-              >
+              <Label htmlFor="description" className="text-xs font-bold text-muted-foreground">
                 {t('finances.merchant')}
               </Label>
               <div className="relative">
@@ -443,17 +438,12 @@ export function CreateExpenseForm({
                 <Store className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
               </div>
               {errors.description && (
-                <p className="text-destructive text-[11px] mt-0.5">
-                  {errors.description.message}
-                </p>
+                <p className="text-destructive text-[11px] mt-0.5">{errors.description.message}</p>
               )}
             </div>
 
             <div className="space-y-1.5">
-              <Label
-                htmlFor="expenseDate"
-                className="text-xs font-bold text-muted-foreground"
-              >
+              <Label htmlFor="expenseDate" className="text-xs font-bold text-muted-foreground">
                 {t('finances.expenseDate')}
               </Label>
               <div className="relative">
@@ -466,19 +456,14 @@ export function CreateExpenseForm({
                 <Calendar className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
               </div>
               {errors.expenseDate && (
-                <p className="text-destructive text-[11px] mt-0.5">
-                  {errors.expenseDate.message}
-                </p>
+                <p className="text-destructive text-[11px] mt-0.5">{errors.expenseDate.message}</p>
               )}
             </div>
           </div>
 
           {/* Total Amount (THB) */}
           <div className="space-y-1.5">
-            <Label
-              htmlFor="amount"
-              className="text-xs font-bold text-muted-foreground"
-            >
+            <Label htmlFor="amount" className="text-xs font-bold text-muted-foreground">
               {t('finances.totalAmountThb')}
             </Label>
             <div className="relative flex items-center">
@@ -498,18 +483,13 @@ export function CreateExpenseForm({
               </div>
             </div>
             {errors.amount && (
-              <p className="text-destructive text-[11px] mt-0.5">
-                {errors.amount.message}
-              </p>
+              <p className="text-destructive text-[11px] mt-0.5">{errors.amount.message}</p>
             )}
           </div>
 
           {/* Category */}
           <div className="space-y-1.5">
-            <Label
-              htmlFor="category"
-              className="text-xs font-bold text-muted-foreground"
-            >
+            <Label htmlFor="category" className="text-xs font-bold text-muted-foreground">
               {t('finances.categoryLabel')}
             </Label>
             <div className="relative">
@@ -527,18 +507,13 @@ export function CreateExpenseForm({
               <Tag className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
             </div>
             {errors.category && (
-              <p className="text-destructive text-[11px] mt-0.5">
-                {errors.category.message}
-              </p>
+              <p className="text-destructive text-[11px] mt-0.5">{errors.category.message}</p>
             )}
           </div>
 
           {/* Paid By Selection */}
           <div className="space-y-1.5">
-            <Label
-              htmlFor="paidById"
-              className="text-xs font-bold text-muted-foreground"
-            >
+            <Label htmlFor="paidById" className="text-xs font-bold text-muted-foreground">
               {t('finances.paidBy')}
             </Label>
             <select
@@ -798,7 +773,9 @@ export function CreateExpenseForm({
                           </div>
                         )}
                         <span className="text-xs text-foreground font-semibold">
-                          {member?.userId === currentUserId ? `${member?.name} (${t('common.you')})` : member?.name}
+                          {member?.userId === currentUserId
+                            ? `${member?.name} (${t('common.you')})`
+                            : member?.name}
                         </span>
                       </button>
                     );

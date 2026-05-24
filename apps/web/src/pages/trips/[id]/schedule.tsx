@@ -41,10 +41,7 @@ export default function TripSchedulePage() {
   const { data: places } = useTripPlaces(id);
   const { data: schedule, mutate, error, isLoading } = useSchedule(id);
 
-  const days = useMemo(
-    () => (trip ? buildDays(trip.startsOn, trip.endsOn) : []),
-    [trip],
-  );
+  const days = useMemo(() => (trip ? buildDays(trip.startsOn, trip.endsOn) : []), [trip]);
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeDay, setActiveDay] = useState(() => {
     const day = searchParams.get('day');
@@ -135,8 +132,7 @@ export default function TripSchedulePage() {
     let durationMinutes: number;
     if (data.kind === 'existing') {
       durationMinutes =
-        (schedule ?? []).find((s) => s.id === data.scheduleId)?.durationMinutes ??
-        DEFAULT_DURATION;
+        (schedule ?? []).find((s) => s.id === data.scheduleId)?.durationMinutes ?? DEFAULT_DURATION;
     } else {
       const place = placesById.get(data.tripPlaceId);
       durationMinutes = place?.stayMinutes || DEFAULT_DURATION;
@@ -176,8 +172,7 @@ export default function TripSchedulePage() {
       durationMinutes = place?.stayMinutes || DEFAULT_DURATION;
     } else {
       durationMinutes =
-        (schedule ?? []).find((s) => s.id === data.scheduleId)?.durationMinutes ??
-        DEFAULT_DURATION;
+        (schedule ?? []).find((s) => s.id === data.scheduleId)?.durationMinutes ?? DEFAULT_DURATION;
     }
 
     const endMinute = startMinute + Math.max(1, durationMinutes);
@@ -204,9 +199,7 @@ export default function TripSchedulePage() {
           startMinute,
           dayIndex: activeDay,
         });
-        mutate((prev) =>
-          (prev ?? []).map((s) => (s.id === data.scheduleId ? updated : s)),
-        );
+        mutate((prev) => (prev ?? []).map((s) => (s.id === data.scheduleId ? updated : s)));
       }
     } catch (err) {
       console.error('[schedule] drop failed', err);
@@ -278,14 +271,10 @@ export default function TripSchedulePage() {
 
     try {
       const updated = await updateSchedule(id, scheduleId, { durationMinutes });
-      mutate((curr) =>
-        (curr ?? []).map((s) => (s.id === scheduleId ? updated : s)),
-      );
+      mutate((curr) => (curr ?? []).map((s) => (s.id === scheduleId ? updated : s)));
     } catch (err) {
       console.error('[schedule] resize failed', err);
-      mutate((curr) =>
-        (curr ?? []).map((s) => (s.id === scheduleId ? prev : s)),
-      );
+      mutate((curr) => (curr ?? []).map((s) => (s.id === scheduleId ? prev : s)));
     } finally {
       setPendingResizeIds((curr) => {
         if (!curr.has(scheduleId)) return curr;
@@ -317,7 +306,10 @@ export default function TripSchedulePage() {
           backTo={`/trips/${id}`}
           backLabel={t('overview.tripOverview')}
           title={t('schedule.title', 'Trip Schedule')}
-          subtitle={t('schedule.subtitle', 'Drag voted places onto the timeline to build each day.')}
+          subtitle={t(
+            'schedule.subtitle',
+            'Drag voted places onto the timeline to build each day.',
+          )}
           withBorder
         />
 
@@ -372,8 +364,14 @@ export default function TripSchedulePage() {
 
             <p className="text-muted-foreground mb-4 mt-3 text-xs">
               {allowDuplicates
-                ? t('schedule.allowDuplicatesOn', 'A place can repeat across days — handy for daily stops.')
-                : t('schedule.allowDuplicatesOff', 'Each place appears once across the whole trip.')}
+                ? t(
+                    'schedule.allowDuplicatesOn',
+                    'A place can repeat across days — handy for daily stops.',
+                  )
+                : t(
+                    'schedule.allowDuplicatesOff',
+                    'Each place appears once across the whole trip.',
+                  )}
             </p>
 
             {topVotedForDay.length === 0 ? (

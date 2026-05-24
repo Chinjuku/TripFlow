@@ -194,7 +194,12 @@ export function DatePicker({
             ref={popoverRef}
             role="dialog"
             aria-label="Choose date"
-            style={{ position: 'fixed', top: position.top, left: position.left, width: POPOVER_WIDTH }}
+            style={{
+              position: 'fixed',
+              top: position.top,
+              left: position.left,
+              width: POPOVER_WIDTH,
+            }}
             className={cn(
               'bg-popover text-popover-foreground border-border z-[60] rounded-xl border p-4 shadow-lg',
               'animate-in fade-in-0 zoom-in-95',

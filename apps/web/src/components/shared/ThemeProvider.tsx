@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react';
+import { createContext, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Theme, ThemeContextValue } from '@/types/theme';
 
 export const THEME_STORAGE_KEY = 'trip-flow-theme';
@@ -56,10 +49,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   }, [theme, setTheme]);
 
-  const value = useMemo(
-    () => ({ theme, setTheme, toggleTheme }),
-    [theme, setTheme, toggleTheme],
-  );
+  const value = useMemo(() => ({ theme, setTheme, toggleTheme }), [theme, setTheme, toggleTheme]);
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

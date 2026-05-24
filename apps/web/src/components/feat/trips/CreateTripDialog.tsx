@@ -121,7 +121,9 @@ export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDi
         </div>
 
         <div className="bg-muted/40 border-border rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs font-medium">{t('trips.calculatedDuration')}</p>
+          <p className="text-muted-foreground text-xs font-medium">
+            {t('trips.calculatedDuration')}
+          </p>
           <p className="text-foreground mt-1 text-base font-semibold">
             {duration !== null ? t('common.days', { count: duration }) : t('trips.daysPlaceholder')}
           </p>

@@ -41,9 +41,7 @@ export function EventBlock({ item, next, onRemove, onResize, dragLocked }: Event
   const style: React.CSSProperties = {
     top,
     height,
-    transform: transform
-      ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
-      : undefined,
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
     opacity: transform ? 0.6 : 1,
   };
 
@@ -123,8 +121,7 @@ export function EventBlock({ item, next, onRemove, onResize, dragLocked }: Event
         <div className="min-w-0 flex-1">
           <p className={cn('truncate text-sm font-bold', tone.text)}>{item.place.name}</p>
           <p className="text-primary-foreground/80 mt-0.5 truncate text-xs">
-            {formatTime(item.startMinute)} -{' '}
-            {formatTime(item.startMinute + effectiveDuration)}
+            {formatTime(item.startMinute)} - {formatTime(item.startMinute + effectiveDuration)}
             <span className="ml-1 opacity-70">({formatDuration(effectiveDuration)})</span>
           </p>
         </div>

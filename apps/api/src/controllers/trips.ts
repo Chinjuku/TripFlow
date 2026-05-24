@@ -18,12 +18,18 @@ export async function handleCreateTrip({ user, body }: AuthContext & { body: any
   return { trip };
 }
 
-export async function handleJoinTripByCode({ user, body }: AuthContext & { body: { inviteCode: string } }) {
+export async function handleJoinTripByCode({
+  user,
+  body,
+}: AuthContext & { body: { inviteCode: string } }) {
   const trip = await tripsService.joinTripByCode(user.sub, body.inviteCode);
   return { trip };
 }
 
-export async function handleGetTripDetail({ user, params }: AuthContext & { params: { id: string } }) {
+export async function handleGetTripDetail({
+  user,
+  params,
+}: AuthContext & { params: { id: string } }) {
   const trip = await tripsService.getTripDetail(user.sub, params.id);
   return { trip };
 }

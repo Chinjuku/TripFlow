@@ -3,7 +3,7 @@ import { sql } from 'drizzle-orm';
 
 async function run() {
   console.log('Starting custom finance table migration...');
-  
+
   const createTablesSql = `
     CREATE TABLE IF NOT EXISTS "expenses" (
       "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,

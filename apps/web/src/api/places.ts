@@ -32,11 +32,7 @@ export async function removePlace(tripId: string, placeId: string): Promise<void
   unwrap(res);
 }
 
-export async function setLike(
-  tripId: string,
-  placeId: string,
-  liked: boolean,
-): Promise<TripPlace> {
+export async function setLike(tripId: string, placeId: string, liked: boolean): Promise<TripPlace> {
   const res = await api.trips[tripId]!.places[placeId]!.like.put({ liked });
   const { place } = unwrap(res) as { place: TripPlace };
   return place;

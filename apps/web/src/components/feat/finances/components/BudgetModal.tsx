@@ -38,7 +38,10 @@ export function BudgetModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-2">
         <div className="space-y-1">
-          <Label htmlFor="budget-amount" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          <Label
+            htmlFor="budget-amount"
+            className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+          >
             Budget Limit (THB)
           </Label>
           <div className="relative">
