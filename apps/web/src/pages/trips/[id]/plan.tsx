@@ -4,6 +4,7 @@ import { cn } from '@trip-flow/ui/lib/cn';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrip } from '@/components/feat/trips';
 import { TripPageHeader } from '@/components/shared/TripPageHeader';
+import { useTranslation } from 'react-i18next';
 import {
   addPlace,
   bucketFor,
@@ -28,20 +29,7 @@ interface TabMeta {
   helper: string;
 }
 
-const TABS: TabMeta[] = [
-  {
-    id: 'plan',
-    label: 'Suggestions',
-    heading: 'Plan places',
-    helper: 'Pick candidate places to put up for the group.',
-  },
-  {
-    id: 'vote',
-    label: 'Voting',
-    heading: 'Vote for Places',
-    helper: 'Help decide the itinerary by voting for your favorite spots.',
-  },
-];
+// We'll generate TABS dynamically inside the component since they use translations.
 
 function sortPlaces(list: TripPlace[]): TripPlace[] {
   return [...list].sort((a, b) => {
@@ -55,6 +43,7 @@ export default function TripPlanPage() {
   const { user } = useAuth();
   const { data: trip } = useTrip(id);
   const { data: places, error, isLoading, mutate } = useTripPlaces(id);
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [hoveredPlaceId, setHoveredPlaceId] = useState<string | null>(null);
   const cardRefs = useRef<Map<string, HTMLElement>>(new Map());
@@ -66,6 +55,22 @@ export default function TripPlanPage() {
   const [bulkBusy, setBulkBusy] = useState(false);
 
   const tab: PlanTab = searchParams.get('tab') === 'vote' ? 'vote' : 'plan';
+
+  const TABS: TabMeta[] = [
+    {
+      id: 'plan',
+      label: t('plan.suggestions', 'Suggestions'),
+      heading: t('plan.planPlaces', 'Plan places'),
+      helper: t('plan.planPlacesHelper', 'Pick candidate places to put up for the group.'),
+    },
+    {
+      id: 'vote',
+      label: t('plan.voting', 'Voting'),
+      heading: t('plan.votePlaces', 'Vote for Places'),
+      helper: t('plan.votePlacesHelper', 'Help decide the itinerary by voting for your favorite spots.'),
+    },
+  ];
+
   const activeMeta = TABS.find((t) => t.id === tab)!;
   const catParam = searchParams.get('cat');
   const activeCat: PlaceBucket | 'all' =
@@ -187,7 +192,7 @@ export default function TripPlanPage() {
       }
       exitBulkMode();
     } catch (err) {
-      setAddError(err instanceof Error ? err.message : 'Failed to remove some places');
+      setAddError(err instanceof Error ? err.message : t('plan.failedToRemove', 'Failed to remove some places'));
     } finally {
       setBulkBusy(false);
     }
@@ -215,7 +220,7 @@ export default function TripPlanPage() {
         return sortPlaces([added, ...without]);
       });
     } catch (err) {
-      setAddError(err instanceof Error ? err.message : 'Failed to add place');
+      setAddError(err instanceof Error ? err.message : t('plan.failedToAdd', 'Failed to add place'));
     }
   }
 
@@ -225,7 +230,7 @@ export default function TripPlanPage() {
     <div className="mx-auto flex h-[calc(100dvh-4rem)] min-h-0 max-w-6xl flex-col gap-6">
       <TripPageHeader
         backTo={`/trips/${id}`}
-        backLabel="Trip workspace"
+        backLabel={t('overview.tripOverview', 'Trip overview')}
         title={activeMeta.heading}
         subtitle={activeMeta.helper}
       />
@@ -254,7 +259,7 @@ export default function TripPlanPage() {
         </div>
         {tab === 'plan' && (
           <span className="text-muted-foreground mb-2 hidden text-xs sm:inline">
-            Tip: click any place on the map to add it.
+            {t('plan.tipClickMap', 'Tip: click any place on the map to add it.')}
           </span>
         )}
       </div>

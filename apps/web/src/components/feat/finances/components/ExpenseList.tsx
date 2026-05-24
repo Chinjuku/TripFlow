@@ -138,7 +138,7 @@ export function ExpenseList({
               return (
                 <div
                   key={`expense-${exp.id}`}
-                  className="bg-white border border-[#e8eaed] rounded-2xl transition-all duration-200 overflow-hidden shadow-sm hover:shadow-md"
+                  className="bg-card border border-border rounded-2xl transition-all duration-200 overflow-hidden shadow-sm hover:shadow-md"
                 >
                   <div
                     onClick={() => toggleExpand(exp.id)}
@@ -160,7 +160,7 @@ export function ExpenseList({
                           <span>{t('finances.paidBy')} {isPaidByMe ? t('common.you') : exp.payerName}</span>
                           <span className="opacity-40">•</span>
                           <span className="bg-tertiary/50 text-tertiary-foreground px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border border-tertiary">
-                            {exp.split_method === 'equally' ? 'Equally' : 'Exact'}
+                            {exp.split_method === 'equally' ? t('finances.equally', 'Equally') : t('finances.exact', 'Exact')}
                           </span>
                           <span className="opacity-40">•</span>
                           <span>{formatDate(exp.expense_date)}</span>
@@ -206,14 +206,14 @@ export function ExpenseList({
                           return (
                             <div
                               key={split.id}
-                              className="flex items-center justify-between bg-white p-3 rounded-xl border border-[#e8eaed] shadow-sm"
+                              className="flex items-center justify-between bg-muted/30 p-3 rounded-xl border border-border shadow-sm"
                             >
                               <div className="flex items-center gap-3">
                                 {split.avatarUrl ? (
                                   <img
                                     src={split.avatarUrl}
                                     alt={split.userName}
-                                    className="w-8 h-8 rounded-full object-cover border border-[#e8eaed]"
+                                    className="w-8 h-8 rounded-full object-cover border border-border"
                                   />
                                 ) : (
                                   <div

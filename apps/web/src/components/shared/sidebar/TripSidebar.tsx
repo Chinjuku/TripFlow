@@ -132,7 +132,8 @@ export function TripSidebar({ tripId, open, onOpenChange }: TripSidebarProps) {
         <nav className="mt-8 flex-1 space-y-2 overflow-y-auto overflow-x-hidden px-3 py-2">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isFinancesActive = item.name === 'Finances' && (
+            const isFinancesItem = item.to.endsWith('/finances');
+            const isFinancesActive = isFinancesItem && (
               location.pathname.includes('/finances') || 
               location.pathname.includes('/all-expenses') || 
               location.pathname.includes('/to-receive') || 

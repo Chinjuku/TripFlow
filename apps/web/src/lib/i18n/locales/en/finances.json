@@ -8,6 +8,10 @@
   "whatYouOwe": "What you owe",
   "recentExpenses": "Recent Expenses",
   "allExpenses": "All Expenses",
+  "searchExpenses": "Search merchants or payers...",
+  "backToFinanceDashboard": "Back to Finance Dashboard",
+  "noExpensesFound": "No expenses found matching your search.",
+  "payer": "Payer",
   "seeAll": "See all",
   "addExpense": "Add Expense",
   "noExpenses": "No expenses yet",
@@ -161,5 +165,7 @@
   "budgetConsumption": "Budget Consumption",
   "spent": "Spent",
   "categoryBreakdown": "Category Breakdown",
-  "totalYouOwe": "Total You Owe"
+  "totalYouOwe": "Total You Owe",
+  "equally": "Equally",
+  "exact": "Exact"
 }

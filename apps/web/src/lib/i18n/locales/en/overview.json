@@ -14,5 +14,22 @@
   "howToUseCode": "How to use this code:",
   "howToStep1": "Tell your friends to sign in to <b>TripFlow</b>",
   "howToStep2": "Go to the <b>Trips</b> page and click <b>\"Join Trip Using Code\"</b>",
-  "howToStep3": "Paste or enter the code to instantly join"
+  "howToStep3": "Paste or enter the code to instantly join",
+  "itinerarySummary": "Daily Itinerary Summary",
+  "itineraryScheduled": "{{total}} places scheduled across {{days}} days",
+  "itineraryPlan": "Plan daily activities and routes",
+  "expandAll": "Expand all",
+  "collapseAll": "Collapse all",
+  "noPlacesScheduled": "No places scheduled yet",
+  "noPlacesScheduledDesc": "Drag and schedule your voted candidate places on the time grid to build a beautiful timeline.",
+  "createSchedule": "Create schedule",
+  "dayNumber": "Day",
+  "noStops": "No stops scheduled",
+  "stops_one": "{{count}} stop",
+  "stops_other": "{{count}} stops",
+  "noStopsDay": "No stops scheduled for this day.",
+  "schedulePlaces": "Schedule some places",
+  "directionsMaps": "Directions in Google Maps",
+  "editSchedule": "Edit Schedule",
+  "failedLoadSchedule": "Failed to load schedule overview"
 }

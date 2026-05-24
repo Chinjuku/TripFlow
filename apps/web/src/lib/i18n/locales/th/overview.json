@@ -14,5 +14,22 @@
   "howToUseCode": "วิธีใช้รหัสนี้:",
   "howToStep1": "บอกเพื่อนให้เข้าสู่ระบบ <b>TripFlow</b>",
   "howToStep2": "ไปที่หน้า <b>ทริป</b> แล้วกด <b>\"เข้าร่วมทริปด้วยรหัส\"</b>",
-  "howToStep3": "วางหรือพิมพ์รหัสเพื่อเข้าร่วมทันที"
+  "howToStep3": "วางหรือพิมพ์รหัสเพื่อเข้าร่วมทันที",
+  "itinerarySummary": "สรุปแผนการเดินทางรายวัน",
+  "itineraryScheduled": "จัดตาราง {{total}} สถานที่ ใน {{days}} วัน",
+  "itineraryPlan": "วางแผนกิจกรรมและเส้นทางในแต่ละวัน",
+  "expandAll": "ขยายทั้งหมด",
+  "collapseAll": "ย่อทั้งหมด",
+  "noPlacesScheduled": "ยังไม่ได้จัดตารางสถานที่",
+  "noPlacesScheduledDesc": "ลากสถานที่ที่โหวตแล้วลงในตารางเวลาเพื่อสร้างไทม์ไลน์ของคุณ",
+  "createSchedule": "สร้างตาราง",
+  "dayNumber": "วันที่",
+  "noStops": "ยังไม่มีจุดแวะพัก",
+  "stops_one": "{{count}} จุดแวะพัก",
+  "stops_other": "{{count}} จุดแวะพัก",
+  "noStopsDay": "ยังไม่มีจุดแวะพักสำหรับวันนี้",
+  "schedulePlaces": "เพิ่มสถานที่ในตาราง",
+  "directionsMaps": "ดูเส้นทางใน Google Maps",
+  "editSchedule": "แก้ไขตารางเวลา",
+  "failedLoadSchedule": "ไม่สามารถโหลดข้อมูลสรุปตารางเวลาได้"
 }
