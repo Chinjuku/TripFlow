@@ -15,6 +15,7 @@ import {
 import { TripFinancesLayout, useTripFinancesContext } from '@/components/feat/finances/components/TripFinancesLayout';
 import type { DebtRelation, HydratedExpense, HydratedSettlement } from '@/components/feat/finances';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 
 // Explicit interfaces for types
 interface Transaction {
@@ -39,7 +40,7 @@ function buildCreditorsList(
   whatYouOwe: DebtRelation[],
   expenses: HydratedExpense[],
   settlements: HydratedSettlement[],
-  t: (key: string) => string
+  t: TFunction
 ): Creditor[] {
   return whatYouOwe.map((creditor) => {
     // Reconstruct contributing transactions between currentUserId and creditor.

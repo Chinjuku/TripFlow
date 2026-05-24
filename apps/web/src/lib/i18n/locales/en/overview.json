@@ -1,0 +1,18 @@
+{
+  "tripOverview": "Trip overview",
+  "boardCollaborators": "Board Collaborators",
+  "invite": "Invite",
+  "inviteFriends": "Invite Friends",
+  "inviteDesc": "Share this unique invite code with your friends so they can join your trip <b>{{title}}</b>.",
+  "planPlaces": "Plan places",
+  "allTrips": "All trips",
+  "suggestAndVote": "Suggest & vote on places",
+  "suggestAndVoteDesc": "Pick spots from the map and let your group rank them.",
+  "dates": "Dates",
+  "members": "Members",
+  "currentTrip": "Current Trip",
+  "howToUseCode": "How to use this code:",
+  "howToStep1": "Tell your friends to sign in to <b>TripFlow</b>",
+  "howToStep2": "Go to the <b>Trips</b> page and click <b>\"Join Trip Using Code\"</b>",
+  "howToStep3": "Paste or enter the code to instantly join"
+}

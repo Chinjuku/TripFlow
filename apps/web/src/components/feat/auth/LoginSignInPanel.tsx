@@ -29,7 +29,7 @@ export function LoginSignInPanel() {
 
           <div className="mb-8 text-center lg:text-left">
             <h2 className="font-headline text-foreground mb-1.5 text-2xl font-bold tracking-tight">
-              {t(`auth.greeting.${getGreetingKey()}`)}
+              {t(getGreetingKey())}
             </h2>
             <p className="text-muted-foreground text-sm">
               {t('auth.signInToContinue')}
@@ -76,10 +76,16 @@ export function LoginSignInPanel() {
   );
 }
 
-function getGreetingKey(): string {
+type GreetingKey =
+  | 'auth.greeting.morning'
+  | 'auth.greeting.afternoon'
+  | 'auth.greeting.evening'
+  | 'auth.greeting.lateNight';
+
+function getGreetingKey(): GreetingKey {
   const h = new Date().getHours();
-  if (h >= 5 && h < 12) return 'morning';
-  if (h >= 12 && h < 17) return 'afternoon';
-  if (h >= 17 && h < 22) return 'evening';
-  return 'lateNight';
+  if (h >= 5 && h < 12) return 'auth.greeting.morning';
+  if (h >= 12 && h < 17) return 'auth.greeting.afternoon';
+  if (h >= 17 && h < 22) return 'auth.greeting.evening';
+  return 'auth.greeting.lateNight';
 }

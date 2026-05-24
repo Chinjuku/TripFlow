@@ -1,0 +1,7 @@
+{
+  "title": "Schedule",
+  "day": "Day {{number}}",
+  "allDay": "All Day",
+  "noEvents": "No events scheduled",
+  "addToSchedule": "Add to Schedule"
+}

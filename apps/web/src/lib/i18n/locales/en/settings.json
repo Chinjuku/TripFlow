@@ -1,0 +1,21 @@
+{
+  "title": "Settings",
+  "subtitle": "Manage your account settings and preferences.",
+  "appearance": "Appearance",
+  "appearanceDesc": "Choose how TripFlow looks.",
+  "theme": "Theme",
+  "themeDesc": "Switches the entire app, including the login screen.",
+  "language": "Language",
+  "languageDesc": "Select your preferred display language.",
+  "english": "English",
+  "thai": "ไทย",
+  "profile": "Profile Information",
+  "profileDesc": "Your personal information synced from your Google account.",
+  "profilePicture": "Profile Picture",
+  "profilePictureDesc": "Managed automatically by your connected Google account.",
+  "displayName": "Display Name",
+  "emailAddress": "Email Address",
+  "googleOAuthNotice": "Your account is currently managed via Google OAuth. To update your name or profile picture, please make the changes directly in your Google account settings.",
+  "payment": "Payment Details",
+  "paymentDesc": "Your repayment and financial preferences."
+}

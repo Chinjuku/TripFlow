@@ -71,6 +71,19 @@ const config: Config = {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      keyframes: {
+        // Animates the dash pattern on the route-flow connector so the
+        // line appears to "flow" from one stop to the next, like a moving
+        // map route. Used via the `animate-route-flow` utility.
+        'route-flow-dash': {
+          from: { strokeDashoffset: '0' },
+          to: { strokeDashoffset: '-16' },
+        },
+      },
+      animation: {
+        'route-flow': 'route-flow-dash 0.9s linear infinite',
+        'spin-slow': 'spin 3s linear infinite',
+      },
     },
   },
   plugins: [],

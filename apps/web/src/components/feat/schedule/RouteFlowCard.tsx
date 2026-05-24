@@ -253,7 +253,7 @@ function RouteFlowConnector({
         <path
           d="M2 6 H 38"
           strokeDasharray="4 4"
-          style={{ animation: 'route-flow-dash 0.9s linear infinite' }}
+          className="animate-route-flow"
         />
         <path d="M36 2 L42 6 L36 10" strokeLinejoin="round" />
       </svg>
