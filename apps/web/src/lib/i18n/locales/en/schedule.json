@@ -3,5 +3,14 @@
   "day": "Day {{number}}",
   "allDay": "All Day",
   "noEvents": "No events scheduled",
-  "addToSchedule": "Add to Schedule"
+  "addToSchedule": "Add to Schedule",
+  "subtitle": "Drag voted places onto the timeline to build each day.",
+  "topVotedPlaces": "Top Voted Places",
+  "itemsCount_one": "{{count}} item",
+  "itemsCount_other": "{{count}} items",
+  "allowDuplicatesOn": "A place can repeat across days — handy for daily stops.",
+  "allowDuplicatesOff": "Each place appears once across the whole trip.",
+  "noMoreCandidates": "No more candidates left to schedule.",
+  "movingEvent": "Moving event…",
+  "dayFallback": "Day"
 }

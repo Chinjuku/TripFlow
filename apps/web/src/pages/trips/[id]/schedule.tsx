@@ -14,6 +14,7 @@ import { Skeleton } from '@trip-flow/ui/components/skeleton';
 import { TripPageHeader } from '@/components/shared/TripPageHeader';
 import { useTrip } from '@/components/feat/trips';
 import { useTripPlaces, type TripPlace } from '@/components/feat/places';
+import { useTranslation } from 'react-i18next';
 import {
   addSchedule,
   buildDays,
@@ -35,6 +36,7 @@ import {
 
 export default function TripSchedulePage() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useTranslation();
   const { data: trip } = useTrip(id);
   const { data: places } = useTripPlaces(id);
   const { data: schedule, mutate, error, isLoading } = useSchedule(id);
@@ -313,9 +315,9 @@ export default function TripSchedulePage() {
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
         <TripPageHeader
           backTo={`/trips/${id}`}
-          backLabel="Trip workspace"
-          title="Trip Schedule"
-          subtitle="Drag voted places onto the timeline to build each day."
+          backLabel={t('overview.tripOverview')}
+          title={t('schedule.title', 'Trip Schedule')}
+          subtitle={t('schedule.subtitle', 'Drag voted places onto the timeline to build each day.')}
           withBorder
         />
 
@@ -335,7 +337,7 @@ export default function TripSchedulePage() {
               <h2 className="text-foreground font-headline text-lg font-bold">
                 {activeDayMeta
                   ? `${activeDayMeta.date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} (${activeDayMeta.label})`
-                  : 'Day'}
+                  : t('schedule.dayFallback', 'Day')}
               </h2>
             </div>
 
@@ -359,11 +361,10 @@ export default function TripSchedulePage() {
           <aside className="border-border bg-card rounded-2xl border p-5 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto">
             <div className="border-border mb-3 flex items-center justify-between gap-2 border-b pb-3">
               <h3 className="text-foreground font-headline text-base font-bold">
-                Top Voted Places
+                {t('schedule.topVotedPlaces', 'Top Voted Places')}
               </h3>
               <span className="bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold">
-                {topVotedForDay.length}
-                {topVotedForDay.length === 1 ? ' item' : ' items'}
+                {t('schedule.itemsCount', '{{count}} items', { count: topVotedForDay.length })}
               </span>
             </div>
 
@@ -371,13 +372,13 @@ export default function TripSchedulePage() {
 
             <p className="text-muted-foreground mb-4 mt-3 text-xs">
               {allowDuplicates
-                ? 'A place can repeat across days — handy for daily stops.'
-                : 'Each place appears once across the whole trip.'}
+                ? t('schedule.allowDuplicatesOn', 'A place can repeat across days — handy for daily stops.')
+                : t('schedule.allowDuplicatesOff', 'Each place appears once across the whole trip.')}
             </p>
 
             {topVotedForDay.length === 0 ? (
               <p className="text-muted-foreground text-sm">
-                No more candidates left to schedule.
+                {t('schedule.noMoreCandidates', 'No more candidates left to schedule.')}
               </p>
             ) : (
               <div className="space-y-2.5">
@@ -395,7 +396,7 @@ export default function TripSchedulePage() {
           <PlacePill place={placesById.get(dragging.tripPlaceId)!} dragging />
         ) : dragging?.kind === 'existing' ? (
           <div className="bg-primary/90 text-primary-foreground rounded-md px-3 py-2 text-sm font-semibold shadow-lg">
-            Moving event…
+            {t('schedule.movingEvent', 'Moving event…')}
           </div>
         ) : null}
       </DragOverlay>

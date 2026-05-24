@@ -11,19 +11,9 @@ import {
 import { Button } from '@trip-flow/ui/components/button';
 import { cn } from '@trip-flow/ui/lib/cn';
 import type { FilterKey, SortKey, TripPlace } from '@/types/places';
+import { useTranslation } from 'react-i18next';
 
-const FILTERS: Array<{ id: FilterKey; label: string; icon: typeof ThumbsUp }> = [
-  { id: 'all', label: 'All', icon: ListChecks },
-  { id: 'voted', label: 'Voted only', icon: ThumbsUp },
-  { id: 'mine', label: 'My picks', icon: Check },
-  { id: 'photos', label: 'Has photo', icon: ImageIcon },
-];
-
-const SORTS: Array<{ id: SortKey; label: string }> = [
-  { id: 'votes', label: 'Most votes' },
-  { id: 'name', label: 'Name (A–Z)' },
-  { id: 'recent', label: 'Recently added' },
-];
+// We will generate SORTS dynamically inside the component since they use translations.
 
 interface ListToolbarProps {
   filter: FilterKey;
@@ -50,6 +40,15 @@ export function ListToolbar({
   bulkBusy,
   places,
 }: ListToolbarProps) {
+  const { t } = useTranslation();
+  
+  const FILTERS: Array<{ id: FilterKey; label: string; icon: typeof ThumbsUp }> = useMemo(() => [
+    { id: 'all', label: t('plan.filterAll', 'All'), icon: ListChecks },
+    { id: 'voted', label: t('plan.filterVotedOnly', 'Voted only'), icon: ThumbsUp },
+    { id: 'mine', label: t('plan.filterMyPicks', 'My picks'), icon: Check },
+    { id: 'photos', label: t('plan.filterHasPhoto', 'Has photo'), icon: ImageIcon },
+  ], [t]);
+
   const counts = useMemo(() => {
     const out: Record<FilterKey, number> = { all: places.length, voted: 0, mine: 0, photos: 0 };
     for (const p of places) {
@@ -109,7 +108,7 @@ export function ListToolbar({
       {bulkMode ? (
         <div className="inline-flex items-center gap-2">
           <span className="text-muted-foreground text-xs font-semibold tabular-nums">
-            {bulkSelected.size} selected
+            {bulkSelected.size} {t('plan.selected', 'selected')}
           </span>
           <Button
             type="button"
@@ -120,7 +119,7 @@ export function ListToolbar({
             className="h-8 gap-1.5 rounded-full"
           >
             <Trash2 className="h-3.5 w-3.5" strokeWidth={2.25} />
-            {bulkBusy ? 'Deleting…' : 'Delete'}
+            {bulkBusy ? t('plan.deleting', 'Deleting…') : t('plan.delete', 'Delete')}
           </Button>
           <Button
             type="button"
@@ -129,7 +128,7 @@ export function ListToolbar({
             onClick={onToggleBulkMode}
             className="h-8 rounded-full"
           >
-            Done
+            {t('plan.done', 'Done')}
           </Button>
         </div>
       ) : (
@@ -141,7 +140,7 @@ export function ListToolbar({
           className="h-8 gap-1.5 rounded-full"
         >
           <ListChecks className="h-3.5 w-3.5" strokeWidth={2} />
-          Select
+          {t('plan.select', 'Select')}
         </Button>
       )}
     </div>
@@ -155,8 +154,16 @@ function SortPicker({
   value: SortKey;
   onChange: (next: SortKey) => void;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement | null>(null);
+
+  const SORTS: Array<{ id: SortKey; label: string }> = useMemo(() => [
+    { id: 'votes', label: t('plan.sortMostVotes', 'Most votes') },
+    { id: 'name', label: t('plan.sortNameAZ', 'Name (A–Z)') },
+    { id: 'recent', label: t('plan.sortRecentlyAdded', 'Recently added') },
+  ], [t]);
+
   const active = SORTS.find((s) => s.id === value) ?? SORTS[0]!;
 
   useEffect(() => {

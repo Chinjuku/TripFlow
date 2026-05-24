@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { Utensils, Car, Compass, Home, Banknote, ChevronDown, ChevronUp, ArrowRightLeft, CheckCircle2, AlertCircle } from 'lucide-react';
+import {
+  Utensils,
+  Car,
+  Compass,
+  Home,
+  Banknote,
+  ChevronDown,
+  ArrowRightLeft,
+  CheckCircle2,
+  AlertCircle,
+} from 'lucide-react';
 import { Button } from '@trip-flow/ui/components/button';
 import type { HydratedExpense, HydratedSettlement, HydratedExpenseSplit } from '../types';
 import { Link, useParams, useLocation } from 'react-router-dom';
@@ -11,6 +21,7 @@ interface ExpenseListProps {
   currentUserId: string;
   onConfirmSettlement: (id: string) => Promise<void>;
   confirmingId: string | null;
+  seeAllLink?: string;
 }
 
 export function ExpenseList({
@@ -19,6 +30,7 @@ export function ExpenseList({
   currentUserId,
   onConfirmSettlement,
   confirmingId,
+  seeAllLink,
 }: ExpenseListProps) {
   const [expandedExpenseId, setExpandedExpenseId] = useState<string | null>(null);
   const { id } = useParams<{ id: string }>();
@@ -35,7 +47,11 @@ export function ExpenseList({
     | { type: 'settlement'; date: string; data: HydratedSettlement };
 
   const feedItems: FeedItem[] = [
-    ...expenses.map((e) => ({ type: 'expense' as const, date: e.expense_date || e.created_at, data: e })),
+    ...expenses.map((e) => ({
+      type: 'expense' as const,
+      date: e.expense_date || e.created_at,
+      data: e,
+    })),
     ...settlements.map((s) => ({ type: 'settlement' as const, date: s.created_at, data: s })),
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
@@ -67,9 +83,16 @@ export function ExpenseList({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between border-b border-border pb-3">
-        <h3 className="font-headline text-foreground text-xl font-bold tracking-tight">{t('finances.recentActivity')}</h3>
-        {location.pathname.endsWith('/finances') && (
-          <Link to={`/trips/${id}/all-expenses`} className="text-primary text-sm font-semibold hover:text-primary/80 hover:underline">{t('finances.seeAll')}</Link>
+        <h3 className="font-headline text-foreground text-xl font-bold tracking-tight">
+          {t('finances.recentActivity')}
+        </h3>
+        {seeAllLink && (
+          <Link
+            to={seeAllLink}
+            className="text-primary hover:text-primary/80 text-xs font-bold tracking-wide uppercase transition-colors"
+          >
+            to={`/trips/${id}/all-expenses`} 
+          </Link>
         )}
       </div>
 
@@ -92,8 +115,10 @@ export function ExpenseList({
               const CatIcon = cat.icon;
 
               const isPaidByMe = exp.paid_by_id === currentUserId;
-              const mySplit = exp.splits.find((s: HydratedExpenseSplit) => s.user_id === currentUserId);
-              
+              const mySplit = exp.splits.find(
+                (s: HydratedExpenseSplit) => s.user_id === currentUserId,
+              );
+
               // Calculate split summary label
               let splitLabel = '';
               let mySplitSummary = '';
@@ -113,7 +138,7 @@ export function ExpenseList({
               return (
                 <div
                   key={`expense-${exp.id}`}
-                  className="bg-card hover:bg-card/75 border border-border rounded-2xl transition-all duration-200 overflow-hidden shadow-sm hover:shadow"
+                  className="bg-card border border-border rounded-2xl transition-all duration-200 overflow-hidden shadow-sm hover:shadow-md"
                 >
                   <div
                     onClick={() => toggleExpand(exp.id)}
@@ -121,16 +146,22 @@ export function ExpenseList({
                   >
                     <div className="flex items-center gap-4">
                       {/* Category Rounded Icon */}
-                      <div className={`w-11 h-11 rounded-full flex items-center justify-center shadow-sm shrink-0 ${cat.bg}`}>
+                      <div
+                        className={`w-11 h-11 rounded-full flex items-center justify-center shadow-sm shrink-0 ${cat.bg}`}
+                      >
                         <CatIcon className="w-5 h-5" />
                       </div>
-                      
+
                       <div className="space-y-0.5">
                         <h4 className="text-foreground text-sm font-bold sm:text-base leading-tight">
                           {exp.description}
                         </h4>
                         <div className="text-muted-foreground text-xs flex flex-wrap items-center gap-1">
                           <span>{t('finances.paidBy')} {isPaidByMe ? t('common.you') : exp.payerName}</span>
+                          <span className="opacity-40">•</span>
+                          <span className="bg-tertiary/50 text-tertiary-foreground px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border border-tertiary">
+                            {exp.split_method === 'equally' ? t('finances.equally', 'Equally') : t('finances.exact', 'Exact')}
+                          </span>
                           <span className="opacity-40">•</span>
                           <span>{formatDate(exp.expense_date)}</span>
                         </div>
@@ -147,7 +178,9 @@ export function ExpenseList({
                         </div>
                       </div>
                       <div className="text-muted-foreground hidden sm:block">
-                        {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                        <ChevronDown
+                          className={`w-5 h-5 transition-transform ${isExpanded ? 'rotate-180 text-foreground' : ''}`}
+                        />
                       </div>
                     </div>
                   </div>
@@ -162,24 +195,39 @@ export function ExpenseList({
                       <div className="space-y-2">
                         {exp.splits.map((split: HydratedExpenseSplit) => {
                           const isSplitMe = split.user_id === currentUserId;
+                          const isPayer = split.user_id === exp.paid_by_id;
+                          const initials = split.userName
+                            .split(' ')
+                            .map((n) => n[0])
+                            .join('')
+                            .toUpperCase()
+                            .slice(0, 2);
+
                           return (
-                            <div key={split.id} className="flex items-center justify-between text-xs py-1">
-                              <div className="flex items-center gap-2">
+                            <div
+                              key={split.id}
+                              className="flex items-center justify-between bg-muted/30 p-3 rounded-xl border border-border shadow-sm"
+                            >
+                              <div className="flex items-center gap-3">
                                 {split.avatarUrl ? (
                                   <img
                                     src={split.avatarUrl}
                                     alt={split.userName}
-                                    className="w-5 h-5 rounded-full object-cover shadow-sm"
+                                    className="w-8 h-8 rounded-full object-cover border border-border"
                                   />
                                 ) : (
-                                  <div className="w-5 h-5 rounded-full bg-muted-foreground/10 text-muted-foreground font-bold flex items-center justify-center text-[10px]">
-                                    {split.userName.charAt(0)}
+                                  <div
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-inner ${
+                                      isPayer ? 'bg-[#005f42]' : 'bg-[#5f6368]'
+                                    }`}
+                                  >
+                                    {initials}
                                   </div>
                                 )}
                                 <span className={`font-medium ${isSplitMe ? 'text-primary font-semibold' : 'text-foreground'}`}>
                                   {isSplitMe ? t('common.you') : split.userName}
                                   {split.item_paid && (
-                                    <span className="text-muted-foreground text-[10px] italic ml-1.5 font-normal">
+                                    <span className="text-muted-foreground text-[10px] italic font-normal ml-1.5">
                                       ({split.item_paid})
                                     </span>
                                   )}
@@ -227,9 +275,7 @@ export function ExpenseList({
                           {set.status === 'completed' ? t('finances.paid') : t('finances.pendingConfirmation')}
                         </span>
                       </div>
-                      <p className="text-muted-foreground text-xs">
-                        {formatDate(set.created_at)}
-                      </p>
+                      <p className="text-muted-foreground text-xs">{formatDate(set.created_at)}</p>
                     </div>
                   </div>
 
