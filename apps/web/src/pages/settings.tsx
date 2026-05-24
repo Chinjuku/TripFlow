@@ -1,16 +1,16 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { ProfileCard, AppearanceCard, PaymentDetailsCard } from '@/components/feat/settings';
+import { ProfileCard, AppearanceCard, PaymentDetailsCard, SettingsTabs, useSettingsTab } from '@/components/feat/settings';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [activeTab] = useSettingsTab();
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-3xl space-y-8 duration-500 ease-out">
+    <div className="animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-3xl space-y-6 duration-500 ease-out">
       <div className="space-y-1">
-        {/* Mobile Back Link (Matches the layout and style of trip details back links) */}
         <button
           onClick={() => navigate(-1)}
           className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-sm font-semibold transition-colors md:hidden"
@@ -30,15 +30,13 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Profile Information */}
-      <ProfileCard />
+      <SettingsTabs />
 
-      {/* Appearance & Themes */}
-      <AppearanceCard />
-
-      {/* Repayment and Financial Details */}
-      <PaymentDetailsCard />
+      <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+        {activeTab === 'profile' && <ProfileCard />}
+        {activeTab === 'appearance' && <AppearanceCard />}
+        {activeTab === 'payment' && <PaymentDetailsCard />}
+      </div>
     </div>
   );
 }
-
