@@ -4,6 +4,7 @@ import { Button } from '@trip-flow/ui/components/button';
 import { Check, Copy, QrCode, CreditCard, CheckCircle2 } from 'lucide-react';
 import type { DebtRelation, UserPaymentDetail } from '../types';
 import { useTranslation, Trans } from 'react-i18next';
+import { findBank } from '@/utils/thai-banks';
 
 interface SettleUpModalProps {
   open: boolean;
@@ -23,32 +24,23 @@ export function SettleUpModal({
   isSubmitting,
 }: SettleUpModalProps) {
   const [copiedText, setCopiedText] = useState<string | null>(null);
-  const [method, setMethod] = useState<'qr_image' | 'promptpay_id' | 'bank' | null>(null);
-  const { t } = useTranslation();
-
-  // Compute active methods based on mutually exclusive visibility flags
-  const activeMethods: ('qr_image' | 'promptpay_id' | 'bank')[] = [];
   
-  // Enforce mutual exclusivity safely with defaults
-  const showPromptpay = paymentDetails ? (paymentDetails.is_show_promptpay ?? true) : true;
-  const showMobileBanking = paymentDetails ? (paymentDetails.is_show_mobile_banking ?? !showPromptpay) : false;
+  // ตัดโหมด qr_image ออกไป เหลือแค่ Bank Account และ PromptPay
+  const [method, setMethod] = useState<'promptpay_id' | 'bank' | null>(null);
+  const { t, i18n } = useTranslation();
 
-  if (showPromptpay) {
-    if (paymentDetails?.qr_code_url) activeMethods.push('qr_image');
-    if (paymentDetails?.promptpay_id) activeMethods.push('promptpay_id');
-  }
+  const activeMethods: ('promptpay_id' | 'bank')[] = [];
   
-  if (showMobileBanking) {
-    if (
-      paymentDetails?.bank_name &&
-      paymentDetails?.bank_account_number &&
-      paymentDetails?.bank_account_name
-    ) {
-      activeMethods.push('bank');
-    }
+  // ดึงข้อมูล Bank Account มาแสดง (ถ้ามีข้อมูล)
+  if (paymentDetails?.bank_name && paymentDetails?.bank_account_number) {
+    activeMethods.push('bank');
   }
 
-  // Set the default active method based on availability and priority
+  // ดึงข้อมูล PromptPay ID มาแสดง (ถ้ามีข้อมูล)
+  if (paymentDetails?.promptpay_id) {
+    activeMethods.push('promptpay_id');
+  }
+
   const activeMethodsKey = activeMethods.join(',');
   useEffect(() => {
     if (activeMethods.length > 0) {
@@ -58,7 +50,7 @@ export function SettleUpModal({
     } else {
       setMethod(null);
     }
-  }, [activeMethodsKey]);
+  }, [activeMethodsKey, method]);
 
   if (!payee) return null;
 
@@ -82,9 +74,9 @@ export function SettleUpModal({
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      title={t('finances.settleUpDebt')}
-      description={t('finances.payOffBalance', { name: payee.name })}
-      className="sm:max-w-md"
+      title={t('finances.settleUpDebt', 'Settle Up Debt')}
+      description={t('finances.payOffBalance', { name: payee.name, defaultValue: `Pay off your balance to ${payee.name}` })}
+      className="sm:max-w-md font-sans"
     >
       <div className="space-y-5 pt-2">
         {/* Payee Info Panel */}
@@ -94,96 +86,124 @@ export function SettleUpModal({
               <img
                 src={payee.avatarUrl}
                 alt={payee.name}
-                className="w-10 h-10 rounded-full object-cover shadow-sm"
+                className="w-10 h-10 rounded-full object-cover shadow-sm ring-2 ring-emerald-100 dark:ring-emerald-900"
               />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-rose-500/10 text-rose-600 font-bold flex items-center justify-center text-sm">
+              <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 font-bold flex items-center justify-center text-sm">
                 {payee.name.charAt(0)}
               </div>
             )}
             <div>
-              <span className="text-muted-foreground text-xs block">{t('finances.sendingRepaymentTo')}</span>
+              <span className="text-muted-foreground text-xs block">{t('finances.sendingRepaymentTo', 'Sending to')}</span>
               <span className="text-foreground text-sm font-bold">{payee.name}</span>
             </div>
           </div>
           <div className="text-right">
-            <span className="text-muted-foreground text-xs block">{t('finances.amountDue')}</span>
-            <span className="text-rose-600 font-headline text-lg font-extrabold">
-              ${payee.amount.toFixed(2)}
+            <span className="text-muted-foreground text-xs block">{t('finances.amountDue', 'Amount Due')}</span>
+            <span className="text-destructive font-headline text-lg font-extrabold">
+              ฿{payee.amount.toFixed(2)}
             </span>
           </div>
         </div>
 
-        {/* Method Toggle if multiple details are available */}
+        {/* Method Toggle */}
         {activeMethods.length > 1 && (
-          <div className="flex bg-muted rounded-lg p-1 border border-border gap-1">
-            {activeMethods.includes('qr_image') && (
+          <div className="flex bg-muted/50 rounded-lg p-1 border border-border gap-1">
+            {activeMethods.includes('bank') && (
               <button
                 type="button"
-                onClick={() => setMethod('qr_image')}
-                className={`flex-1 text-center py-1.5 text-[10px] sm:text-xs font-bold rounded-md transition-all flex items-center justify-center gap-1 ${
-                  method === 'qr_image'
-                    ? 'bg-white shadow text-primary dark:bg-card'
+                onClick={() => setMethod('bank')}
+                className={`flex-1 text-center py-2 text-xs font-bold rounded-md transition-all flex items-center justify-center gap-1.5 ${
+                  method === 'bank'
+                    ? 'bg-background shadow text-primary'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <QrCode className="w-3.5 h-3.5 animate-in fade-in zoom-in duration-300" />
-                {t('finances.qrImage')}
+                <CreditCard className="w-3.5 h-3.5" />
+                {t('finances.bankTransfer', 'Bank Transfer')}
               </button>
             )}
             {activeMethods.includes('promptpay_id') && (
               <button
                 type="button"
                 onClick={() => setMethod('promptpay_id')}
-                className={`flex-1 text-center py-1.5 text-[10px] sm:text-xs font-bold rounded-md transition-all flex items-center justify-center gap-1 ${
+                className={`flex-1 text-center py-2 text-xs font-bold rounded-md transition-all flex items-center justify-center gap-1.5 ${
                   method === 'promptpay_id'
-                    ? 'bg-white shadow text-primary dark:bg-card'
+                    ? 'bg-background shadow text-primary'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <QrCode className="w-3.5 h-3.5 animate-in fade-in zoom-in duration-300" />
-                {t('finances.promptPayId')}
-              </button>
-            )}
-            {activeMethods.includes('bank') && (
-              <button
-                type="button"
-                onClick={() => setMethod('bank')}
-                className={`flex-1 text-center py-1.5 text-[10px] sm:text-xs font-bold rounded-md transition-all flex items-center justify-center gap-1 ${
-                  method === 'bank'
-                    ? 'bg-white shadow text-primary dark:bg-card'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <CreditCard className="w-3.5 h-3.5 animate-in fade-in zoom-in duration-300" />
-                {t('finances.bankTransfer')}
+                <QrCode className="w-3.5 h-3.5" />
+                {t('finances.promptPayId', 'PromptPay')}
               </button>
             )}
           </div>
         )}
 
-        {/* 1. Uploaded QR Image */}
-        {method === 'qr_image' && paymentDetails?.qr_code_url && (
-          <div className="flex flex-col items-center justify-center gap-3 py-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="bg-white border border-border p-3 rounded-2xl shadow-sm relative overflow-hidden">
-              <img
-                src={paymentDetails.qr_code_url}
-                alt="PromptPay QR Code Image"
-                className="w-48 h-48 object-contain"
-              />
-              <div className="absolute inset-x-0 bottom-0 bg-emerald-600 text-white text-[8px] font-bold text-center py-0.5 uppercase tracking-widest">
-                {t('finances.promptPayQrImage')}
+        {/* 1. Bank Account Details (ดึงข้อมูลแทนรูป QR) */}
+        {method === 'bank' && (
+          <div className="space-y-3 bg-muted/20 border border-border rounded-xl p-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="flex items-center justify-between border-b border-border pb-3 last:border-0">
+              <span className="text-muted-foreground text-xs font-semibold">{t('finances.bankName', 'Bank')}</span>
+              <span className="text-foreground text-xs font-bold uppercase">
+                {(() => {
+                  const bank = findBank(paymentDetails?.bank_name || '');
+                  return bank
+                    ? (i18n.language.startsWith('th') ? bank.thaiName : bank.niceName)
+                    : paymentDetails?.bank_name;
+                })()}
+              </span>
+            </div>
+
+            {/* เพิ่มส่วนการแสดงชื่อบัญชีตรงนี้ */}
+            <div className="flex items-center justify-between border-b border-border pb-3 last:border-0">
+              <span className="text-muted-foreground text-xs font-semibold">{t('finances.accountName', 'Account Name')}</span>
+              <span className="text-foreground text-xs font-bold uppercase truncate max-w-[200px]" title={paymentDetails?.bank_account_name ?? undefined}>
+                {paymentDetails?.bank_account_name || '-'}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between border-b border-border pb-3 last:border-0">
+              <span className="text-muted-foreground text-xs font-semibold">{t('finances.accountNumber', 'Account Number')}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-foreground text-xs font-bold font-mono tracking-wide">{paymentDetails?.bank_account_number}</span>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(paymentDetails?.bank_account_number || '', 'bank')}
+                  className="text-muted-foreground hover:text-primary transition-colors bg-muted/50 p-1.5 rounded-md"
+                >
+                  {copiedText === 'bank' ? (
+                    <Check className="w-3.5 h-3.5 text-primary animate-in fade-in duration-300" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5" />
+                  )}
+                </button>
               </div>
             </div>
-            <p className="text-muted-foreground text-[10px] text-center max-w-xs leading-normal">
-              {t('finances.scanQrApp')}
-            </p>
+
+            <div className="flex items-center justify-between py-1 last:border-0">
+              <span className="text-muted-foreground text-xs font-semibold">{t('finances.amountDue', 'Transfer Amount')}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-destructive text-xs font-bold font-mono tracking-wide">฿{payee.amount.toFixed(2)}</span>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(payee.amount.toFixed(2), 'amount')}
+                  className="text-muted-foreground hover:text-primary transition-colors bg-muted/50 p-1.5 rounded-md"
+                >
+                  {copiedText === 'amount' ? (
+                    <Check className="w-3.5 h-3.5 text-primary animate-in fade-in duration-300" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5" />
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
         {/* 2. Dynamic PromptPay QR / ID display */}
         {method === 'promptpay_id' && (
-          <div className="flex flex-col items-center justify-center gap-3 py-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="flex flex-col items-center justify-center gap-4 py-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
             {dynamicQrUrl && (
               <div className="bg-white border border-border p-3 rounded-2xl shadow-sm relative overflow-hidden">
                 <img
@@ -191,25 +211,25 @@ export function SettleUpModal({
                   alt="Dynamic PromptPay QR Code"
                   className="w-48 h-48 object-contain"
                 />
-                <div className="absolute inset-x-0 bottom-0 bg-blue-600 text-white text-[8px] font-bold text-center py-0.5 uppercase tracking-widest">
-                  {t('finances.promptPayDynamicQr')}
+                <div className="absolute inset-x-0 bottom-0 bg-[#113566] text-white text-[9px] font-bold text-center py-1 uppercase tracking-widest flex items-center justify-center gap-1">
+                  <span className="text-white/80">PromptPay</span>
                 </div>
               </div>
             )}
 
             {promptPayId && (
-              <div className="flex items-center gap-2 bg-blue-50/50 border border-blue-100 rounded-xl px-3 py-1.5 dark:bg-slate-900/40 dark:border-blue-950/20">
-                <span className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase">
-                  {t('finances.promptPayId')}:
+              <div className="flex items-center gap-2 bg-[#113566]/5 border border-[#113566]/20 rounded-xl px-4 py-2 dark:bg-[#113566]/20 dark:border-[#113566]/40">
+                <span className="text-[10px] font-bold text-[#113566] dark:text-blue-300 uppercase">
+                  {t('finances.promptPayId', 'PromptPay ID')}:
                 </span>
-                <span className="text-foreground text-xs font-bold font-mono">{promptPayId}</span>
+                <span className="text-foreground text-sm font-bold font-mono tracking-wide">{promptPayId}</span>
                 <button
                   type="button"
                   onClick={() => handleCopy(promptPayId, 'promptpay')}
-                  className="text-muted-foreground hover:text-foreground transition-colors ml-1"
+                  className="text-muted-foreground hover:text-foreground transition-colors ml-2 bg-background p-1.5 rounded-md border border-border shadow-sm"
                 >
                   {copiedText === 'promptpay' ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-600 animate-in fade-in duration-300" />
+                    <Check className="w-3.5 h-3.5 text-primary animate-in fade-in duration-300" />
                   ) : (
                     <Copy className="w-3.5 h-3.5" />
                   )}
@@ -219,43 +239,11 @@ export function SettleUpModal({
             <p className="text-muted-foreground text-[10px] text-center max-w-xs leading-normal">
               <Trans
                 i18nKey="finances.scanQrAnyApp"
+                defaultValue="Scan this QR code with any banking app to pay exactly <b>฿{{amount}}</b>."
                 values={{ amount: payee.amount.toFixed(2) }}
-                components={{ 1: <b /> }}
+                components={{ 1: <b className="text-foreground" /> }}
               />
             </p>
-          </div>
-        )}
-
-        {/* 3. Bank Account Details Transfer */}
-        {method === 'bank' && (
-          <div className="space-y-3 bg-muted/20 border border-border rounded-xl p-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="flex items-center justify-between border-b border-border pb-2 last:border-0">
-              <span className="text-muted-foreground text-xs font-semibold">{t('finances.bankName')}</span>
-              <span className="text-foreground text-xs font-bold uppercase">{paymentDetails?.bank_name}</span>
-            </div>
-
-            <div className="flex items-center justify-between border-b border-border pb-2 last:border-0">
-              <span className="text-muted-foreground text-xs font-semibold">{t('finances.bankAccountName')}</span>
-              <span className="text-foreground text-xs font-bold">{paymentDetails?.bank_account_name || payee.name}</span>
-            </div>
-
-            <div className="flex items-center justify-between py-1 last:border-0">
-              <span className="text-muted-foreground text-xs font-semibold">{t('finances.accountNumber')}</span>
-              <div className="flex items-center gap-2">
-                <span className="text-foreground text-xs font-bold font-mono">{paymentDetails?.bank_account_number}</span>
-                <button
-                  type="button"
-                  onClick={() => handleCopy(paymentDetails?.bank_account_number || '', 'bank')}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {copiedText === 'bank' ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-600 animate-in fade-in duration-300" />
-                  ) : (
-                    <Copy className="w-3.5 h-3.5" />
-                  )}
-                </button>
-              </div>
-            </div>
           </div>
         )}
 
@@ -263,10 +251,10 @@ export function SettleUpModal({
         {activeMethods.length === 0 && (
           <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl text-xs space-y-1.5 dark:bg-amber-950/20 dark:border-amber-900/30 dark:text-amber-300 animate-in fade-in duration-300">
             <h4 className="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-200">
-              {t('finances.noPaymentDetails')}
+              {t('finances.noPaymentDetails', 'No Payment Info')}
             </h4>
             <p className="leading-relaxed">
-              {t('finances.noPaymentDetailsDesc', { name: payee.name })}
+              {t('finances.noPaymentDetailsDesc', { name: payee.name, defaultValue: `${payee.name} hasn't provided any payment details yet.` })}
             </p>
           </div>
         )}
@@ -276,22 +264,21 @@ export function SettleUpModal({
           <Button
             disabled={isSubmitting}
             onClick={handleConfirm}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-10 rounded-xl shadow-sm shadow-emerald-600/10 flex items-center justify-center gap-1.5 transition-colors"
+            className="w-full bg-primary hover:opacity-90 text-primary-foreground font-bold text-xs h-10 rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all"
           >
             <CheckCircle2 className="w-4 h-4" />
-            {isSubmitting ? t('finances.recordingRepayment') : t('finances.markAsPaid')}
+            {isSubmitting ? t('finances.recordingRepayment', 'Recording...') : t('finances.markAsPaid', 'Mark as Paid')}
           </Button>
           <Button
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="w-full text-xs h-9 rounded-xl border border-border hover:bg-muted font-bold transition-colors"
+            className="w-full text-xs h-10 rounded-xl border border-border hover:bg-muted font-bold transition-colors"
           >
-            {t('common.cancel')}
+            {t('common.cancel', 'Cancel')}
           </Button>
         </div>
       </div>
     </Modal>
   );
 }
-

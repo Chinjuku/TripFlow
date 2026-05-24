@@ -10,7 +10,8 @@ import {
   Car,
   Home,
   Compass,
-  ShoppingBag
+  ShoppingBag,
+  Clock // เพิ่ม Icon นาฬิกาหรือเครื่องหมายถูก
 } from 'lucide-react';
 import { TripFinancesLayout, useTripFinancesContext } from '@/components/feat/finances/components/TripFinancesLayout';
 import type { DebtRelation, HydratedExpense, HydratedSettlement } from '@/components/feat/finances';
@@ -33,6 +34,7 @@ interface Creditor {
   amountOwed: number;
   transactions: Transaction[];
   rawDebtRelation: DebtRelation;
+  hasPendingSettlement: boolean; // เพิ่ม Field เพื่อเช็กว่ามีการกดจ่ายเงินไปแล้วแต่รอการยืนยันหรือไม่
 }
 
 function buildCreditorsList(
@@ -129,13 +131,22 @@ function buildCreditorsList(
       ? [...positiveTxs, ...negativeTxs, ...outgoingSettlements, ...incomingSettlements]
       : [...positiveTxs, ...outgoingSettlements];
 
+    // เช็กว่าเราเคยกด "Mark as paid" ไปแล้วและกำลังรอให้อีกฝ่ายยืนยัน (Pending) หรือไม่
+    const hasPendingSettlement = settlements.some(
+      (set) =>
+        set.payer_id === currentUserId &&
+        set.payee_id === creditor.userId &&
+        set.status === 'pending'
+    );
+
     return {
       id: creditor.userId,
       name: creditor.name,
       avatar: creditor.avatarUrl || '',
       amountOwed: creditor.amount,
       transactions: allTxs,
-      rawDebtRelation: creditor
+      rawDebtRelation: creditor,
+      hasPendingSettlement, // ส่งค่าไปให้ UI จัดการ
     };
   });
 }
@@ -250,14 +261,21 @@ function TripToPayContent() {
                       </div>
                     </div>
 
-                    {/* Settle Up Button */}
-                    <button
-                      onClick={() => handleSettleUpTrigger(creditor.rawDebtRelation)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-xs bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-all font-label cursor-pointer"
-                    >
-                      <CreditCard className="w-3.5 h-3.5" />
-                      {t('finances.settleUp')}
-                    </button>
+                    {/* Settle Up Button / Paid Status */}
+                    {creditor.hasPendingSettlement ? (
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-xs bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 cursor-default transition-all font-label dark:bg-emerald-500/20 dark:text-emerald-400">
+                        <Check className="w-3.5 h-3.5" />
+                        {t('finances.paid', 'จ่ายแล้ว')}
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleSettleUpTrigger(creditor.rawDebtRelation)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-xs bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-all font-label cursor-pointer shadow-sm"
+                      >
+                        <CreditCard className="w-3.5 h-3.5" />
+                        {t('finances.settleUp')}
+                      </button>
+                    )}
                   </div>
 
                   {/* Accordion Divider & Toggle Button */}

@@ -277,35 +277,8 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
       subtitle: isToReceive ? t('finances.manageWhoOwesYou') : t('finances.trackMoneyOwe'),
       actions: (
         <div className="flex gap-3 items-center">
-          {/* Debt Optimization Toggle */}
-          <div className="bg-muted p-0.5 rounded-xl flex items-center border border-border h-10 shrink-0">
-            <button
-              onClick={() => setIsOptimized(!isOptimized)}
-              className={cn(
-                'px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 h-[2.125rem] font-label',
-                isOptimized
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              <Sparkles className="w-3.5 h-3.5 shrink-0" />
-              {isOptimized ? t('finances.optimizedActive') : t('finances.enableOptimization')}
-            </button>
-          </div>
-
           {/* Toggle pill buttons */}
           <div className="bg-muted p-0.5 rounded-xl flex border border-border h-10 shrink-0">
-            <button
-              onClick={() => navigate(`/trips/${id}/to-pay`)}
-              className={cn(
-                'px-4 py-1.5 text-xs font-bold rounded-lg transition-all h-[2.125rem] font-label',
-                !isToReceive
-                  ? 'bg-card text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              {t('finances.toPay')}
-            </button>
             <button
               onClick={() => navigate(`/trips/${id}/to-receive`)}
               className={cn(
@@ -317,6 +290,17 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
             >
               {t('finances.toReceive')}
             </button>
+            <button
+              onClick={() => navigate(`/trips/${id}/to-pay`)}
+              className={cn(
+                'px-4 py-1.5 text-xs font-bold rounded-lg transition-all h-[2.125rem] font-label',
+                !isToReceive
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {t('finances.toPay')}
+            </button>
           </div>
         </div>
       ),
@@ -324,7 +308,22 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
     monitoring: {
       title: t('finances.financesMonitoring'),
       subtitle: t('finances.observeBudget'),
-      actions: null,
+      actions: (
+        <div className="bg-muted p-0.5 rounded-xl flex items-center border border-border h-10 shrink-0">
+          <button
+            onClick={() => setIsOptimized(!isOptimized)}
+            className={cn(
+              'px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 h-[2.125rem] font-label',
+              isOptimized
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            <Sparkles className="w-3.5 h-3.5 shrink-0" />
+            {isOptimized ? t('finances.optimizedActive') : t('finances.enableOptimization')}
+          </button>
+        </div>
+      ),
     },
   };
 
