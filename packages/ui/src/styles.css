@@ -97,4 +97,16 @@
     --font-headline: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
     --font-label: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, monospace;
   }
+
+  /* Noto Sans Thai overrides for Thai language */
+  html[lang="th"] {
+    --font-headline: 'Noto Sans Thai', 'Lexend Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-body: 'Noto Sans Thai', 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-label: 'Noto Sans Thai', 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  }
+
+  html.dark[lang="th"] {
+    --font-headline: 'Noto Sans Thai', 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-label: 'Noto Sans Thai', 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, monospace;
+  }
 }
