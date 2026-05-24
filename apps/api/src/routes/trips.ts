@@ -12,20 +12,19 @@
 
 import { Elysia, t } from 'elysia';
 import { requireAuth } from '../middleware/auth';
-import * as tripsService from '../services/trips';
+import {
+  handleListTripsForUser,
+  handleCreateTrip,
+  handleJoinTripByCode,
+  handleGetTripDetail,
+} from '../controllers/trips';
 
 export const tripsRoute = new Elysia({ prefix: '/trips' })
   .use(requireAuth)
-  .get('/', async ({ user }) => {
-    const trips = await tripsService.listTripsForUser(user.sub);
-    return { trips };
-  })
+  .get('/', handleListTripsForUser)
   .post(
     '/',
-    async ({ user, body }) => {
-      const trip = await tripsService.createTrip(user.sub, body);
-      return { trip };
-    },
+    handleCreateTrip,
     {
       body: t.Object({
         title: t.String({ minLength: 1, maxLength: 120 }),
@@ -36,10 +35,7 @@ export const tripsRoute = new Elysia({ prefix: '/trips' })
   )
   .post(
     '/join',
-    async ({ user, body }) => {
-      const trip = await tripsService.joinTripByCode(user.sub, body.inviteCode);
-      return { trip };
-    },
+    handleJoinTripByCode,
     {
       body: t.Object({
         inviteCode: t.String({ minLength: 4, maxLength: 32 }),
@@ -48,10 +44,7 @@ export const tripsRoute = new Elysia({ prefix: '/trips' })
   )
   .get(
     '/:id',
-    async ({ user, params }) => {
-      const trip = await tripsService.getTripDetail(user.sub, params.id);
-      return { trip };
-    },
+    handleGetTripDetail,
     {
       params: t.Object({
         id: t.String({ format: 'uuid' }),

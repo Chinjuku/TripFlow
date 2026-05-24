@@ -51,8 +51,12 @@
     /* --- Geometry ---------------------------------------------------- */
     --radius: 0.75rem;
 
-    /* --- Typography (sans = Headline + Body) -------------------------- */
-    --font-headline: 'Lexend Variable', ui-sans-serif, system-ui, sans-serif;
+    /* --- Typography --------------------------------------------------
+       Single source for light + dark. Manrope reads as friendly + a
+       little geometric for headlines; Inter is the workhorse for body
+       and labels; JetBrains Mono is reserved for numerics/codes (invite
+       codes, QR amounts) where character width must stay even. */
+    --font-headline: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
     --font-body: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
     --font-label: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
     --font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, monospace;
@@ -92,9 +96,7 @@
     --warning-foreground: 222 47% 11%;
     --destructive: 0 63% 55%;
     --destructive-foreground: 210 40% 98%;
-
-    /* Dark theme swaps headline + label per the spec. */
-    --font-headline: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
-    --font-label: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, monospace;
+    /* Typography is identical to :root — no per-theme font swap. */
   }
+
 }

@@ -85,8 +85,32 @@ export async function getFinancesByTripId(
 ): Promise<FinancesData> {
   await ensureTripMember(userId, tripId);
 
-  // 1. Load Trip Members
-  const members = await loadTripMembers(tripId);
+  // 1. Kick off independent queries concurrently
+  const membersPromise = loadTripMembers(tripId);
+  const expensesPromise = db
+    .select()
+    .from(expenses)
+    .where(eq(expenses.trip_id, tripId))
+    .orderBy(desc(expenses.expense_date), desc(expenses.created_at));
+  const settlementsPromise = db
+    .select()
+    .from(settlements)
+    .where(eq(settlements.trip_id, tripId))
+    .orderBy(desc(settlements.created_at));
+  const budgetPromise = db
+    .select()
+    .from(tripBudgets)
+    .where(and(eq(tripBudgets.trip_id, tripId), sql`${tripBudgets.category} is null`))
+    .limit(1);
+
+  // Wait for the first wave of queries
+  const [members, rawExpenses, rawSettlements, [budget]] = await Promise.all([
+    membersPromise,
+    expensesPromise,
+    settlementsPromise,
+    budgetPromise,
+  ]);
+
   const memberMap = new Map<string, TripMemberProfile>();
   const memberUserIds: string[] = [];
   for (const m of members) {
@@ -94,18 +118,23 @@ export async function getFinancesByTripId(
     memberUserIds.push(m.userId);
   }
 
-  // 2. Load Expenses & Splits
-  const rawExpenses = await db
-    .select()
-    .from(expenses)
-    .where(eq(expenses.trip_id, tripId))
-    .orderBy(desc(expenses.expense_date), desc(expenses.created_at));
-
   const expenseIds = rawExpenses.map((e) => e.id);
-  const rawSplits =
+
+  // 2. Kick off dependent queries concurrently
+  const splitsPromise =
     expenseIds.length > 0
-      ? await db.select().from(expenseSplits).where(inArray(expenseSplits.expense_id, expenseIds))
-      : [];
+      ? db.select().from(expenseSplits).where(inArray(expenseSplits.expense_id, expenseIds))
+      : Promise.resolve([]);
+
+  const paymentsPromise =
+    memberUserIds.length > 0
+      ? db
+          .select()
+          .from(userPaymentDetails)
+          .where(inArray(userPaymentDetails.user_id, memberUserIds))
+      : Promise.resolve([]);
+
+  const [rawSplits, paymentRows] = await Promise.all([splitsPromise, paymentsPromise]);
 
   const splitsByExpense = new Map<string, ExpenseSplit[]>();
   for (const s of rawSplits) {
@@ -136,13 +165,7 @@ export async function getFinancesByTripId(
     };
   });
 
-  // 3. Load Settlements
-  const rawSettlements = await db
-    .select()
-    .from(settlements)
-    .where(eq(settlements.trip_id, tripId))
-    .orderBy(desc(settlements.created_at));
-
+  // Hydrate settlements
   const hydratedSettlements: HydratedSettlement[] = rawSettlements.map((set) => {
     const payer = memberMap.get(set.payer_id);
     const payee = memberMap.get(set.payee_id);
@@ -154,22 +177,6 @@ export async function getFinancesByTripId(
       payeeAvatarUrl: payee?.avatarUrl ?? null,
     };
   });
-
-  // 4. Load budget (global budget is category is null)
-  const [budget] = await db
-    .select()
-    .from(tripBudgets)
-    .where(and(eq(tripBudgets.trip_id, tripId), sql`${tripBudgets.category} is null`))
-    .limit(1);
-
-  // 5. Load Payment Details for members
-  const paymentRows =
-    memberUserIds.length > 0
-      ? await db
-          .select()
-          .from(userPaymentDetails)
-          .where(inArray(userPaymentDetails.user_id, memberUserIds))
-      : [];
 
   const paymentDetailsRecord: Record<string, UserPaymentDetail> = {};
   for (const row of paymentRows) {

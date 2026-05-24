@@ -1,27 +1,17 @@
-/* Variable-axis web fonts — loaded once for the whole app. */
-@import '@fontsource-variable/inter';
-@import '@fontsource-variable/lexend';
-@import '@fontsource-variable/manrope';
-@import '@fontsource-variable/jetbrains-mono';
+/* Fonts first so design tokens can reference them. */
+@import './fonts.css';
 
 /* Design tokens (Verdant Horizon). */
 @import '@trip-flow/ui/styles.css';
 
+/* Third-party widget overrides — must come before @tailwind per PostCSS
+   ordering rules. The overrides use `!important`, so cascade order
+   doesn't affect resolution. */
+@import './vendor.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* Used by the route flow connector — animates the dash pattern so the line
-   appears to "flow" from one stop to the next, like a moving map route. */
-@keyframes route-flow-dash {
-  from { stroke-dashoffset: 0; }
-  to { stroke-dashoffset: -16; }
-}
 
 @layer base {
   * {
@@ -57,7 +47,7 @@
   }
 
   /* Hide default browser calendar picker indicator but keep it clickable */
-  input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  input[type='datetime-local']::-webkit-calendar-picker-indicator {
     background: transparent;
     bottom: 0;
     color: transparent;
