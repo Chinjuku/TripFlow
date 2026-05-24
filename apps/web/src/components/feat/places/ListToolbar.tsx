@@ -41,13 +41,16 @@ export function ListToolbar({
   places,
 }: ListToolbarProps) {
   const { t } = useTranslation();
-  
-  const FILTERS: Array<{ id: FilterKey; label: string; icon: typeof ThumbsUp }> = useMemo(() => [
-    { id: 'all', label: t('plan.filterAll', 'All'), icon: ListChecks },
-    { id: 'voted', label: t('plan.filterVotedOnly', 'Voted only'), icon: ThumbsUp },
-    { id: 'mine', label: t('plan.filterMyPicks', 'My picks'), icon: Check },
-    { id: 'photos', label: t('plan.filterHasPhoto', 'Has photo'), icon: ImageIcon },
-  ], [t]);
+
+  const FILTERS: Array<{ id: FilterKey; label: string; icon: typeof ThumbsUp }> = useMemo(
+    () => [
+      { id: 'all', label: t('plan.filterAll', 'All'), icon: ListChecks },
+      { id: 'voted', label: t('plan.filterVotedOnly', 'Voted only'), icon: ThumbsUp },
+      { id: 'mine', label: t('plan.filterMyPicks', 'My picks'), icon: Check },
+      { id: 'photos', label: t('plan.filterHasPhoto', 'Has photo'), icon: ImageIcon },
+    ],
+    [t],
+  );
 
   const counts = useMemo(() => {
     const out: Record<FilterKey, number> = { all: places.length, voted: 0, mine: 0, photos: 0 };
@@ -147,22 +150,19 @@ export function ListToolbar({
   );
 }
 
-function SortPicker({
-  value,
-  onChange,
-}: {
-  value: SortKey;
-  onChange: (next: SortKey) => void;
-}) {
+function SortPicker({ value, onChange }: { value: SortKey; onChange: (next: SortKey) => void }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement | null>(null);
 
-  const SORTS: Array<{ id: SortKey; label: string }> = useMemo(() => [
-    { id: 'votes', label: t('plan.sortMostVotes', 'Most votes') },
-    { id: 'name', label: t('plan.sortNameAZ', 'Name (A–Z)') },
-    { id: 'recent', label: t('plan.sortRecentlyAdded', 'Recently added') },
-  ], [t]);
+  const SORTS: Array<{ id: SortKey; label: string }> = useMemo(
+    () => [
+      { id: 'votes', label: t('plan.sortMostVotes', 'Most votes') },
+      { id: 'name', label: t('plan.sortNameAZ', 'Name (A–Z)') },
+      { id: 'recent', label: t('plan.sortRecentlyAdded', 'Recently added') },
+    ],
+    [t],
+  );
 
   const active = SORTS.find((s) => s.id === value) ?? SORTS[0]!;
 

@@ -17,15 +17,10 @@ export default function NotFoundPage() {
       <div className="space-y-2 max-w-md">
         <h1 className="text-4xl font-extrabold tracking-tight text-white">{t('notFound.title')}</h1>
         <h2 className="text-xl font-bold text-slate-300">{t('notFound.heading')}</h2>
-        <p className="text-sm text-slate-500 leading-relaxed">
-          {t('notFound.description')}
-        </p>
+        <p className="text-sm text-slate-500 leading-relaxed">{t('notFound.description')}</p>
       </div>
 
-      <Link
-        to="/trips"
-        className={`${buttonVariants({ variant: 'default' })} gap-2 px-5`}
-      >
+      <Link to="/trips" className={`${buttonVariants({ variant: 'default' })} gap-2 px-5`}>
         <ArrowLeft className="h-4 w-4" />
         {t('notFound.backToTrips')}
       </Link>

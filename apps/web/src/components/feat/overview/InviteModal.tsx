@@ -8,10 +8,13 @@ import { cn } from '@trip-flow/ui/lib/cn';
 interface InviteModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  trip: {
-    title: string;
-    inviteCode: string;
-  } | null | undefined;
+  trip:
+    | {
+        title: string;
+        inviteCode: string;
+      }
+    | null
+    | undefined;
 }
 
 export function InviteModal({ open, onOpenChange, trip }: InviteModalProps) {
@@ -61,10 +64,12 @@ export function InviteModal({ open, onOpenChange, trip }: InviteModalProps) {
               <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-0.5">
                 {t('common.inviteCode')}
               </span>
-              <span className={cn(
-                "font-mono text-2xl font-black tracking-widest transition-colors duration-200 select-all",
-                copied ? "text-foreground" : "text-muted-foreground/50"
-              )}>
+              <span
+                className={cn(
+                  'font-mono text-2xl font-black tracking-widest transition-colors duration-200 select-all',
+                  copied ? 'text-foreground' : 'text-muted-foreground/50',
+                )}
+              >
                 {copied ? trip.inviteCode : '******'}
               </span>
             </div>
@@ -72,7 +77,10 @@ export function InviteModal({ open, onOpenChange, trip }: InviteModalProps) {
               onClick={handleCopyCode}
               variant={copied ? 'default' : 'outline'}
               size="sm"
-              className={cn("h-10 rounded-xl gap-2 font-semibold min-w-[5.5rem] transition-all", copied && "bg-green-600 hover:bg-green-600")}
+              className={cn(
+                'h-10 rounded-xl gap-2 font-semibold min-w-[5.5rem] transition-all',
+                copied && 'bg-green-600 hover:bg-green-600',
+              )}
             >
               {copied ? (
                 <>

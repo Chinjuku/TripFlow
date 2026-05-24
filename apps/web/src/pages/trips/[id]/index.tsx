@@ -45,8 +45,8 @@ export default function TripBoardPage() {
         title={trip.title}
         subtitle={
           <>
-            {t('common.inviteCode')}: <span className="font-mono">{trip.inviteCode}</span> — {t('common.createdBy')}{' '}
-            {owner?.name ?? t('common.unknown')}
+            {t('common.inviteCode')}: <span className="font-mono">{trip.inviteCode}</span> —{' '}
+            {t('common.createdBy')} {owner?.name ?? t('common.unknown')}
           </>
         }
         withBorder
@@ -69,14 +69,18 @@ export default function TripBoardPage() {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 lg:h-[calc(100vh-14rem)] lg:overflow-hidden">
         <div className="space-y-6 lg:col-span-2 lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
-          <h3 className="text-foreground font-headline text-lg font-bold shrink-0">{t('overview.tripOverview')}</h3>
+          <h3 className="text-foreground font-headline text-lg font-bold shrink-0">
+            {t('overview.tripOverview')}
+          </h3>
           <div className="shrink-0">
             <TripOverviewCard trip={trip} />
           </div>
           <TripPlacesSummaryCard trip={trip} className="lg:flex-1 lg:overflow-hidden" />
         </div>
         <div className="space-y-6 lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
-          <h3 className="text-foreground font-headline text-lg font-bold shrink-0">{t('overview.boardCollaborators')}</h3>
+          <h3 className="text-foreground font-headline text-lg font-bold shrink-0">
+            {t('overview.boardCollaborators')}
+          </h3>
           <div className="lg:flex-1 lg:overflow-y-auto pr-1 -mr-1 scrollbar-none">
             <CollaboratorsPanel members={trip.members} currentUserId={user?.id} />
           </div>

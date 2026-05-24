@@ -62,9 +62,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const searchParams = new URLSearchParams(window.location.search);
     const redirectTo = searchParams.get('redirectTo');
     const baseUrl = getGoogleSignInUrl();
-    const url = redirectTo
-      ? `${baseUrl}?redirectTo=${encodeURIComponent(redirectTo)}`
-      : baseUrl;
+    const url = redirectTo ? `${baseUrl}?redirectTo=${encodeURIComponent(redirectTo)}` : baseUrl;
     window.location.href = url;
   }, []);
 

@@ -17,7 +17,7 @@ interface TimelineProps {
   items: ScheduleItem[];
   onRemove: (scheduleId: string) => void;
   onResize: (scheduleId: string, durationMinutes: number) => void;
-  ghost: ({ kind: 'new'; tripPlaceId: string }) | null;
+  ghost: { kind: 'new'; tripPlaceId: string } | null;
   dragPreview: { startMinute: number; durationMinutes: number; conflict: boolean } | null;
   pendingResizeIds: Set<string>;
   timelineRef: (el: HTMLDivElement | null) => void;
@@ -43,10 +43,7 @@ export function Timeline({
   return (
     <div
       ref={composedRef}
-      className={cn(
-        'relative ml-12 transition-colors',
-        isOver && 'bg-primary/5 rounded-lg',
-      )}
+      className={cn('relative ml-12 transition-colors', isOver && 'bg-primary/5 rounded-lg')}
       style={{ height: TIMELINE_HEIGHT_PX }}
     >
       {hourLines.map((h, idx) => {
@@ -101,9 +98,7 @@ function DropPreview({
       aria-hidden
       className={cn(
         'pointer-events-none absolute left-2 right-2 rounded-lg border-2 border-dashed',
-        conflict
-          ? 'border-destructive bg-destructive/10'
-          : 'border-primary bg-primary/10',
+        conflict ? 'border-destructive bg-destructive/10' : 'border-primary bg-primary/10',
       )}
       style={{ top, height }}
     >

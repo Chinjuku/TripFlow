@@ -28,10 +28,12 @@ export function PaymentDetailsModal({
   const [promptPayId, setPromptPayId] = useState(initialDetails?.promptpay_id || '');
   const [qrCodeUrl, setQrCodeUrl] = useState(initialDetails?.qr_code_url || '');
   const [bankName, setBankName] = useState(initialDetails?.bank_name || '');
-  const [bankAccountNumber, setBankAccountNumber] = useState(initialDetails?.bank_account_number || '');
+  const [bankAccountNumber, setBankAccountNumber] = useState(
+    initialDetails?.bank_account_number || '',
+  );
   const [bankAccountName, setBankAccountName] = useState(initialDetails?.bank_account_name || '');
   const [preferredChannel, setPreferredChannel] = useState<'promptpay' | 'banking'>(
-    initialDetails?.is_show_mobile_banking ? 'banking' : 'promptpay'
+    initialDetails?.is_show_mobile_banking ? 'banking' : 'promptpay',
   );
   const [uploadError, setUploadError] = useState<string | null>(null);
   const { t } = useTranslation();
@@ -94,7 +96,10 @@ export function PaymentDetailsModal({
                 }
               }
             } catch (parseErr) {
-              console.error('Failed to parse PromptPay EMVCo payload in modal using promptparse:', parseErr);
+              console.error(
+                'Failed to parse PromptPay EMVCo payload in modal using promptparse:',
+                parseErr,
+              );
             }
           } else {
             console.log('No QR code detected in the uploaded image.');
@@ -111,10 +116,9 @@ export function PaymentDetailsModal({
     reader.readAsDataURL(file);
   };
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const trimmedBankName = bankName.trim();
     const trimmedBankAccountNumber = bankAccountNumber.trim();
     const trimmedBankAccountName = bankAccountName.trim();
@@ -123,7 +127,8 @@ export function PaymentDetailsModal({
     const hasBankAccountNumber = !!trimmedBankAccountNumber;
     const hasBankAccountName = !!trimmedBankAccountName;
 
-    const isBankPartiallyFilled = (hasBankName || hasBankAccountNumber || hasBankAccountName) &&
+    const isBankPartiallyFilled =
+      (hasBankName || hasBankAccountNumber || hasBankAccountName) &&
       !(hasBankName && hasBankAccountNumber && hasBankAccountName);
 
     if (isBankPartiallyFilled) {
@@ -204,12 +209,13 @@ export function PaymentDetailsModal({
             {t('finances.selectedChannelDesc')}
           </p>
 
-          {preferredChannel === 'banking' && !(bankName.trim() && bankAccountNumber.trim() && bankAccountName.trim()) && (
-            <div className="bg-destructive/10 border border-destructive/20 text-destructive text-[10px] font-medium px-2 py-1.5 rounded-lg flex items-center gap-1.5 mt-2 animate-in fade-in slide-in-from-top-1">
-              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-              <span>{t('finances.fillInAllBankFields')}</span>
-            </div>
-          )}
+          {preferredChannel === 'banking' &&
+            !(bankName.trim() && bankAccountNumber.trim() && bankAccountName.trim()) && (
+              <div className="bg-destructive/10 border border-destructive/20 text-destructive text-[10px] font-medium px-2 py-1.5 rounded-lg flex items-center gap-1.5 mt-2 animate-in fade-in slide-in-from-top-1">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{t('finances.fillInAllBankFields')}</span>
+              </div>
+            )}
 
           {preferredChannel === 'promptpay' && !(promptPayId.trim() || qrCodeUrl) && (
             <div className="bg-destructive/10 border border-destructive/20 text-destructive text-[10px] font-medium px-2 py-1.5 rounded-lg flex items-center gap-1.5 mt-2 animate-in fade-in slide-in-from-top-1">
@@ -275,8 +281,12 @@ export function PaymentDetailsModal({
                   <Upload className="h-4 w-4" />
                 </div>
                 <div>
-                  <p className="text-foreground text-[10px] font-semibold">{t('finances.uploadPromptPayQr')}</p>
-                  <p className="text-muted-foreground text-[8px] mt-0.5">{t('finances.uploadPromptPayQrFormat')}</p>
+                  <p className="text-foreground text-[10px] font-semibold">
+                    {t('finances.uploadPromptPayQr')}
+                  </p>
+                  <p className="text-muted-foreground text-[8px] mt-0.5">
+                    {t('finances.uploadPromptPayQrFormat')}
+                  </p>
                 </div>
               </div>
             )}

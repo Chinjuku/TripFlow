@@ -7,22 +7,12 @@ export function TopoPattern() {
       preserveAspectRatio="xMinYMin slice"
       className="text-foreground/[0.06] absolute inset-0 h-full w-full"
     >
-      <g
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={1.25}
-        transform="translate(180 420)"
-      >
+      <g fill="none" stroke="currentColor" strokeWidth={1.25} transform="translate(180 420)">
         {rings.map((r) => (
           <circle key={r} cx={0} cy={0} r={r} />
         ))}
       </g>
-      <g
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={1.25}
-        transform="translate(680 720)"
-      >
+      <g fill="none" stroke="currentColor" strokeWidth={1.25} transform="translate(680 720)">
         {[40, 80, 120, 160, 200, 240, 280].map((r) => (
           <circle key={r} cx={0} cy={0} r={r} />
         ))}

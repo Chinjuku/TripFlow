@@ -4,7 +4,10 @@ import { Input } from '@trip-flow/ui/components/input';
 import { useTranslation } from 'react-i18next';
 import { DatePicker } from '@trip-flow/ui/components/date-picker';
 
-import { TripFinancesLayout, useTripFinancesContext } from '@/components/feat/finances/components/TripFinancesLayout';
+import {
+  TripFinancesLayout,
+  useTripFinancesContext,
+} from '@/components/feat/finances/components/TripFinancesLayout';
 import { AllExpenseItem } from '@/components/feat/finances/components/AllExpenseItem';
 import { AllExpensesSkeleton } from '@/components/feat/finances/components/AllExpensesSkeleton';
 import type { HydratedExpense } from '@/components/feat/finances';
@@ -20,7 +23,7 @@ export default function AllExpensePage() {
 function AllExpensesContent() {
   const { finances, user, isLoading } = useTripFinancesContext();
   const { t } = useTranslation();
-  
+
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -42,11 +45,15 @@ function AllExpensesContent() {
 
       const matchesCategory = !categoryFilter || exp.category === categoryFilter;
       const matchesPayer = !payerFilter || exp.paid_by_id === payerFilter;
-      
+
       let matchesDate = true;
       if (dateFilter) {
-        const dateStr = (new Date(dateFilter.getTime() - dateFilter.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
-        matchesDate = (exp.expense_date && exp.expense_date.startsWith(dateStr)) || (exp.created_at.startsWith(dateStr));
+        const dateStr = new Date(dateFilter.getTime() - dateFilter.getTimezoneOffset() * 60000)
+          .toISOString()
+          .slice(0, 10);
+        matchesDate =
+          (exp.expense_date && exp.expense_date.startsWith(dateStr)) ||
+          exp.created_at.startsWith(dateStr);
       }
 
       return matchesSearch && matchesCategory && matchesPayer && matchesDate;
@@ -103,9 +110,9 @@ function AllExpensesContent() {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in-0 duration-300">
+    <div className="flex flex-col flex-1 overflow-hidden gap-6 h-full min-h-0 animate-in fade-in-0 duration-300">
       {/* Search and Filters */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center shrink-0">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -116,7 +123,6 @@ function AllExpensesContent() {
           />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-none shrink-0">
-          
           <div className="relative flex items-center">
             <Filter className="absolute left-3 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
             <select
@@ -124,7 +130,9 @@ function AllExpensesContent() {
               value={categoryFilter || ''}
               onChange={(e) => setCategoryFilter(e.target.value || null)}
             >
-              <option value="">{t('common.category', 'Category')} ({t('common.all', 'All')})</option>
+              <option value="">
+                {t('common.category', 'Category')} ({t('common.all', 'All')})
+              </option>
               <option value="food">{t('finances.category.food', 'Food')}</option>
               <option value="transport">{t('finances.category.transport', 'Transport')}</option>
               <option value="lodging">{t('finances.category.lodging', 'Lodging')}</option>
@@ -150,7 +158,9 @@ function AllExpensesContent() {
               value={payerFilter || ''}
               onChange={(e) => setPayerFilter(e.target.value || null)}
             >
-              <option value="">{t('finances.payer', 'Payer')} ({t('common.all', 'All')})</option>
+              <option value="">
+                {t('finances.payer', 'Payer')} ({t('common.all', 'All')})
+              </option>
               {uniquePayers.map((payer) => (
                 <option key={payer.id} value={payer.id}>
                   {payer.id === user?.id ? t('common.you', 'You') : payer.name}
@@ -158,12 +168,11 @@ function AllExpensesContent() {
               ))}
             </select>
           </div>
-
         </div>
       </div>
 
       {/* Expense List */}
-      <div className="space-y-8 pb-10">
+      <div className="flex-1 overflow-y-auto pr-2 min-h-0 pb-10 space-y-8">
         {Object.entries(groupedExpenses).map(([dateLabel, expenses]) => (
           <div key={dateLabel} className="space-y-4">
             <h3 className="text-muted-foreground text-[11px] font-bold tracking-widest uppercase font-label">

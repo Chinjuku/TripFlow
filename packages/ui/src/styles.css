@@ -13,20 +13,20 @@
 @layer base {
   :root {
     /* --- Brand roles -------------------------------------------------- */
-    --primary: 160 84% 31%;             /* #059669 emerald-600 */
+    --primary: 160 84% 31%; /* #059669 emerald-600 */
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 222 47% 11%;           /* #0F172A slate-900 */
+    --secondary: 222 47% 11%; /* #0F172A slate-900 */
     --secondary-foreground: 210 40% 98%;
 
-    --tertiary: 149 80% 90%;            /* #D1FAE5 emerald-100 */
+    --tertiary: 149 80% 90%; /* #D1FAE5 emerald-100 */
     --tertiary-foreground: 222 47% 11%;
 
-    --neutral: 210 40% 98%;             /* #F8FAFC slate-50 */
+    --neutral: 210 40% 98%; /* #F8FAFC slate-50 */
     --neutral-foreground: 222 47% 11%;
 
     /* --- Semantic surfaces ------------------------------------------- */
-    --background: 210 40% 98%;          /* same as neutral */
+    --background: 210 40% 98%; /* same as neutral */
     --foreground: 222 47% 11%;
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
@@ -34,11 +34,11 @@
     --popover-foreground: 222 47% 11%;
     --muted: 210 40% 96%;
     --muted-foreground: 215 16% 47%;
-    --accent: 149 80% 90%;              /* tertiary */
+    --accent: 149 80% 90%; /* tertiary */
     --accent-foreground: 222 47% 11%;
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 160 84% 31%;                /* match primary */
+    --ring: 160 84% 31%; /* match primary */
 
     /* --- Semantic feedback ------------------------------------------- */
     --success: 160 84% 31%;
@@ -64,16 +64,16 @@
 
   .dark {
     /* Roles flip per the Verdant Horizon Dark spec. */
-    --primary: 160 84% 31%;             /* #059669 keeps its meaning */
+    --primary: 160 84% 31%; /* #059669 keeps its meaning */
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 156 72% 67%;           /* #34D399 emerald-400 */
+    --secondary: 156 72% 67%; /* #34D399 emerald-400 */
     --secondary-foreground: 222 47% 11%;
 
-    --tertiary: 160 84% 39%;            /* #10B981 emerald-500 */
+    --tertiary: 160 84% 39%; /* #10B981 emerald-500 */
     --tertiary-foreground: 210 40% 98%;
 
-    --neutral: 222 47% 11%;             /* #0F172A becomes the page */
+    --neutral: 222 47% 11%; /* #0F172A becomes the page */
     --neutral-foreground: 210 40% 98%;
 
     --background: 222 47% 11%;
@@ -84,11 +84,11 @@
     --popover-foreground: 210 40% 98%;
     --muted: 217 33% 18%;
     --muted-foreground: 215 20% 65%;
-    --accent: 160 84% 39%;              /* tertiary */
+    --accent: 160 84% 39%; /* tertiary */
     --accent-foreground: 210 40% 98%;
     --border: 217 33% 22%;
     --input: 217 33% 22%;
-    --ring: 156 72% 67%;                /* match secondary in dark */
+    --ring: 156 72% 67%; /* match secondary in dark */
 
     --success: 156 72% 52%;
     --success-foreground: 222 47% 11%;
@@ -98,5 +98,4 @@
     --destructive-foreground: 210 40% 98%;
     /* Typography is identical to :root — no per-theme font swap. */
   }
-
 }

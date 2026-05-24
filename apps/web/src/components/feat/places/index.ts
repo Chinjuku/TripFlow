@@ -5,7 +5,16 @@ export { listPlaces, addPlace, removePlace, setLike } from '@/api/places';
 export { useTripPlaces } from '@/hooks/usePlaces';
 
 // * Types
-export type { TripPlace, AddPlacePayload, FilterKey, SortKey, PlanTab, RankDelta, PlaceBucket, BucketMeta } from '@/types/places';
+export type {
+  TripPlace,
+  AddPlacePayload,
+  FilterKey,
+  SortKey,
+  PlanTab,
+  RankDelta,
+  PlaceBucket,
+  BucketMeta,
+} from '@/types/places';
 
 // * Utils
 export { bucketFor, BUCKETS } from '@/utils/places';

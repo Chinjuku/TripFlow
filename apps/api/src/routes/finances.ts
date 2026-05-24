@@ -27,96 +27,65 @@ import {
 
 export const financesRoute = new Elysia({ prefix: '/finances' })
   .use(requireAuth)
-  .get(
-    '/trip/:tripId',
-    handleGetFinancesByTripId,
-    {
-      params: t.Object({
-        tripId: t.String({ format: 'uuid' }),
-      }),
-      query: t.Object({
-        optimized: t.Optional(t.String()),
-      }),
-    },
-  )
-  .post(
-    '/expense',
-    handleCreateExpense,
-    {
-      body: t.Object({
-        tripId: t.String({ format: 'uuid' }),
-        description: t.String({ minLength: 1, maxLength: 200 }),
-        amount: t.Numeric({ minimum: 0.01 }),
-        paidById: t.String({ format: 'uuid' }),
-        category: t.Union([
-          t.Literal('food'),
-          t.Literal('transport'),
-          t.Literal('activity'),
-          t.Literal('lodging'),
-          t.Literal('other'),
-        ]),
-        splitMethod: t.Union([
-          t.Literal('equally'),
-          t.Literal('exact_amount'),
-        ]),
-        expenseDate: t.Optional(t.String()),
-        splits: t.Array(
-          t.Object({
-            userId: t.String({ format: 'uuid' }),
-            amount: t.Numeric({ minimum: 0.0 }),
-            itemPaid: t.Optional(t.Nullable(t.String({ maxLength: 100 }))),
-          }),
-        ),
-      }),
-    },
-  )
-  .post(
-    '/settlement',
-    handleCreateSettlement,
-    {
-      body: t.Object({
-        tripId: t.String({ format: 'uuid' }),
-        payeeId: t.String({ format: 'uuid' }),
-        amount: t.Numeric({ minimum: 0.01 }),
-      }),
-    },
-  )
-  .post(
-    '/settlement/:id/confirm',
-    handleConfirmSettlement,
-    {
-      params: t.Object({
-        id: t.String({ format: 'uuid' }),
-      }),
-    },
-  )
-  .post(
-    '/budget',
-    handleUpdateTripBudget,
-    {
-      body: t.Object({
-        tripId: t.String({ format: 'uuid' }),
-        amount: t.Numeric({ minimum: 0.0 }),
-      }),
-    },
-  )
-  .post(
-    '/payment-details',
-    handleSaveUserPaymentDetails,
-    {
-      body: t.Object({
-        promptpayId: t.Optional(t.Nullable(t.String({ maxLength: 50 }))),
-        qrCodeUrl: t.Optional(t.Nullable(t.String())),
-        bankName: t.Optional(t.Nullable(t.String({ maxLength: 100 }))),
-        bankAccountNumber: t.Optional(t.Nullable(t.String({ maxLength: 50 }))),
-        bankAccountName: t.Optional(t.Nullable(t.String({ maxLength: 150 }))),
-        isShowMobileBanking: t.Optional(t.Boolean()),
-        isShowPromptpay: t.Optional(t.Boolean()),
-      }),
-    },
-  )
-  .get(
-    '/payment-details',
-    handleGetUserPaymentDetails
-  );
-
+  .get('/trip/:tripId', handleGetFinancesByTripId, {
+    params: t.Object({
+      tripId: t.String({ format: 'uuid' }),
+    }),
+    query: t.Object({
+      optimized: t.Optional(t.String()),
+    }),
+  })
+  .post('/expense', handleCreateExpense, {
+    body: t.Object({
+      tripId: t.String({ format: 'uuid' }),
+      description: t.String({ minLength: 1, maxLength: 200 }),
+      amount: t.Numeric({ minimum: 0.01 }),
+      paidById: t.String({ format: 'uuid' }),
+      category: t.Union([
+        t.Literal('food'),
+        t.Literal('transport'),
+        t.Literal('activity'),
+        t.Literal('lodging'),
+        t.Literal('other'),
+      ]),
+      splitMethod: t.Union([t.Literal('equally'), t.Literal('exact_amount')]),
+      expenseDate: t.Optional(t.String()),
+      splits: t.Array(
+        t.Object({
+          userId: t.String({ format: 'uuid' }),
+          amount: t.Numeric({ minimum: 0.0 }),
+          itemPaid: t.Optional(t.Nullable(t.String({ maxLength: 100 }))),
+        }),
+      ),
+    }),
+  })
+  .post('/settlement', handleCreateSettlement, {
+    body: t.Object({
+      tripId: t.String({ format: 'uuid' }),
+      payeeId: t.String({ format: 'uuid' }),
+      amount: t.Numeric({ minimum: 0.01 }),
+    }),
+  })
+  .post('/settlement/:id/confirm', handleConfirmSettlement, {
+    params: t.Object({
+      id: t.String({ format: 'uuid' }),
+    }),
+  })
+  .post('/budget', handleUpdateTripBudget, {
+    body: t.Object({
+      tripId: t.String({ format: 'uuid' }),
+      amount: t.Numeric({ minimum: 0.0 }),
+    }),
+  })
+  .post('/payment-details', handleSaveUserPaymentDetails, {
+    body: t.Object({
+      promptpayId: t.Optional(t.Nullable(t.String({ maxLength: 50 }))),
+      qrCodeUrl: t.Optional(t.Nullable(t.String())),
+      bankName: t.Optional(t.Nullable(t.String({ maxLength: 100 }))),
+      bankAccountNumber: t.Optional(t.Nullable(t.String({ maxLength: 50 }))),
+      bankAccountName: t.Optional(t.Nullable(t.String({ maxLength: 150 }))),
+      isShowMobileBanking: t.Optional(t.Boolean()),
+      isShowPromptpay: t.Optional(t.Boolean()),
+    }),
+  })
+  .get('/payment-details', handleGetUserPaymentDetails);

@@ -148,10 +148,7 @@ export const tripScheduleItems = pgTable(
       .default(sql`now()`),
   },
   (table) => ({
-    tripDayIdx: index('trip_schedule_items_trip_day_idx').on(
-      table.trip_id,
-      table.day_index,
-    ),
+    tripDayIdx: index('trip_schedule_items_trip_day_idx').on(table.trip_id, table.day_index),
   }),
 );
 
@@ -301,4 +298,3 @@ export type TripBudget = typeof tripBudgets.$inferSelect;
 export type NewTripBudget = typeof tripBudgets.$inferInsert;
 export type UserPaymentDetail = typeof userPaymentDetails.$inferSelect;
 export type NewUserPaymentDetail = typeof userPaymentDetails.$inferInsert;
-

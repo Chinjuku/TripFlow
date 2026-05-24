@@ -28,10 +28,14 @@ export function CollaboratorRow({ member, isCurrentUser }: CollaboratorRowProps)
         <p className="text-foreground truncate text-sm font-medium">
           {member.name}
           {member.role === 'owner' && (
-            <span className="text-muted-foreground ml-1 text-xs font-normal">({t('common.owner')})</span>
+            <span className="text-muted-foreground ml-1 text-xs font-normal">
+              ({t('common.owner')})
+            </span>
           )}
           {isCurrentUser && (
-            <span className="text-muted-foreground ml-1 text-xs font-normal">· {t('common.you')}</span>
+            <span className="text-muted-foreground ml-1 text-xs font-normal">
+              · {t('common.you')}
+            </span>
           )}
         </p>
         <p className="text-muted-foreground truncate text-xs">{member.email || member.role}</p>

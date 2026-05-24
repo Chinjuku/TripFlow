@@ -24,9 +24,7 @@ export default function TripsListPage() {
           <h1 className="font-headline text-foreground text-3xl font-extrabold tracking-tight sm:text-4xl">
             {t('trips.title')}
           </h1>
-          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-            {t('trips.subtitle')}
-          </p>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">{t('trips.subtitle')}</p>
         </div>
         <Button
           onClick={() => setJoinOpen(true)}
@@ -45,9 +43,11 @@ export default function TripsListPage() {
 
       <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
         <StartJourneyCard onClick={() => setCreateOpen(true)} />
-        {isLoading && trips === null
-          ? <TripListSkeleton />
-          : (trips ?? []).map((trip) => <TripCard key={trip.id} trip={trip} />)}
+        {isLoading && trips === null ? (
+          <TripListSkeleton />
+        ) : (
+          (trips ?? []).map((trip) => <TripCard key={trip.id} trip={trip} />)
+        )}
       </div>
 
       {/* Mobile FAB */}
@@ -73,12 +73,18 @@ export default function TripsListPage() {
       <CreateTripDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        onCreated={() => { setCreateOpen(false); void refresh(); }}
+        onCreated={() => {
+          setCreateOpen(false);
+          void refresh();
+        }}
       />
       <JoinTripDialog
         open={joinOpen}
         onOpenChange={setJoinOpen}
-        onJoined={() => { setJoinOpen(false); void refresh(); }}
+        onJoined={() => {
+          setJoinOpen(false);
+          void refresh();
+        }}
       />
     </div>
   );

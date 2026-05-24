@@ -5,10 +5,10 @@ export function TripFinancesRepaymentsSkeleton() {
     <div className="space-y-6 flex flex-col flex-1 animate-pulse">
       {/* Banner skeleton */}
       <Skeleton className="h-32 rounded-2xl w-full shrink-0" />
-      
+
       {/* List header skeleton */}
       <Skeleton className="h-6 w-1/3 max-w-[12rem] shrink-0" />
-      
+
       {/* Grid layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {[0, 1, 2, 3].map((i) => (

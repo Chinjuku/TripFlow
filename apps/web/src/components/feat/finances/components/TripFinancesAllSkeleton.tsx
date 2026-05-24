@@ -74,7 +74,10 @@ export function TripFinancesAllSkeleton() {
         </div>
         <div className="space-y-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="bg-card border border-border rounded-2xl p-4 sm:p-5 flex items-center justify-between shadow-sm">
+            <div
+              key={i}
+              className="bg-card border border-border rounded-2xl p-4 sm:p-5 flex items-center justify-between shadow-sm"
+            >
               <div className="flex items-center gap-4">
                 <Skeleton className="w-11 h-11 rounded-full shrink-0" />
                 <div className="space-y-1.5">

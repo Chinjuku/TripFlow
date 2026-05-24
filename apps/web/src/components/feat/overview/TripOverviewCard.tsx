@@ -38,9 +38,7 @@ export function TripOverviewCard({ trip }: TripOverviewCardProps) {
       >
         <div>
           <p className="text-foreground text-sm font-semibold">{t('overview.suggestAndVote')}</p>
-          <p className="text-muted-foreground mt-0.5 text-xs">
-            {t('overview.suggestAndVoteDesc')}
-          </p>
+          <p className="text-muted-foreground mt-0.5 text-xs">{t('overview.suggestAndVoteDesc')}</p>
         </div>
         <ArrowRight className="text-muted-foreground h-4 w-4 shrink-0" strokeWidth={2} />
       </Link>

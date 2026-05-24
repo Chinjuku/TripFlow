@@ -22,48 +22,34 @@ import {
 
 export const placesRoute = new Elysia()
   .use(requireAuth)
-  .get(
-    '/trips/:id/places',
-    handleListPlaces,
-    { params: t.Object({ id: t.String({ format: 'uuid' }) }) },
-  )
-  .post(
-    '/trips/:id/places',
-    handleAddPlace,
-    {
-      params: t.Object({ id: t.String({ format: 'uuid' }) }),
-      body: t.Object({
-        externalId: t.String({ minLength: 1, maxLength: 200 }),
-        name: t.String({ minLength: 1, maxLength: 200 }),
-        address: t.Optional(t.Nullable(t.String({ maxLength: 500 }))),
-        category: t.Optional(t.Nullable(t.String({ maxLength: 64 }))),
-        lat: t.Optional(t.Nullable(t.Number())),
-        lng: t.Optional(t.Nullable(t.Number())),
-        photoUrl: t.Optional(t.Nullable(t.String({ maxLength: 1000 }))),
-        rating: t.Optional(t.Nullable(t.Number({ minimum: 0, maximum: 5 }))),
-        openingHoursText: t.Optional(t.Nullable(t.String({ maxLength: 200 }))),
-        stayMinutes: t.Optional(t.Nullable(t.Integer({ minimum: 5, maximum: 1440 }))),
-      }),
-    },
-  )
-  .delete(
-    '/trips/:id/places/:placeId',
-    handleRemovePlace,
-    {
-      params: t.Object({
-        id: t.String({ format: 'uuid' }),
-        placeId: t.String({ format: 'uuid' }),
-      }),
-    },
-  )
-  .put(
-    '/trips/:id/places/:placeId/like',
-    handleSetLike,
-    {
-      params: t.Object({
-        id: t.String({ format: 'uuid' }),
-        placeId: t.String({ format: 'uuid' }),
-      }),
-      body: t.Object({ liked: t.Boolean() }),
-    },
-  );
+  .get('/trips/:id/places', handleListPlaces, {
+    params: t.Object({ id: t.String({ format: 'uuid' }) }),
+  })
+  .post('/trips/:id/places', handleAddPlace, {
+    params: t.Object({ id: t.String({ format: 'uuid' }) }),
+    body: t.Object({
+      externalId: t.String({ minLength: 1, maxLength: 200 }),
+      name: t.String({ minLength: 1, maxLength: 200 }),
+      address: t.Optional(t.Nullable(t.String({ maxLength: 500 }))),
+      category: t.Optional(t.Nullable(t.String({ maxLength: 64 }))),
+      lat: t.Optional(t.Nullable(t.Number())),
+      lng: t.Optional(t.Nullable(t.Number())),
+      photoUrl: t.Optional(t.Nullable(t.String({ maxLength: 1000 }))),
+      rating: t.Optional(t.Nullable(t.Number({ minimum: 0, maximum: 5 }))),
+      openingHoursText: t.Optional(t.Nullable(t.String({ maxLength: 200 }))),
+      stayMinutes: t.Optional(t.Nullable(t.Integer({ minimum: 5, maximum: 1440 }))),
+    }),
+  })
+  .delete('/trips/:id/places/:placeId', handleRemovePlace, {
+    params: t.Object({
+      id: t.String({ format: 'uuid' }),
+      placeId: t.String({ format: 'uuid' }),
+    }),
+  })
+  .put('/trips/:id/places/:placeId/like', handleSetLike, {
+    params: t.Object({
+      id: t.String({ format: 'uuid' }),
+      placeId: t.String({ format: 'uuid' }),
+    }),
+    body: t.Object({ liked: t.Boolean() }),
+  });

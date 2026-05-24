@@ -28,9 +28,7 @@ export function AppearanceCard() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-foreground text-sm font-medium">{t('settings.theme')}</p>
-            <p className="text-muted-foreground text-xs">
-              {t('settings.themeDesc')}
-            </p>
+            <p className="text-muted-foreground text-xs">{t('settings.themeDesc')}</p>
           </div>
           <ThemeToggle />
         </div>
@@ -44,9 +42,7 @@ export function AppearanceCard() {
               </div>
               <div>
                 <p className="text-foreground text-sm font-medium">{t('settings.language')}</p>
-                <p className="text-muted-foreground text-xs">
-                  {t('settings.languageDesc')}
-                </p>
+                <p className="text-muted-foreground text-xs">{t('settings.languageDesc')}</p>
               </div>
             </div>
             <div className="flex gap-1 rounded-xl border border-border bg-muted/50 p-1">

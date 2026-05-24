@@ -80,7 +80,10 @@ export function Modal({
         ) : (
           <div className="flex items-start justify-between gap-4 px-5 pt-4 sm:px-6 sm:pt-6">
             <div className="space-y-1">
-              <h2 id="modal-title" className="font-headline text-primary text-lg font-bold sm:text-xl">
+              <h2
+                id="modal-title"
+                className="font-headline text-primary text-lg font-bold sm:text-xl"
+              >
                 {title}
               </h2>
               {description && <p className="text-muted-foreground text-sm">{description}</p>}
@@ -98,7 +101,9 @@ export function Modal({
         <div
           className={cn(
             'overflow-y-auto',
-            hideHeader ? '' : 'px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:px-6 sm:pb-6',
+            hideHeader
+              ? ''
+              : 'px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:px-6 sm:pb-6',
           )}
         >
           {children}
