@@ -46,7 +46,7 @@ export const app = new Elysia()
   .use(placesRoute)
   .use(scheduleRoute)
   .use(financesRoute)
-  .listen(env.port);
+  .listen({ port: env.port, hostname: '0.0.0.0' });
 
 console.info(`[api] TripFlow API listening on http://${app.server?.hostname}:${app.server?.port}`);
 
