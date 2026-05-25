@@ -38,125 +38,125 @@ interface Debtor {
 }
 
 function buildDebtorsList(
-  currentUserId: string,
-  whoOwesYou: DebtRelation[],
-  expenses: HydratedExpense[],
-  settlements: HydratedSettlement[],
-  t: TFunction,
-  isOptimized: boolean
+    currentUserId: string,
+    whoOwesYou: DebtRelation[],
+    expenses: HydratedExpense[],
+    settlements: HydratedSettlement[],
+    t: TFunction,
+    isOptimized: boolean
 ): Debtor[] {
-  return whoOwesYou.map((debtor) => {
-    // Reconstruct contributing transactions between debtor and currentUserId.
-    const positiveTxs = expenses
-      .filter((exp) => exp.paid_by_id === currentUserId)
-      .map((exp) => {
-        const split = exp.splits.find((s) => s.user_id === debtor.userId);
-        if (!split) return null;
+    return whoOwesYou.map((debtor) => {
+        // Reconstruct contributing transactions between debtor and currentUserId.
+        const positiveTxs = expenses
+            .filter((exp) => exp.paid_by_id === currentUserId)
+            .map((exp) => {
+                const split = exp.splits.find((s) => s.user_id === debtor.userId);
+                if (!split) return null;
 
-        let displayDescription = exp.description;
-        if (exp.split_method === 'exact_amount') {
-          const ownerSplit = exp.splits.find((s) => s.user_id === exp.paid_by_id);
-          displayDescription = split.item_paid || ownerSplit?.item_paid || exp.description;
-        }
+                let displayDescription = exp.description;
+                if (exp.split_method === 'exact_amount') {
+                    const ownerSplit = exp.splits.find((s) => s.user_id === exp.paid_by_id);
+                    displayDescription = split.item_paid || ownerSplit?.item_paid || exp.description;
+                }
+
+                return {
+                    id: `exp-${exp.id}`,
+                    description: displayDescription,
+                    date: exp.expense_date ? new Date(exp.expense_date).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                    }) : t('finances.unknownDate'),
+                    amount: split.amount,
+                    category: exp.category as any,
+                };
+            })
+            .filter(Boolean) as Transaction[];
+
+        const negativeTxs = expenses
+            .filter((exp) => exp.paid_by_id === debtor.userId)
+            .map((exp) => {
+                const split = exp.splits.find((s) => s.user_id === currentUserId);
+                if (!split) return null;
+
+                let displayDescription = exp.description;
+                if (exp.split_method === 'exact_amount') {
+                    const ownerSplit = exp.splits.find((s) => s.user_id === exp.paid_by_id);
+                    displayDescription = split.item_paid || ownerSplit?.item_paid || exp.description;
+                }
+
+                return {
+                    id: `exp-${exp.id}`,
+                    description: displayDescription,
+                    date: exp.expense_date ? new Date(exp.expense_date).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                    }) : t('finances.unknownDate'),
+                    amount: -split.amount,
+                    category: exp.category as any,
+                };
+            })
+            .filter(Boolean) as Transaction[];
+
+        const incomingSettlements = settlements
+            .filter((set) => set.payer_id === debtor.userId && set.payee_id === currentUserId && set.status === 'completed')
+            .map((set) => ({
+                id: `set-${set.id}`,
+                description: t('finances.repaymentReceived'),
+                date: set.created_at ? new Date(set.created_at).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                }) : t('finances.unknownDate'),
+                amount: -set.amount,
+                category: 'other' as const,
+            }));
+
+        const outgoingSettlements = settlements
+            .filter((set) => set.payer_id === currentUserId && set.payee_id === debtor.userId && set.status === 'completed')
+            .map((set) => ({
+                id: `set-${set.id}`,
+                description: t('finances.repaymentSent'),
+                date: set.created_at ? new Date(set.created_at).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                }) : t('finances.unknownDate'),
+                amount: set.amount,
+                category: 'other' as const,
+            }));
+
+        const allTxs = isOptimized
+            ? [...positiveTxs, ...negativeTxs, ...incomingSettlements, ...outgoingSettlements]
+            : [...positiveTxs, ...incomingSettlements];
+
+        // ตรวจสอบว่ามีรายการที่อีกฝั่งกดจ่ายมาแล้ว และกำลังรอเรายืนยัน (pending) หรือไม่
+        const pendingSettlement = settlements.find(
+            (set) =>
+                set.payer_id === debtor.userId &&
+                set.payee_id === currentUserId &&
+                set.status === 'pending'
+        );
 
         return {
-          id: `exp-${exp.id}`,
-          description: displayDescription,
-          date: exp.expense_date ? new Date(exp.expense_date).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          }) : t('finances.unknownDate'),
-          amount: split.amount,
-          category: exp.category as any,
+            id: debtor.userId,
+            name: debtor.name,
+            avatar: debtor.avatarUrl || '',
+            amountOwed: debtor.amount,
+            transactions: allTxs,
+            hasPendingSettlement: !!pendingSettlement, // ส่งค่ามาให้ UI นำไปใช้สลับปุ่ม
+            pendingSettlementId: pendingSettlement?.id || null,
         };
-      })
-      .filter(Boolean) as Transaction[];
-
-    const negativeTxs = expenses
-      .filter((exp) => exp.paid_by_id === debtor.userId)
-      .map((exp) => {
-        const split = exp.splits.find((s) => s.user_id === currentUserId);
-        if (!split) return null;
-
-        let displayDescription = exp.description;
-        if (exp.split_method === 'exact_amount') {
-          const ownerSplit = exp.splits.find((s) => s.user_id === exp.paid_by_id);
-          displayDescription = split.item_paid || ownerSplit?.item_paid || exp.description;
-        }
-
-        return {
-          id: `exp-${exp.id}`,
-          description: displayDescription,
-          date: exp.expense_date ? new Date(exp.expense_date).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          }) : t('finances.unknownDate'),
-          amount: -split.amount,
-          category: exp.category as any,
-        };
-      })
-      .filter(Boolean) as Transaction[];
-
-    const incomingSettlements = settlements
-      .filter((set) => set.payer_id === debtor.userId && set.payee_id === currentUserId && set.status === 'completed')
-      .map((set) => ({
-        id: `set-${set.id}`,
-        description: t('finances.repaymentReceived'),
-        date: set.created_at ? new Date(set.created_at).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        }) : t('finances.unknownDate'),
-        amount: -set.amount,
-        category: 'other' as const,
-      }));
-
-    const outgoingSettlements = settlements
-      .filter((set) => set.payer_id === currentUserId && set.payee_id === debtor.userId && set.status === 'completed')
-      .map((set) => ({
-        id: `set-${set.id}`,
-        description: t('finances.repaymentSent'),
-        date: set.created_at ? new Date(set.created_at).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        }) : t('finances.unknownDate'),
-        amount: set.amount,
-        category: 'other' as const,
-      }));
-
-    const allTxs = isOptimized
-      ? [...positiveTxs, ...negativeTxs, ...incomingSettlements, ...outgoingSettlements]
-      : [...positiveTxs, ...incomingSettlements];
-
-    // ตรวจสอบว่ามีรายการที่อีกฝั่งกดจ่ายมาแล้ว และกำลังรอเรายืนยัน (pending) หรือไม่
-    const pendingSettlement = settlements.find(
-      (set) =>
-        set.payer_id === debtor.userId &&
-        set.payee_id === currentUserId &&
-        set.status === 'pending'
-    );
-
-    return {
-      id: debtor.userId,
-      name: debtor.name,
-      avatar: debtor.avatarUrl || '',
-      amountOwed: debtor.amount,
-      transactions: allTxs,
-      hasPendingSettlement: !!pendingSettlement, // ส่งค่ามาให้ UI นำไปใช้สลับปุ่ม
-      pendingSettlementId: pendingSettlement?.id || null,
-    };
-  });
+    });
 }
 
 export default function TripToReceivePage() {
-  return (
-    <TripFinancesLayout activeTab="settlements">
-      <TripToReceiveContent />
-    </TripFinancesLayout>
-  );
+    return (
+        <TripFinancesLayout activeTab="settlements">
+            <TripToReceiveContent />
+        </TripFinancesLayout>
+    );
 }
 
 function TripToReceiveContent() {
@@ -350,7 +350,7 @@ function TripToReceiveContent() {
                                             className="w-full px-5 py-3 text-xs font-bold text-muted-foreground hover:text-foreground flex items-center justify-between transition-colors cursor-pointer font-label"
                                         >
                                             <span>
-                                                {isOptimized 
+                                                {isOptimized
                                                     ? t('finances.viewUnderlyingSplits', { count: debtor.transactions.length })
                                                     : t('finances.viewTransactions', { count: debtor.transactions.length })
                                                 }
@@ -371,7 +371,11 @@ function TripToReceiveContent() {
                                                     debtor.transactions.map((tx) => (
                                                         <div
                                                             key={tx.id}
-                                                            className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/40 hover:border-border transition-all"
+                                                            className={`flex items-center justify-between p-3 rounded-xl transition-all border ${
+                                                                tx.amount < 0
+                                                                    ? 'bg-destructive/5 dark:bg-destructive/10 border-destructive/20 hover:border-destructive/30'
+                                                                    : 'bg-muted/30 border-border/40 hover:border-border'
+                                                            }`}
                                                         >
                                                             <div className="flex items-center gap-3">
                                                                 <div className="p-2 rounded-lg bg-card border border-border/80 shadow-sm shrink-0">

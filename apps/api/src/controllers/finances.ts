@@ -15,8 +15,12 @@ export async function handleGetFinancesByTripId({
   params,
   query,
 }: AuthContext & { params: { tripId: string }; query: { optimized?: string } }) {
-  const isDebtOptimized = query.optimized === 'true';
-  return await financesService.getFinancesByTripId(user.sub, params.tripId, isDebtOptimized);
+  const isDebtOptimizedOverride = query.optimized === 'true'
+    ? true
+    : query.optimized === 'false'
+    ? false
+    : undefined;
+  return await financesService.getFinancesByTripId(user.sub, params.tripId, isDebtOptimizedOverride);
 }
 
 export async function handleCreateExpense({ user, body }: AuthContext & { body: any }) {
@@ -36,6 +40,14 @@ export async function handleConfirmSettlement({
 
 export async function handleUpdateTripBudget({ user, body }: AuthContext & { body: any }) {
   return await financesService.updateTripBudget(user.sub, body);
+}
+
+export async function handleUpdateTripOptimization({
+  user,
+  params,
+  body,
+}: AuthContext & { params: { tripId: string }; body: { isOptimized: boolean } }) {
+  return await financesService.updateTripOptimization(user.sub, params.tripId, body.isOptimized);
 }
 
 export async function handleSaveUserPaymentDetails({ user, body }: AuthContext & { body: any }) {

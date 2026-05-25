@@ -17,6 +17,7 @@ import {
   createSettlement,
   confirmSettlement,
   updateBudget,
+  optimizeTrip,
   savePaymentDetails,
   CreateExpenseModal,
   SettleUpModal,
@@ -75,8 +76,6 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
     { id: 'monitoring' as TabId, label: t('finances.monitoring'), path: 'monitoring' },
   ], [t]);
 
-  // Local state for modals & debt optimization
-  const [isOptimized, setIsOptimized] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [settleOpen, setSettleOpen] = useState(false);
   const [activeSettlePayee, setActiveSettlePayee] = useState<DebtRelation | null>(null);
@@ -92,7 +91,27 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Load general trip detail & members
-  const { data: trip, error: tripError, isLoading: isTripLoading } = useTrip(id);
+  const { data: trip, error: tripError, isLoading: isTripLoading, refresh: refreshTrip } = useTrip(id);
+
+  const isOptimized = trip?.isDebtOptimized ?? false;
+
+  const setIsOptimized = async (val: boolean) => {
+    if (!id) return;
+    setErrorMsg(null);
+    try {
+      await optimizeTrip(id, val);
+      await Promise.all([
+        refreshFinances(),
+        refreshTrip(),
+      ]);
+    } catch (err) {
+      console.error('[finances] failed to toggle optimization', err);
+      setErrorMsg(err instanceof Error ? err.message : 'Failed to update optimization setting');
+    }
+  };
+
+  // Use the global optimization setting directly
+  const queryOptimized = isOptimized;
 
   // Load finances (summary, expenses list, settlements list)
   const {
@@ -100,7 +119,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
     error: financesError,
     isLoading: isFinancesLoading,
     refresh: refreshFinances,
-  } = useTripFinances(id, isOptimized);
+  } = useTripFinances(id, queryOptimized);
 
   const error = tripError || financesError;
   const isLoading = isTripLoading || isFinancesLoading;
@@ -338,7 +357,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
         finances,
         user,
         isLoading,
-        isOptimized,
+        isOptimized: queryOptimized,
         setIsOptimized,
         confirmingSettlementId,
         handleConfirmSettlementReceived,

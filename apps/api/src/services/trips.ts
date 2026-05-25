@@ -23,6 +23,7 @@ export interface TripSummary {
   startsOn: string;
   endsOn: string;
   inviteCode: string;
+  isDebtOptimized: boolean;
   role: 'owner' | 'member';
   createdAt: string;
   members: TripMemberProfile[];
@@ -52,6 +53,7 @@ function toSummary(
     startsOn: trip.starts_on,
     endsOn: trip.ends_on,
     inviteCode: trip.invite_code,
+    isDebtOptimized: trip.is_debt_optimized,
     role,
     createdAt: trip.created_at,
     members,
