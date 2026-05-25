@@ -92,11 +92,24 @@ export function buildMapsDirectionsUrl(from: ScheduleItem, to: ScheduleItem): st
 export function buildFullDayDirectionsUrl(items: ScheduleItem[]): string | null {
   if (items.length === 0) return null;
   const params = new URLSearchParams({ api: '1', travelmode: 'driving' });
+  
+  if (items.length === 1) {
+    const single = describeLocation(items[0]!);
+    params.set('destination', single.query);
+    if (single.placeId) params.set('destination_place_id', single.placeId);
+    return `https://www.google.com/maps/dir/?${params.toString()}`;
+  }
+
+  const first = describeLocation(items[0]!);
+  params.set('origin', first.query);
+  if (first.placeId) params.set('origin_place_id', first.placeId);
+
   const last = describeLocation(items[items.length - 1]!);
   params.set('destination', last.query);
   if (last.placeId) params.set('destination_place_id', last.placeId);
-  if (items.length > 1) {
-    const middle = items.slice(0, -1).map((it) => describeLocation(it));
+
+  if (items.length > 2) {
+    const middle = items.slice(1, -1).map((it) => describeLocation(it));
     params.set('waypoints', middle.map((m) => m.query).join('|'));
     const ids = middle.map((m) => m.placeId).filter((x): x is string => Boolean(x));
     if (ids.length === middle.length) {

@@ -68,3 +68,29 @@ export async function getPaymentDetails(): Promise<UserPaymentDetail | null> {
   }
   return res.data as UserPaymentDetail | null;
 }
+
+export async function verifySlip(id: string, file: File): Promise<{ isMatch: boolean; reason?: string; settlement?: HydratedSettlement }> {
+  const res = await api.finances.settlement[id]!['verify-slip'].post({
+    slip_image: file,
+  });
+  return unwrap(res) as { isMatch: boolean; reason?: string; settlement?: HydratedSettlement };
+}
+
+export async function extractReceipt(file: File): Promise<{
+  merchant: string | null;
+  amount: number | null;
+  datetime: string | null;
+  sender_name?: string | null;
+  bank_name?: string | null;
+}> {
+  const res = await api.finances['extract-receipt'].post({
+    slip_image: file,
+  });
+  return unwrap(res) as {
+    merchant: string | null;
+    amount: number | null;
+    datetime: string | null;
+    sender_name?: string | null;
+    bank_name?: string | null;
+  };
+}

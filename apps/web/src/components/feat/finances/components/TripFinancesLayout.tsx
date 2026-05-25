@@ -139,20 +139,22 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
 
   // Handle Recording a P2P Settlement
   const handleSettleUpSubmit = async (payeeId: string, amount: number) => {
-    if (!id) return;
+    if (!id) return null;
     setIsSubmittingSettlement(true);
     setErrorMsg(null);
     try {
-      await createSettlement({
+      const created = await createSettlement({
         tripId: id,
         payeeId,
         amount,
       });
       await refreshFinances();
-      setSettleOpen(false);
+      // setSettleOpen(false) is now handled by the modal to support slip upload wait
+      return created;
     } catch (err) {
       console.error('[finances] failed to record repayment', err);
       setErrorMsg(err instanceof Error ? err.message : 'Failed to record repayment');
+      return null;
     } finally {
       setIsSubmittingSettlement(false);
     }
@@ -433,6 +435,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
                   paymentDetails={finances.summary.paymentDetails[activeSettlePayee.userId]}
                   onSubmit={handleSettleUpSubmit}
                   isSubmitting={isSubmittingSettlement}
+                  onVerified={() => refreshFinances()}
                 />
               )}
 

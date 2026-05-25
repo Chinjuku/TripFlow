@@ -13,7 +13,8 @@
         "SUPABASE_SERVICE_ROLE_KEY",
         "JWT_SECRET",
         "WEB_URL",
-        "PORT"
+        "PORT",
+        "GEMINI_API_KEY"
       ]
     },
     "dev": {

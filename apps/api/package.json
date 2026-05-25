@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@elysiajs/cors": "^1.2.0",
+    "@google/genai": "^2.6.0",
     "@trip-flow/db": "workspace:*",
     "drizzle-orm": "^0.45.2",
     "elysia": "^1.2.10",

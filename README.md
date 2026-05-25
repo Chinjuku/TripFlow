@@ -146,7 +146,8 @@ Root scripts fan out across the monorepo via Turbo:
 The full list lives in [`.env.example`](.env.example). Two scopes:
 
 - **Server-only** (`apps/api`): `SUPABASE_URL`,
-  `SUPABASE_SERVICE_ROLE_KEY`, `PORT`.
+  `SUPABASE_SERVICE_ROLE_KEY`, `PORT`, `JWT_SECRET`, `WEB_URL`, `DATABASE_URL`.
+  - **AI Features**: `GEMINI_API_KEY` is used for OCR E-Slip Verification (optional but required for the settlement OCR dropzone feature).
 - **Browser-exposed** (`apps/web`): anything prefixed `VITE_`
   (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_API_URL`).
 
@@ -156,6 +157,14 @@ The full list lives in [`.env.example`](.env.example). Two scopes:
 When you add a new var, update `.env.example`, the typed loader
 (`apps/api/src/env.ts` or `apps/web/src/vite-env.d.ts`), and the
 `env` array in `turbo.json` so cache keys stay correct.
+
+---
+
+## Features
+
+- **Progressive Web App (PWA)**: Built with `vite-plugin-pwa`, Workbox, and a manifest file. It auto-updates and caches static assets for an app-like experience. Ensure to install it via your browser's prompt.
+- **OCR E-Slip Verification**: Uses Gemini 2.5-flash AI to analyze uploaded bank transaction slips (E-Slips) and automatically verifies settlement amounts against the database.
+- **Interactive Routing**: Generates precise multi-stop Google Maps directions deep-links, using your exact origin based on real-time location.
 
 ---
 
