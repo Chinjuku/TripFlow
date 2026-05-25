@@ -18,6 +18,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDialogProps) {
   const [title, setTitle] = useState('');
+  const [tripMode, setTripMode] = useState<'multi' | 'single'>('multi');
   const [startsOn, setStartsOn] = useState<Date | undefined>(undefined);
   const [endsOn, setEndsOn] = useState<Date | undefined>(undefined);
   const [submitting, setSubmitting] = useState(false);
@@ -31,6 +32,7 @@ export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDi
 
   function reset() {
     setTitle('');
+    setTripMode('multi');
     setStartsOn(undefined);
     setEndsOn(undefined);
     setError(null);
@@ -39,7 +41,9 @@ export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDi
 
   function handleStartChange(date: Date | undefined) {
     setStartsOn(date);
-    if (date && endsOn && endsOn < date) {
+    if (tripMode === 'single') {
+      setEndsOn(date);
+    } else if (date && endsOn && endsOn < date) {
       setEndsOn(undefined);
     }
   }
@@ -101,22 +105,61 @@ export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDi
           </div>
         </div>
 
+        {/* Trip Mode Toggle (Multi-day vs One-day) */}
+        <div className="space-y-2">
+          <Label>{t('trips.tripType', 'ประเภททริป')}</Label>
+          <div className="flex bg-muted rounded-xl p-1 border border-border/40 gap-1 w-full">
+            <button
+              type="button"
+              onClick={() => {
+                setTripMode('multi');
+                setEndsOn(undefined);
+              }}
+              className={`flex-1 text-center py-2 text-xs font-bold rounded-lg transition-all ${
+                tripMode === 'multi'
+                  ? 'bg-background shadow-sm text-primary font-extrabold'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {t('trips.multiDayTrip', 'หลายวัน')}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setTripMode('single');
+                if (startsOn) {
+                  setEndsOn(startsOn);
+                }
+              }}
+              className={`flex-1 text-center py-2 text-xs font-bold rounded-lg transition-all ${
+                tripMode === 'single'
+                  ? 'bg-background shadow-sm text-primary font-extrabold'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {t('trips.oneDayTrip', 'วันเดียว')}
+            </button>
+          </div>
+        </div>
+
         <div className="space-y-2">
           <Label>{t('trips.dates')}</Label>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className={`grid gap-3 ${tripMode === 'multi' ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
             <DatePicker
               id="trip-start"
               value={startsOn}
               onChange={handleStartChange}
-              placeholder={t('trips.departure')}
+              placeholder={tripMode === 'single' ? t('trips.tripDate', 'วันที่เดินทาง') : t('trips.departure')}
             />
-            <DatePicker
-              id="trip-end"
-              value={endsOn}
-              onChange={setEndsOn}
-              minDate={startsOn ?? undefined}
-              placeholder={t('trips.return')}
-            />
+            {tripMode === 'multi' && (
+              <DatePicker
+                id="trip-end"
+                value={endsOn}
+                onChange={setEndsOn}
+                minDate={startsOn ?? undefined}
+                placeholder={t('trips.return')}
+              />
+            )}
           </div>
         </div>
 
