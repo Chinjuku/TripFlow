@@ -28,7 +28,11 @@ export interface CookieAttributes {
   sameSite: 'lax' | 'strict' | 'none';
   path: string;
   maxAge: number;
+  domain?: string;
 }
+
+const COOKIE_DOMAIN = isProduction ? '.chinniejeen.com' : undefined;
+const COOKIE_SAME_SITE: CookieAttributes['sameSite'] = isProduction ? 'none' : 'lax';
 
 /**
  * Builds attributes for the session cookie.
@@ -38,9 +42,10 @@ export function buildSessionCookie(token: string): CookieAttributes {
     value: token,
     httpOnly: true,
     secure: isProduction,
-    sameSite: 'lax',
+    sameSite: COOKIE_SAME_SITE,
     path: '/',
     maxAge: SESSION_MAX_AGE,
+    domain: COOKIE_DOMAIN,
   };
 }
 
@@ -52,9 +57,10 @@ export function buildPkceCookie(verifier: string): CookieAttributes {
     value: verifier,
     httpOnly: true,
     secure: isProduction,
-    sameSite: 'lax',
+    sameSite: COOKIE_SAME_SITE,
     path: '/',
     maxAge: PKCE_MAX_AGE,
+    domain: COOKIE_DOMAIN,
   };
 }
 
@@ -66,8 +72,9 @@ export function buildClearCookie(): CookieAttributes {
     value: '',
     httpOnly: true,
     secure: isProduction,
-    sameSite: 'lax',
+    sameSite: COOKIE_SAME_SITE,
     path: '/',
     maxAge: 0,
+    domain: COOKIE_DOMAIN,
   };
 }
