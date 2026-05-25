@@ -46,6 +46,18 @@
     @apply font-label;
   }
 
+  /* Reset iOS Safari default style for datetime-local inputs */
+  input[type='datetime-local'] {
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  input[type='datetime-local']::-webkit-date-and-time-value {
+    text-align: left;
+    min-height: 1.2em;
+    padding: 0;
+    margin: 0;
+  }
+
   /* Hide default browser calendar picker indicator but keep it clickable */
   input[type='datetime-local']::-webkit-calendar-picker-indicator {
     background: transparent;
