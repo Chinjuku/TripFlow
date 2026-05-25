@@ -127,9 +127,7 @@ function buildCreditorsList(
         category: 'other' as const,
       }));
 
-    const allTxs = isOptimized
-      ? [...positiveTxs, ...negativeTxs, ...outgoingSettlements, ...incomingSettlements]
-      : [...positiveTxs, ...outgoingSettlements];
+    const allTxs = [...positiveTxs, ...negativeTxs, ...outgoingSettlements, ...incomingSettlements];
 
     // เช็กว่าเราเคยกด "Mark as paid" ไปแล้วและกำลังรอให้อีกฝ่ายยืนยัน (Pending) หรือไม่
     const hasPendingSettlement = settlements.some(

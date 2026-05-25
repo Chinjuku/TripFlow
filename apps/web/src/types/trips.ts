@@ -13,6 +13,7 @@ export interface TripSummary {
   startsOn: string;
   endsOn: string;
   inviteCode: string;
+  isDebtOptimized: boolean;
   role: 'owner' | 'member';
   createdAt: string;
   members: TripMemberProfile[];

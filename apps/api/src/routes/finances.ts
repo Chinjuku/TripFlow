@@ -21,6 +21,7 @@ import {
   handleCreateSettlement,
   handleConfirmSettlement,
   handleUpdateTripBudget,
+  handleUpdateTripOptimization,
   handleSaveUserPaymentDetails,
   handleGetUserPaymentDetails,
   handleVerifySlip,
@@ -35,6 +36,14 @@ export const financesRoute = new Elysia({ prefix: '/finances' })
     }),
     query: t.Object({
       optimized: t.Optional(t.String()),
+    }),
+  })
+  .post('/trip/:tripId/optimize', handleUpdateTripOptimization, {
+    params: t.Object({
+      tripId: t.String({ format: 'uuid' }),
+    }),
+    body: t.Object({
+      isOptimized: t.Boolean(),
     }),
   })
   .post('/expense', handleCreateExpense, {

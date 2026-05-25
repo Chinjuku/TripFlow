@@ -1,5 +1,6 @@
 import {
   db,
+  trips,
   expenses,
   expenseSplits,
   settlements,
@@ -81,7 +82,7 @@ async function ensureTripMember(userId: string, tripId: string) {
 export async function getFinancesByTripId(
   userId: string,
   tripId: string,
-  isDebtOptimized: boolean = false,
+  isDebtOptimizedOverride?: boolean,
 ): Promise<FinancesData> {
   await ensureTripMember(userId, tripId);
 
@@ -102,14 +103,24 @@ export async function getFinancesByTripId(
     .from(tripBudgets)
     .where(and(eq(tripBudgets.trip_id, tripId), sql`${tripBudgets.category} is null`))
     .limit(1);
+  const tripPromise = db
+    .select()
+    .from(trips)
+    .where(eq(trips.id, tripId))
+    .limit(1);
 
   // Wait for the first wave of queries
-  const [members, rawExpenses, rawSettlements, [budget]] = await Promise.all([
+  const [members, rawExpenses, rawSettlements, [budget], [tripRow]] = await Promise.all([
     membersPromise,
     expensesPromise,
     settlementsPromise,
     budgetPromise,
+    tripPromise,
   ]);
+
+  const finalIsDebtOptimized = isDebtOptimizedOverride !== undefined
+    ? isDebtOptimizedOverride
+    : (tripRow?.is_debt_optimized ?? false);
 
   const memberMap = new Map<string, TripMemberProfile>();
   const memberUserIds: string[] = [];
@@ -269,7 +280,7 @@ export async function getFinancesByTripId(
     }
   }
 
-  if (isDebtOptimized) {
+  if (finalIsDebtOptimized) {
     // Net the pairwise debts for all pairs of members
     for (let i = 0; i < members.length; i++) {
       for (let j = i + 1; j < members.length; j++) {
@@ -533,6 +544,29 @@ export async function confirmSettlement(
     payeeName: payee?.name ?? 'Traveller',
     payeeAvatarUrl: payee?.avatarUrl ?? null,
   };
+}
+
+/**
+ * Updates the global trip optimization setting in the DB.
+ */
+export async function updateTripOptimization(
+  userId: string,
+  tripId: string,
+  isOptimized: boolean,
+): Promise<any> {
+  await ensureTripMember(userId, tripId);
+
+  const [updated] = await db
+    .update(trips)
+    .set({ is_debt_optimized: isOptimized })
+    .where(eq(trips.id, tripId))
+    .returning();
+
+  if (!updated) {
+    throw new Error('Failed to update trip optimization setting');
+  }
+
+  return updated;
 }
 
 export interface UpdateTripBudgetInput {

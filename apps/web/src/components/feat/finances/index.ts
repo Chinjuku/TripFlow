@@ -5,6 +5,7 @@ export {
   createSettlement,
   confirmSettlement,
   updateBudget,
+  optimizeTrip,
   savePaymentDetails,
   getPaymentDetails,
   verifySlip,

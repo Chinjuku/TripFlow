@@ -26,6 +26,7 @@ export const trips = pgTable(
     starts_on: timestamp('starts_on', { withTimezone: true, mode: 'string' }).notNull(),
     ends_on: timestamp('ends_on', { withTimezone: true, mode: 'string' }).notNull(),
     invite_code: text('invite_code').notNull(),
+    is_debt_optimized: boolean('is_debt_optimized').default(true).notNull(),
     created_at: timestamp('created_at', { withTimezone: true, mode: 'string' })
       .notNull()
       .default(sql`now()`),

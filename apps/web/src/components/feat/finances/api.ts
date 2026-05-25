@@ -53,6 +53,11 @@ export async function updateBudget(payload: UpdateBudgetPayload): Promise<any> {
   return unwrap(res);
 }
 
+export async function optimizeTrip(tripId: string, isOptimized: boolean): Promise<any> {
+  const res = await api.finances.trip[tripId]!.optimize.post({ isOptimized });
+  return unwrap(res);
+}
+
 export async function savePaymentDetails(payload: SavePaymentDetailsPayload): Promise<any> {
   const res = await api.finances['payment-details'].post(payload);
   return unwrap(res);
