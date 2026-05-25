@@ -10,12 +10,27 @@ import type {
   UserPaymentDetail,
 } from './types';
 
-function unwrap<T>(value: { data: T | null; error: unknown }): T {
+function unwrap<T>(value: { data: T | null; error: any }): T {
   if (value.error) {
-    const message =
-      typeof value.error === 'object' && value.error !== null && 'message' in value.error
-        ? String((value.error as { message: unknown }).message)
-        : 'Request failed';
+    let message = 'Request failed';
+    if (typeof value.error === 'object' && value.error !== null) {
+      const errObj = value.error as Record<string, unknown>;
+      // Check Eden's parsed JSON response body first (value.error.value)
+      if (errObj.value && typeof errObj.value === 'object') {
+        const valObj = errObj.value as Record<string, unknown>;
+        if (typeof valObj.message === 'string') {
+          message = valObj.message;
+        } else if (typeof valObj.error === 'string') {
+          message = valObj.error;
+        } else {
+          message = JSON.stringify(valObj);
+        }
+      } else if (typeof errObj.value === 'string') {
+        message = errObj.value;
+      } else if (typeof errObj.message === 'string') {
+        message = errObj.message;
+      }
+    }
     throw new Error(message);
   }
   if (value.data === null) {

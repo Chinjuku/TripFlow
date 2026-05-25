@@ -8,7 +8,7 @@ export interface ResourceState<T> {
   status: ResourceStatus;
   isLoading: boolean;
   isReady: boolean;
-  refresh: () => Promise<void>;
+  refresh: (silent?: boolean) => Promise<void>;
   mutate: (next: T | ((prev: T | null) => T)) => void;
 }
 
@@ -44,9 +44,9 @@ export function useResource<T>(
   const fetcherRef = useRef(fetcher);
   fetcherRef.current = fetcher;
 
-  const run = useCallback(async () => {
+  const run = useCallback(async (silent = false) => {
     const id = ++requestIdRef.current;
-    setStatus('loading');
+    if (!silent) setStatus('loading');
     setError(null);
     try {
       const result = await fetcherRef.current();

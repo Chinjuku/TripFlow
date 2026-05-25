@@ -167,7 +167,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
         payeeId,
         amount,
       });
-      await refreshFinances();
+      await refreshFinances(true);
       // setSettleOpen(false) is now handled by the modal to support slip upload wait
       return created;
     } catch (err) {
@@ -433,7 +433,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
           </div>
 
           {/* Modals & Forms */}
-          {!isLoading && trip && finances && (
+          {trip && finances && (
             <>
               {createOpen && (
                 <CreateExpenseModal
@@ -454,7 +454,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
                   paymentDetails={finances.summary.paymentDetails[activeSettlePayee.userId]}
                   onSubmit={handleSettleUpSubmit}
                   isSubmitting={isSubmittingSettlement}
-                  onVerified={() => refreshFinances()}
+                  onVerified={(silent) => refreshFinances(silent)}
                 />
               )}
 

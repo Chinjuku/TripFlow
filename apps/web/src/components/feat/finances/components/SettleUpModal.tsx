@@ -14,7 +14,7 @@ interface SettleUpModalProps {
   paymentDetails: UserPaymentDetail | undefined;
   onSubmit: (payeeId: string, amount: number) => Promise<any>;
   isSubmitting: boolean;
-  onVerified?: () => void;
+  onVerified?: (silent?: boolean) => void;
 }
 
 export function SettleUpModal({
@@ -36,6 +36,7 @@ export function SettleUpModal({
   const [uploadedFile, setUploadedFile] = useState<{ name: string; size: string; file: File } | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
+  const [pendingSettlementId, setPendingSettlementId] = useState<string | null>(null);
 
   const activeMethods: ('promptpay_id' | 'bank')[] = [];
   
@@ -73,7 +74,7 @@ export function SettleUpModal({
     ? `https://promptpay.io/${promptPayId}/${payee.amount.toFixed(2)}.png`
     : null;
 
-  const handleReceiptUpload = (e: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>) => {
+  const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>) => {
     let file: File | null = null;
     if ('files' in e.target && e.target.files) {
       file = e.target.files[0] || null;
@@ -86,6 +87,42 @@ export function SettleUpModal({
     const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
     setUploadedFile({ name: file.name, size: `${sizeInMB} MB`, file });
     setScanError(null);
+    setIsScanning(true);
+
+    try {
+      // 1. Create the pending settlement first if not already created
+      let settlementId = pendingSettlementId;
+      if (!settlementId) {
+        const createdSettlement = await onSubmit(payee.userId, payee.amount);
+        if (!createdSettlement) {
+          setIsScanning(false);
+          return;
+        }
+        setPendingSettlementId(createdSettlement.id);
+        settlementId = createdSettlement.id;
+      }
+      
+      // 2. Call API to verify slip
+      const result = await verifySlip(settlementId as string, file);
+      
+      if (result.isMatch) {
+        onVerified?.();
+        onOpenChange(false);
+      } else {
+        setScanError(result.reason || "ไม่สามารถตรวจสอบสลิปนี้ได้ หรือสลิปนี้อาจถูกใช้งานไปแล้ว");
+        setUploadedFile(null); // allow re-upload if failed
+        setPendingSettlementId(null);
+        onVerified?.(true); // refresh silently to remove pending status without blinking
+      }
+    } catch (err) {
+      console.error('Verify slip error:', err);
+      setScanError(err instanceof Error ? err.message : "ไม่สามารถตรวจสอบสลิปนี้ได้ หรือสลิปนี้อาจถูกใช้งานไปแล้ว");
+      setUploadedFile(null); // allow re-upload
+      setPendingSettlementId(null);
+      onVerified?.(true); // refresh silently to remove pending status without blinking
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -93,36 +130,10 @@ export function SettleUpModal({
   };
 
   const handleConfirm = async () => {
-    if (uploadedFile) {
-      setIsScanning(true);
-      setScanError(null);
-      try {
-        // 1. Create the pending settlement first
-        const createdSettlement = await onSubmit(payee.userId, payee.amount);
-        if (!createdSettlement) {
-          setIsScanning(false);
-          return; // error handled by layout
-        }
-        
-        // 2. Call API to verify slip
-        const result = await verifySlip(createdSettlement.id, uploadedFile.file);
-        
-        if (result.isMatch) {
-          onVerified?.();
-          onOpenChange(false);
-        } else {
-          setScanError(result.reason || "Verification failed");
-        }
-      } catch (err) {
-        console.error('Verify slip error:', err);
-        setScanError(err instanceof Error ? err.message : "Failed to verify slip");
-      } finally {
-        setIsScanning(false);
-      }
-    } else {
-      await onSubmit(payee.userId, payee.amount);
-      onOpenChange(false);
-    }
+    // Note: Manual confirm button was removed per requirements, 
+    // but we keep this function in case it's needed in the future or invoked programmatically.
+    await onSubmit(payee.userId, payee.amount);
+    onOpenChange(false);
   };
 
   return (
@@ -313,73 +324,69 @@ export function SettleUpModal({
           </div>
         )}
 
-        {/* OCR Dropzone */}
-        <div className="border-t border-border pt-4">
-          {scanError && (
-            <div className="mb-3 border-rose-100 bg-rose-50 text-rose-800 p-3 rounded-xl border text-xs flex items-center gap-2 dark:bg-rose-950/20 dark:border-rose-950/30 dark:text-rose-400">
-              <AlertCircle className="w-5 h-5 shrink-0" />
-              <span>{scanError}</span>
-            </div>
-          )}
-          <div
-            onDragOver={handleDragOver}
-            onDrop={handleReceiptUpload}
-            className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-4 text-center transition-all duration-200 ${scanError ? 'border-destructive bg-destructive/5' : 'border-border hover:border-primary/50 bg-muted/50'}`}
-          >
-            <input
-              id="slip-upload"
-              type="file"
-              accept="image/*,application/pdf"
-              onChange={handleReceiptUpload}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-            />
-            <div className="flex flex-col items-center justify-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-105 transition-transform duration-200">
+        {/* OCR Dropzone (Only show if payment methods exist) */}
+        {activeMethods.length > 0 && (
+          <div className="border-t border-border pt-4">
+            {scanError && (
+              <div className="mb-3 border-rose-100 bg-rose-50 text-rose-800 p-3 rounded-xl border text-xs flex items-center gap-2 dark:bg-rose-950/20 dark:border-rose-950/30 dark:text-rose-400">
+                <AlertCircle className="w-5 h-5 shrink-0" />
+                <span>{scanError}</span>
+              </div>
+            )}
+            <div
+              onDragOver={handleDragOver}
+              onDrop={handleReceiptUpload}
+              className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-4 text-center transition-all duration-200 ${scanError ? 'border-destructive bg-destructive/5' : 'border-border hover:border-primary/50 bg-muted/50'}`}
+            >
+              <input
+                id="slip-upload"
+                type="file"
+                accept="image/*,application/pdf"
+                onChange={handleReceiptUpload}
+                disabled={isScanning}
+                className={`absolute inset-0 w-full h-full opacity-0 ${isScanning ? 'cursor-not-allowed' : 'cursor-pointer'} z-10`}
+              />
+              <div className="flex flex-col items-center justify-center gap-2">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-105 transition-transform duration-200">
+                  {isScanning ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <CloudUpload className="w-5 h-5" />
+                  )}
+                </div>
                 {isScanning ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <div className="space-y-1.5 z-20">
+                    <p className="text-xs font-semibold text-primary">
+                      กำลังตรวจสอบสลิป กรุณารอสักครู่...
+                    </p>
+                  </div>
+                ) : uploadedFile && !scanError ? (
+                  <div className="z-20">
+                    <p className="text-xs font-semibold text-primary flex items-center gap-1 justify-center">
+                      <Check className="w-3.5 h-3.5" /> แนบสลิปแล้ว
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      {uploadedFile.name}
+                    </p>
+                  </div>
                 ) : (
-                  <CloudUpload className="w-5 h-5" />
+                  <div className="z-20">
+                    <p className="text-xs font-semibold text-muted-foreground">
+                      อัปโหลดสลิปโอนเงิน
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      ระบบจะช่วยตรวจสอบยอดเงินให้โดยอัตโนมัติ
+                    </p>
+                  </div>
                 )}
               </div>
-              {isScanning ? (
-                <div className="space-y-1.5 z-20">
-                  <p className="text-xs font-semibold text-muted-foreground">
-                    กำลังตรวจสอบสลิป...
-                  </p>
-                </div>
-              ) : uploadedFile && !scanError ? (
-                <div className="z-20">
-                  <p className="text-xs font-semibold text-primary flex items-center gap-1 justify-center">
-                    <Check className="w-3.5 h-3.5" /> แนบสลิปแล้ว
-                  </p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
-                    {uploadedFile.name}
-                  </p>
-                </div>
-              ) : (
-                <div className="z-20">
-                  <p className="text-xs font-semibold text-muted-foreground">
-                    อัปโหลดสลิปโอนเงิน (ถ้ามี)
-                  </p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
-                    ระบบจะช่วยตรวจสอบยอดเงินให้โดยอัตโนมัติ
-                  </p>
-                </div>
-              )}
             </div>
           </div>
-        </div>
+        )}
 
         {/* Confirm Settlement Buttons */}
         <div className="pt-2 flex flex-col gap-2">
-          <Button
-            disabled={isSubmitting || isScanning}
-            onClick={handleConfirm}
-            className="w-full bg-primary hover:opacity-90 text-primary-foreground font-bold text-xs h-10 rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all"
-          >
-            {isScanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-            {isSubmitting || isScanning ? t('finances.recordingRepayment', 'Recording...') : t('finances.markAsPaid', 'Mark as Paid')}
-          </Button>
+          {/* Removed manual confirmation button per request */}
           <Button
             type="button"
             variant="outline"

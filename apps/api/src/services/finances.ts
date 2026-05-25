@@ -14,7 +14,7 @@ import {
   type UserPaymentDetail,
 } from '@trip-flow/db/server';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
-import { NotFoundError, ForbiddenError } from '../errors/domain';
+import { NotFoundError, ForbiddenError, DomainError } from '../errors/domain';
 import { getUserById } from './auth';
 import { loadTripMembers, type TripMemberProfile } from './trips';
 
@@ -837,14 +837,15 @@ export async function verifySlipService(
    - เบอร์ PromptPay ผู้รับคาดหวัง (PromptPay ID): "${expectedPromptpayId || 'ไม่ได้ลงทะเบียน'}"
 
 ข้อกำหนดการตรวจสอบ (Verification Rules):
+- **สำคัญมาก**: ภาพที่แนบมา **ต้องเป็นภาพสลิปการโอนเงิน (e-slip) ที่ออกโดยแอปพลิเคชันธนาคาร หรือ TrueMoney จริงๆ เท่านั้น** หากรูปภาพเป็นเพียงภาพแคปหน้าจอ (Screenshot) ของแอปพลิเคชันอื่น, เป็นรูปถ่ายธรรมดา, หรือมีลักษณะไม่ใช่สลิปโอนเงิน ให้ถือว่าไม่ถูกต้องทันที และระบุ mismatch_reason เป็น "รูปภาพที่อัปโหลดไม่ใช่สลิปการโอนเงินที่ถูกต้อง"
 - "receiver_name" ในสลิปต้องสอดคล้องหรือใกล้เคียงกับชื่อผู้รับโอนคาดหวัง (เช่น มีความคล้ายคลึงของตัวอักษร, มีการแปลไทย-อังกฤษ หรือเป็นคนเดียวกันแต่เขียนต่างรูปแบบ)
 - หากมีข้อมูล PromptPay คาดหวัง: ตรวจสอบว่าสลิปโอนเข้าเบอร์/รหัส PromptPay นี้จริงหรือไม่
 - หากมีข้อมูลเลขที่บัญชีคาดหวัง: ตรวจสอบว่าสลิปโอนเข้าธนาคารนี้และเลขที่บัญชีนี้หรือไม่ (เช่น เลข 3-4 ตัวท้ายของเลขบัญชีในสลิปตรงกัน)
-- หากข้อมูลผู้รับเงินหรือบัญชีผู้รับเงินไม่ตรงกันหรือตรวจไม่พบ หรือไม่มีข้อมูลยืนยันความถูกต้อง ให้ประเมินเป็น is_receiver_match: false และระบุเหตุผลความไม่สอดคล้องในฟิลด์ "mismatch_reason" ด้วยภาษาไทยที่เป็นทางการและเข้าใจง่าย
+- หากข้อมูลผู้รับเงินไม่ตรงกัน ตรวจไม่พบ หรือไม่ใช่สลิปโอนเงิน ให้ประเมิน is_receiver_match: false และระบุเหตุผลใน "mismatch_reason" ด้วยภาษาไทย
 
 ข้อกำหนดด้านความถูกต้อง:
 1. หากอ่านข้อมูลส่วนไหนไม่ได้ หรือไม่มีในสลิป ให้ใส่ค่าเป็น null
-2. "amount" ต้องเป็นตัวเลขเท่านั้น (Number) ไม่เอาเครื่องหมายลูกน้ำ (,) หรือตัวอักษร
+2. "amount" ต้องเป็นตัวเลขเท่านั้น (Number) ไม่เอาเครื่องหมายลูกน้ำ (,) หรือตัวอักษร หากไม่ใช่สลิปให้ใส่ 0
 3. "datetime" ให้อยู่ในรูปแบบ "YYYY-MM-DD HH:MM" (ปี ค.ศ.)
 4. ตอบกลับมาเป็น JSON เปล่าๆ ไม่ต้องมี Markdown Code Block ครอบ
 
@@ -888,7 +889,16 @@ export async function verifySlipService(
     responseText = response.text || '';
   } catch (error) {
     console.error('Gemini API Error:', error);
-    throw new Error('Failed to verify slip with AI service');
+    await db.delete(settlements).where(eq(settlements.id, settlementId));
+    const errStr = String(error);
+    let friendlyReason = 'ระบบ AI ตรวจสอบสลิปขัดข้องชั่วคราว กรุณาลองใหม่อีกครั้ง หรือยืนยันด้วยวิธีอื่น';
+    if (errStr.includes('429') || errStr.includes('RESOURCE_EXHAUSTED') || errStr.includes('quota') || errStr.includes('Quota')) {
+      friendlyReason = 'ระบบตรวจสอบสลิปอัตโนมัติ (AI) เกินโควตาการใช้งานชั่วคราวแล้ว กรุณายืนยันการชำระเงินด้วยวิธีอื่น หรือลองอีกครั้งในภายหลัง';
+    }
+    return {
+      isMatch: false,
+      reason: friendlyReason,
+    };
   }
 
   // 4. Parse JSON Response
@@ -907,6 +917,7 @@ export async function verifySlipService(
     extractedData = JSON.parse(cleanJson.trim());
   } catch (err) {
     console.error('Failed to parse Gemini output:', responseText);
+    await db.delete(settlements).where(eq(settlements.id, settlementId));
     return {
       isMatch: false,
       reason: 'ไม่สามารถอ่านข้อมูลจากรูปภาพได้ (Invalid JSON)',
@@ -916,14 +927,16 @@ export async function verifySlipService(
   // 5. Compare amount
   const extractedAmount = Number(extractedData.amount);
   if (isNaN(extractedAmount) || extractedAmount === 0 || !extractedData.amount) {
+    await db.delete(settlements).where(eq(settlements.id, settlementId));
     return {
       isMatch: false,
-      reason: 'ไม่พบยอดเงินในสลิปนี้',
+      reason: 'ไม่พบยอดเงินในสลิปนี้ หรือไม่ใช่สลิปที่ถูกต้อง',
     };
   }
 
   // Allow a tiny float difference just in case
   if (Math.abs(extractedAmount - expectedAmount) > 0.05) {
+    await db.delete(settlements).where(eq(settlements.id, settlementId));
     return {
       isMatch: false,
       reason: `ยอดเงินในสลิป (฿${extractedAmount.toFixed(2)}) ไม่ตรงกับยอดที่ต้องชำระ (฿${expectedAmount.toFixed(2)})`,
@@ -932,6 +945,7 @@ export async function verifySlipService(
 
   // Check destination payee matching
   if (extractedData.is_receiver_match === false) {
+    await db.delete(settlements).where(eq(settlements.id, settlementId));
     return {
       isMatch: false,
       reason: extractedData.mismatch_reason || 'ข้อมูลบัญชีปลายทางผู้รับโอนไม่ตรงกับข้อมูลผู้รับเงินในระบบ',
@@ -1041,7 +1055,12 @@ export async function extractReceiptService(
     responseText = response.text || '';
   } catch (error) {
     console.error('Gemini API Error:', error);
-    throw new Error('Failed to extract receipt with AI service');
+    const errStr = String(error);
+    let friendlyReason = 'ระบบ AI ตรวจสอบรูปภาพขัดข้องชั่วคราว กรุณาลองใหม่อีกครั้ง หรือกรอกข้อมูลด้วยตัวเอง';
+    if (errStr.includes('429') || errStr.includes('RESOURCE_EXHAUSTED') || errStr.includes('quota') || errStr.includes('Quota')) {
+      friendlyReason = 'ระบบสแกนอัตโนมัติ (AI) เกินโควตาการใช้งานชั่วคราวแล้ว กรุณากรอกข้อมูลค่าใช้จ่ายด้วยตัวเอง หรือลองอีกครั้งในภายหลัง';
+    }
+    throw new DomainError(friendlyReason, 'VALIDATION_FAILED');
   }
 
   // Parse JSON Response
@@ -1056,15 +1075,22 @@ export async function extractReceiptService(
 
   try {
     const extractedData = JSON.parse(cleanJson.trim());
+    const merchant = extractedData.merchant ?? null;
+    const amount = Number(extractedData.amount) || null;
+
+    if (!merchant && !amount) {
+      throw new DomainError('รูปภาพที่อัปโหลดไม่ใช่ใบเสร็จหรือสลิปการโอนเงินที่ถูกต้อง กรุณาอัปโหลดรูปภาพที่ชัดเจนขึ้น หรือกรอกข้อมูลด้วยตัวเอง', 'VALIDATION_FAILED');
+    }
+
     return {
-      merchant: extractedData.merchant ?? null,
-      amount: Number(extractedData.amount) || null,
+      merchant,
+      amount,
       datetime: extractedData.datetime ?? null,
       sender_name: extractedData.sender_name ?? null,
       bank_name: extractedData.bank_name ?? null,
     };
   } catch (err) {
     console.error('Failed to parse Gemini output:', responseText);
-    throw new Error('Failed to parse receipt data');
+    throw new DomainError(err instanceof Error ? err.message : 'ไม่สามารถอ่านข้อมูลสลิปได้ กรุณาอัปโหลดภาพที่ชัดเจนขึ้น หรือกรอกข้อมูลด้วยตัวเอง', 'VALIDATION_FAILED');
   }
 }
