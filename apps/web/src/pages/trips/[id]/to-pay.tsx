@@ -127,7 +127,9 @@ function buildCreditorsList(
         category: 'other' as const,
       }));
 
-    const allTxs = [...positiveTxs, ...negativeTxs, ...outgoingSettlements, ...incomingSettlements];
+    const allTxs = isOptimized
+      ? [...positiveTxs, ...negativeTxs, ...outgoingSettlements, ...incomingSettlements]
+      : [...positiveTxs, ...outgoingSettlements];
 
     // เช็กว่าเราเคยกด "Mark as paid" ไปแล้วและกำลังรอให้อีกฝ่ายยืนยัน (Pending) หรือไม่
     const hasPendingSettlement = settlements.some(
@@ -304,7 +306,11 @@ function TripToPayContent() {
                           creditor.transactions.map((tx) => (
                             <div
                               key={tx.id}
-                              className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/40 hover:border-border transition-all"
+                              className={`flex items-center justify-between p-3 rounded-xl transition-all border ${
+                                tx.amount < 0
+                                  ? 'bg-primary/5 dark:bg-primary/10 border-primary/20 hover:border-primary/30'
+                                  : 'bg-muted/30 border-border/40 hover:border-border'
+                              }`}
                             >
                               <div className="flex items-center gap-3">
                                 <div className="p-2 rounded-lg bg-card border border-border/80 shadow-sm shrink-0">
