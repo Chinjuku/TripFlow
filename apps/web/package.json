@@ -37,7 +37,8 @@
     "react-i18next": "^17.0.8",
     "react-js-cron": "^5.0.1",
     "react-router-dom": "^7.15.1",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+    "workbox-window": "^7.1.0"
   },
   "devDependencies": {
     "@trip-flow/tsconfig": "workspace:*",
