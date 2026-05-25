@@ -22,6 +22,7 @@ import { Button } from '@trip-flow/ui/components/button';
 import { Input } from '@trip-flow/ui/components/input';
 import { Label } from '@trip-flow/ui/components/label';
 import { useTranslation } from 'react-i18next';
+import { extractReceipt } from '../api';
 
 // Zod schema for validation
 const createExpenseSchema = z.object({
@@ -79,6 +80,9 @@ export function CreateExpenseForm({
   const [isScanning, setIsScanning] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<{ name: string; size: string } | null>(null);
   const [isAutofilled, setIsAutofilled] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const [extractedSenderName, setExtractedSenderName] = useState<string | null>(null);
+  const [extractedBankName, setExtractedBankName] = useState<string | null>(null);
   const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
   const addPersonRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
@@ -208,7 +212,7 @@ export function CreateExpenseForm({
     watchSplitMethod === 'exact_amount' && Math.abs(exactSplitSum - watchAmount) > 0.05;
 
   // Simulate receipt upload & OCR parsing
-  const handleReceiptUpload = (
+  const handleReceiptUpload = async (
     e: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>,
   ) => {
     let file: File | null = null;
@@ -227,18 +231,37 @@ export function CreateExpenseForm({
     setUploadedFile({ name: file.name, size: `${sizeInMB} MB` });
     setIsScanning(true);
     setIsAutofilled(false);
+    setScanError(null);
+    setExtractedSenderName(null);
+    setExtractedBankName(null);
 
-    // Simulate OCR scanning
-    setTimeout(() => {
-      setIsScanning(false);
+    try {
+      const result = await extractReceipt(file);
       setIsAutofilled(true);
 
-      // Auto-fill values to match the screenshots perfectly
-      setValue('description', 'Nara Thai Cuisine');
-      setValue('amount', 2500);
-      setValue('expenseDate', '2023-10-24T12:00');
-      setValue('category', 'food');
-    }, 1200);
+      if (result.merchant) setValue('description', result.merchant);
+      if (result.amount) setValue('amount', result.amount);
+      if (result.datetime) setValue('expenseDate', result.datetime);
+      if (result.sender_name) setExtractedSenderName(result.sender_name);
+      if (result.bank_name) setExtractedBankName(result.bank_name);
+
+      // Auto-match payer from group members
+      if (result.sender_name && members.length > 0) {
+        const senderLower = result.sender_name.toLowerCase();
+        const matchedMember = members.find((m) => {
+          const nameLower = m.name.toLowerCase();
+          return senderLower.includes(nameLower) || nameLower.includes(senderLower);
+        });
+
+        if (matchedMember) {
+          setValue('paidById', matchedMember.userId);
+        }
+      }
+    } catch (err) {
+      setScanError(err instanceof Error ? err.message : 'Failed to extract receipt data');
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -410,6 +433,13 @@ export function CreateExpenseForm({
           </div>
         </div>
 
+        {scanError && (
+          <div className="bg-destructive/10 border border-destructive/20 text-destructive p-3 rounded-xl text-xs font-semibold flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{scanError}</span>
+          </div>
+        )}
+
         {/* Form Fields Card Block */}
         <div className="relative border border-border rounded-2xl p-5 bg-muted/30 space-y-4">
           {/* Sparkle Autofilled Badge */}
@@ -527,6 +557,15 @@ export function CreateExpenseForm({
                 </option>
               ))}
             </select>
+            {extractedSenderName && (
+              <p className="text-[10px] text-primary font-bold flex items-center gap-1 mt-1.5 animate-slide-down">
+                <Sparkles className="w-3 h-3 text-primary shrink-0" />
+                <span>
+                  แสกนพบผู้โอน: <b className="font-extrabold text-foreground">{extractedSenderName}</b>
+                  {extractedBankName && ` (${extractedBankName})`}
+                </span>
+              </p>
+            )}
           </div>
         </div>
 

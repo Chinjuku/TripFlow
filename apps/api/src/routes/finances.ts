@@ -23,6 +23,8 @@ import {
   handleUpdateTripBudget,
   handleSaveUserPaymentDetails,
   handleGetUserPaymentDetails,
+  handleVerifySlip,
+  handleExtractReceipt,
 } from '../controllers/finances';
 
 export const financesRoute = new Elysia({ prefix: '/finances' })
@@ -88,4 +90,17 @@ export const financesRoute = new Elysia({ prefix: '/finances' })
       isShowPromptpay: t.Optional(t.Boolean()),
     }),
   })
-  .get('/payment-details', handleGetUserPaymentDetails);
+  .get('/payment-details', handleGetUserPaymentDetails)
+  .post('/settlement/:id/verify-slip', handleVerifySlip, {
+    params: t.Object({
+      id: t.String({ format: 'uuid' }),
+    }),
+    body: t.Object({
+      slip_image: t.File(),
+    }),
+  })
+  .post('/extract-receipt', handleExtractReceipt, {
+    body: t.Object({
+      slip_image: t.File(),
+    }),
+  });

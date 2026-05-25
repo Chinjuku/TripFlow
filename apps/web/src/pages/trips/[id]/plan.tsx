@@ -242,138 +242,146 @@ export default function TripPlanPage() {
   if (!id) return null;
 
   return (
-    <div className="mx-auto flex h-full min-h-[calc(100dvh-4rem)] lg:h-[calc(100dvh-4rem)] lg:min-h-0 max-w-6xl flex-col gap-6 pb-6 lg:pb-0">
-      <TripPageHeader
-        backTo={`/trips/${id}`}
-        backLabel={t('overview.tripOverview', 'Trip overview')}
-        title={activeMeta.heading}
-        subtitle={activeMeta.helper}
-      />
+    <div className="mx-auto flex flex-col gap-6 pb-6 max-w-6xl lg:h-[calc(100dvh-4rem)] lg:overflow-hidden lg:pb-0">
+      <div className="shrink-0 space-y-6">
+        <TripPageHeader
+          backTo={`/trips/${id}`}
+          backLabel={t('overview.tripOverview', 'Trip overview')}
+          title={activeMeta.heading}
+          subtitle={activeMeta.helper}
+        />
 
-      {/* Tabs */}
-      <div className="border-border flex items-center justify-between gap-3 border-b">
-        <div className="flex gap-2" role="tablist" aria-label="Plan view">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              role="tab"
-              aria-selected={tab === t.id}
-              onClick={() => setTab(t.id)}
-              className={cn(
-                'relative -mb-px px-3 py-2.5 text-sm font-semibold transition-colors sm:px-4',
-                'border-b-2',
-                tab === t.id
-                  ? 'border-primary text-foreground'
-                  : 'text-muted-foreground hover:text-foreground border-transparent',
-              )}
-            >
-              {t.label}
-            </button>
-          ))}
+        {/* Tabs */}
+        <div className="border-border flex items-center justify-between gap-3 border-b">
+          <div className="flex gap-2" role="tablist" aria-label="Plan view">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={tab === t.id}
+                onClick={() => setTab(t.id)}
+                className={cn(
+                  'relative -mb-px px-3 py-2.5 text-sm font-semibold transition-colors sm:px-4',
+                  'border-b-2',
+                  tab === t.id
+                    ? 'border-primary text-foreground'
+                    : 'text-muted-foreground hover:text-foreground border-transparent',
+                )}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          {tab === 'plan' && (
+            <span className="text-muted-foreground mb-2 hidden text-xs sm:inline">
+              {t('plan.tipClickMap', 'Tip: click any place on the map to add it.')}
+            </span>
+          )}
         </div>
-        {tab === 'plan' && (
-          <span className="text-muted-foreground mb-2 hidden text-xs sm:inline">
-            {t('plan.tipClickMap', 'Tip: click any place on the map to add it.')}
-          </span>
+
+        {/* Errors */}
+        {(error || addError) && (
+          <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border p-4 text-sm">
+            {error?.message ?? addError}
+          </div>
+        )}
+
+        {/* Toolbar */}
+        {tab === 'plan' && (places?.length ?? 0) > 0 && (
+          <ListToolbar
+            filter={filter}
+            onFilterChange={setFilter}
+            sortKey={sortKey}
+            onSortChange={setSortKey}
+            bulkMode={bulkMode}
+            onToggleBulkMode={() => {
+              if (bulkMode) exitBulkMode();
+              else setBulkMode(true);
+            }}
+            bulkSelected={bulkSelected}
+            onBulkDelete={handleBulkDelete}
+            bulkBusy={bulkBusy}
+            places={places ?? []}
+          />
         )}
       </div>
 
-      {/* Errors */}
-      {(error || addError) && (
-        <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border p-4 text-sm">
-          {error?.message ?? addError}
-        </div>
-      )}
-
-      {/* Toolbar */}
-      {tab === 'plan' && (places?.length ?? 0) > 0 && (
-        <ListToolbar
-          filter={filter}
-          onFilterChange={setFilter}
-          sortKey={sortKey}
-          onSortChange={setSortKey}
-          bulkMode={bulkMode}
-          onToggleBulkMode={() => {
-            if (bulkMode) exitBulkMode();
-            else setBulkMode(true);
-          }}
-          bulkSelected={bulkSelected}
-          onBulkDelete={handleBulkDelete}
-          bulkBusy={bulkBusy}
-          places={places ?? []}
-        />
-      )}
-
       {/* Content */}
-      {tab === 'vote' ? (
-        <>
-          {(places?.length ?? 0) > 0 && (
-            <CategoryTabs
-              active={activeCat}
-              onChange={setCat}
-              available={availableBuckets}
-              places={places ?? []}
-            />
-          )}
-          <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
-            <PlaceList
-              loading={isLoading && places === null}
-              places={voteListPlaces}
-              tripId={id}
-              mode="vote"
-              memberById={memberById}
-              currentUserId={user?.id}
-              bulkMode={bulkMode}
-              bulkSelected={bulkSelected}
-              onToggleSelect={toggleBulkSelected}
-              onChange={handlePlaceChange}
-              onRemove={handlePlaceRemove}
-              emptyState={<PlanEmptyState tab="vote" onGoToPlan={() => setTab('plan')} />}
-            />
-            <aside className="lg:sticky lg:top-24 lg:self-start">
-              <TopRanking places={places ?? []} activeCat={activeCat} />
-            </aside>
+      <div className="flex-1 lg:min-h-0 lg:flex lg:flex-col">
+        {tab === 'vote' ? (
+          <div className="flex flex-col h-full lg:min-h-0">
+            {(places?.length ?? 0) > 0 && (
+              <div className="shrink-0 mb-6">
+                <CategoryTabs
+                  active={activeCat}
+                  onChange={setCat}
+                  available={availableBuckets}
+                  places={places ?? []}
+                />
+              </div>
+            )}
+            <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_18rem] lg:flex-1 lg:min-h-0">
+              <div className="lg:overflow-y-auto px-1 py-1 lg:p-2">
+                <PlaceList
+                  loading={isLoading && places === null}
+                  places={voteListPlaces}
+                  tripId={id}
+                  mode="vote"
+                  memberById={memberById}
+                  currentUserId={user?.id}
+                  bulkMode={bulkMode}
+                  bulkSelected={bulkSelected}
+                  onToggleSelect={toggleBulkSelected}
+                  onChange={handlePlaceChange}
+                  onRemove={handlePlaceRemove}
+                  emptyState={<PlanEmptyState tab="vote" onGoToPlan={() => setTab('plan')} />}
+                />
+              </div>
+              <aside className="lg:overflow-y-auto px-1 py-1 lg:p-2 lg:self-start">
+                <TopRanking places={places ?? []} activeCat={activeCat} />
+              </aside>
+            </div>
           </div>
-        </>
-      ) : (
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
-          <aside className="min-h-0">
-            <div className="h-[32rem] lg:h-full">
-              <PlacesMap
-                places={places ?? []}
-                pickedExternalIds={pickedExternalIds}
+        ) : (
+          <div className="flex flex-col gap-6 h-full lg:grid lg:grid-cols-[minmax(0,1fr)_24rem] lg:flex-1 lg:min-h-0">
+            <aside className="shrink-0 lg:h-full lg:min-h-0">
+              <div className="h-[45vh] min-h-[300px] lg:h-full rounded-2xl overflow-hidden shadow-sm border border-border">
+                <PlacesMap
+                  places={places ?? []}
+                  pickedExternalIds={pickedExternalIds}
+                  hoveredId={hoveredPlaceId}
+                  onPinClick={focusCard}
+                  onPinHover={setHoveredPlaceId}
+                  onAddPoi={handleAddPoi}
+                />
+              </div>
+            </aside>
+            <div className="lg:overflow-y-auto px-1 py-1 lg:p-2">
+              <PlaceList
+                loading={isLoading && places === null}
+                places={processedPlaces}
+                tripId={id}
+                mode="plan"
+                memberById={memberById}
+                currentUserId={user?.id}
                 hoveredId={hoveredPlaceId}
-                onPinClick={focusCard}
-                onPinHover={setHoveredPlaceId}
-                onAddPoi={handleAddPoi}
+                onHover={setHoveredPlaceId}
+                bulkMode={bulkMode}
+                bulkSelected={bulkSelected}
+                onToggleSelect={toggleBulkSelected}
+                registerCardRef={(placeId, node) => {
+                  if (node) cardRefs.current.set(placeId, node);
+                  else cardRefs.current.delete(placeId);
+                }}
+                onChange={handlePlaceChange}
+                onRemove={handlePlaceRemove}
+                emptyState={<PlanEmptyState tab="plan" onGoToPlan={() => setTab('plan')} />}
               />
             </div>
-          </aside>
-          <div className="min-h-0 px-1 py-1 lg:h-full lg:overflow-y-auto lg:p-2">
-            <PlaceList
-              loading={isLoading && places === null}
-              places={processedPlaces}
-              tripId={id}
-              mode="plan"
-              memberById={memberById}
-              currentUserId={user?.id}
-              hoveredId={hoveredPlaceId}
-              onHover={setHoveredPlaceId}
-              bulkMode={bulkMode}
-              bulkSelected={bulkSelected}
-              onToggleSelect={toggleBulkSelected}
-              registerCardRef={(placeId, node) => {
-                if (node) cardRefs.current.set(placeId, node);
-                else cardRefs.current.delete(placeId);
-              }}
-              onChange={handlePlaceChange}
-              onRemove={handlePlaceRemove}
-              emptyState={<PlanEmptyState tab="plan" onGoToPlan={() => setTab('plan')} />}
-            />
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

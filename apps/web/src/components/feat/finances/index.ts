@@ -6,6 +6,9 @@ export {
   confirmSettlement,
   updateBudget,
   savePaymentDetails,
+  getPaymentDetails,
+  verifySlip,
+  extractReceipt,
 } from './api';
 export { ExpenseSummary } from './components/ExpenseSummary';
 export { ExpenseList } from './components/ExpenseList';
