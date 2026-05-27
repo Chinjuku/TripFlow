@@ -21,15 +21,15 @@ export function RouteFlowCard({ items }: { items: ScheduleItem[] }) {
   const fullRouteUrl = buildFullDayDirectionsUrl(items);
 
   return (
-    <div className="border-border bg-card rounded-2xl border p-4">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+    <div className="border-border bg-card rounded-2xl border p-3 sm:p-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
         <div className="flex items-center gap-2">
           <h3 className="text-foreground text-xs font-bold uppercase tracking-wide">Route flow</h3>
           <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-[0.65rem] font-semibold">
             {items.length} {items.length === 1 ? 'stop' : 'stops'}
           </span>
         </div>
-        <div className="text-muted-foreground flex items-center gap-3 text-[0.7rem] tabular-nums">
+        <div className="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.7rem] tabular-nums sm:gap-3">
           <span className="inline-flex items-center gap-1">
             <Clock className="h-3 w-3" strokeWidth={2.25} />
             {formatDuration(activeMinutes)} active
@@ -71,7 +71,7 @@ function RouteFlowEmpty() {
   const letters = ['A', 'B', 'C', 'D', 'E', 'F'] as const;
   const visibleOn = ['', '', '', 'hidden sm:flex', 'hidden sm:flex', 'hidden sm:flex'];
   return (
-    <div className="border-border bg-card rounded-2xl border border-dashed p-5">
+    <div className="border-border bg-card rounded-2xl border border-dashed p-3 sm:p-5">
       <div className="text-muted-foreground mb-3 text-center text-xs">
         Your route flow will appear here once you schedule stops for the day.
       </div>

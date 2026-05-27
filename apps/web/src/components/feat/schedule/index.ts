@@ -34,10 +34,13 @@ export {
 } from '@/utils/schedule';
 
 // * Components
+export { AddPlaceSheet } from './AddPlaceSheet';
 export { DayTabsScroller } from './DayTabsScroller';
 export { DedupeConfirmModal } from './DedupeConfirmModal';
 export { DraggablePlace, PlacePill } from './DraggablePlace';
 export { DuplicateModeToggle } from './DuplicateModeToggle';
+export { EditEventSheet } from './EditEventSheet';
 export { EventBlock } from './EventBlock';
+export { MobileTimeline, TappablePlace } from './MobileTimeline';
 export { RouteFlowCard } from './RouteFlowCard';
 export { Timeline, TravelGap } from './Timeline';
