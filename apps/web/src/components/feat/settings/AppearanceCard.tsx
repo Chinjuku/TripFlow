@@ -5,14 +5,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@trip-flow/ui/components/card';
-import { Globe, Palette } from 'lucide-react';
+import { Palette } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { ThemeToggle } from '@/components/shared/ThemeToggle';
-import { useLocale } from '@/lib/i18n/useLocale';
+import { ThemePicker } from './appearance/ThemePicker';
+import { LanguagePicker } from './appearance/LanguagePicker';
 
 export function AppearanceCard() {
   const { t } = useTranslation();
-  const { locale, locales, meta, setLocale } = useLocale();
 
   return (
     <Card>
@@ -24,48 +23,22 @@ export function AppearanceCard() {
         <CardDescription>{t('settings.appearanceDesc')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
-        {/* Theme Toggle */}
-        <div className="flex items-center justify-between gap-4">
+        {/* Theme — visual mock-up picker */}
+        <div className="space-y-3">
           <div>
             <p className="text-foreground text-sm font-medium">{t('settings.theme')}</p>
             <p className="text-muted-foreground text-xs">{t('settings.themeDesc')}</p>
           </div>
-          <ThemeToggle />
+          <ThemePicker />
         </div>
 
-        {/* Language Selector */}
-        <div className="border-border border-t pt-5">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-lg">
-                <Globe className="h-4 w-4" strokeWidth={1.75} />
-              </div>
-              <div>
-                <p className="text-foreground text-sm font-medium">{t('settings.language')}</p>
-                <p className="text-muted-foreground text-xs">{t('settings.languageDesc')}</p>
-              </div>
-            </div>
-            <div className="flex gap-1 rounded-xl border border-border bg-muted/50 p-1">
-              {locales.map((code) => {
-                const isActive = code === locale;
-                return (
-                  <button
-                    key={code}
-                    type="button"
-                    onClick={() => void setLocale(code)}
-                    className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
-                      isActive
-                        ? 'bg-card text-foreground shadow-sm border border-border'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    <span>{meta[code].flag}</span>
-                    {meta[code].label}
-                  </button>
-                );
-              })}
-            </div>
+        {/* Language — visual card picker */}
+        <div className="border-border space-y-3 border-t pt-5">
+          <div>
+            <p className="text-foreground text-sm font-medium">{t('settings.language')}</p>
+            <p className="text-muted-foreground text-xs">{t('settings.languageDesc')}</p>
           </div>
+          <LanguagePicker />
         </div>
       </CardContent>
     </Card>

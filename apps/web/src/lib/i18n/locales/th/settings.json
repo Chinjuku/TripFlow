@@ -4,7 +4,22 @@
   "tabs": {
     "profile": "โปรไฟล์",
     "appearance": "รูปลักษณ์",
-    "payment": "การชำระเงิน"
+    "payment": "การชำระเงิน",
+    "notifications": "การแจ้งเตือน"
+  },
+  "signOut": "ออกจากระบบ",
+  "signOutDesc": "ออกจากระบบ TripFlow บนอุปกรณ์นี้",
+  "notifications": "การแจ้งเตือน",
+  "notificationsDesc": "เลือกสิ่งที่อยากให้ TripFlow แจ้งเตือน",
+  "notif": {
+    "settlements": "เตือนการชำระหนี้",
+    "settlementsDesc": "เมื่อมีคนขอหรือยืนยันการชำระเงินคืน",
+    "expenses": "ค่าใช้จ่ายใหม่",
+    "expensesDesc": "เมื่อมีการเพิ่มค่าใช้จ่ายในทริปที่คุณอยู่",
+    "memberJoined": "สมาชิกใหม่ในทริป",
+    "memberJoinedDesc": "เมื่อมีคนเข้าร่วมทริปที่คุณอยู่",
+    "placeAdded": "สถานที่ใหม่",
+    "placeAddedDesc": "เมื่อมีคนเพิ่มสถานที่ในทริปที่คุณอยู่"
   },
   "appearance": "รูปลักษณ์",
   "appearanceDesc": "เลือกรูปลักษณ์ของ TripFlow",

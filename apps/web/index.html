@@ -16,13 +16,23 @@
     }
   </script>
   <script>
-    // Anti-flash: apply theme before React mounts.
+    // Anti-flash: apply theme before React mounts AND before the CSS bundle
+    // loads. Setting only the `.dark` class isn't enough — `--background`
+    // lives in the (async) stylesheet, so the page paints default white for a
+    // frame on a dark-mode refresh. We also paint the html element's
+    // background inline here (matching the dark `--background` token) so there
+    // is never a white flash before the CSS arrives. The inline bg is cleared
+    // once React/CSS take over (see main.tsx).
     // Must match ThemeProvider's storage key (default light when missing).
     (function () {
       try {
         var dark = localStorage.getItem('trip-flow-theme') === 'dark';
         var root = document.documentElement;
-        if (dark) root.classList.add('dark');
+        if (dark) {
+          root.classList.add('dark');
+          // hsl(222 47% 11%) — the dark `--background` token.
+          root.style.backgroundColor = 'hsl(222, 47%, 11%)';
+        }
         root.style.colorScheme = dark ? 'dark' : 'light';
       } catch (_) {
         /* storage disabled — fall through with light theme */
