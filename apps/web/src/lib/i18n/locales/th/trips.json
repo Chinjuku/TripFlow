@@ -34,5 +34,32 @@
   "endBeforeStart": "วันสิ้นสุดต้องไม่ก่อนวันเริ่มต้น",
   "failedCreate": "ไม่สามารถสร้างทริปได้",
   "failedJoin": "ไม่สามารถเข้าร่วมทริปได้",
-  "inviteCode": "รหัสเชิญ"
+  "inviteCode": "รหัสเชิญ",
+  "status": {
+    "draft": "ร่าง",
+    "planning": "กำลังวางแผน",
+    "upcoming": "ใกล้ถึง",
+    "active": "กำลังเดินทาง",
+    "past": "ผ่านมาแล้ว"
+  },
+  "filter": {
+    "all": "ทั้งหมด",
+    "upcoming": "ใกล้ถึง",
+    "active": "กำลังเดินทาง",
+    "past": "ผ่านมาแล้ว"
+  },
+  "sort": {
+    "soonest": "ใกล้สุด",
+    "recent": "เพิ่มล่าสุด"
+  },
+  "group": {
+    "upcoming": "กำลังจะถึง & กำลังเดินทาง",
+    "past": "ทริปที่ผ่านมา"
+  },
+  "tripCount": "{{count}} ทริป",
+  "tripCount_other": "{{count}} ทริป",
+  "emptyTitle": "ยังไม่มีทริป",
+  "emptyDesc": "เริ่มการเดินทางใหม่ หรือเข้าร่วมด้วยรหัสเชิญ",
+  "emptyFilterTitle": "ไม่มีอะไรตรงนี้",
+  "emptyFilterDesc": "ไม่มีทริปที่ตรงกับตัวกรองนี้"
 }

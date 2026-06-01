@@ -1,12 +1,14 @@
 import { Link } from 'react-router-dom';
-import { Calendar } from 'lucide-react';
+import { Calendar, MapPin } from 'lucide-react';
 import {
   coverImageUrl,
+  deriveTripStatus,
   formatDateRange,
   getInitials,
   type TripMemberProfile,
   type TripSummary,
 } from '@/components/feat/trips';
+import { TripStatusBadge } from './TripStatusBadge';
 
 interface TripCardProps {
   trip: TripSummary;
@@ -16,25 +18,39 @@ const MAX_VISIBLE_AVATARS = 4;
 
 export function TripCard({ trip }: TripCardProps) {
   const { range, duration } = formatDateRange(trip.startsOn, trip.endsOn);
+  const status = deriveTripStatus(trip);
 
   return (
-    <article className="bg-card border-border group flex h-full flex-col overflow-hidden rounded-2xl border shadow-sm">
+    <article className="bg-card border-border group flex h-full flex-col overflow-hidden rounded-2xl border shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
       <Link to={`/trips/${trip.id}`} className="relative block">
         <img
           src={coverImageUrl(trip.id)}
           alt=""
           loading="lazy"
           decoding="async"
-          className="bg-muted aspect-[16/10] w-full object-cover sm:aspect-auto sm:h-44"
+          className="bg-muted aspect-[16/10] w-full object-cover transition-transform duration-300 group-hover:scale-[1.03] sm:aspect-auto sm:h-44"
+        />
+        {/* Gradient scrim keeps the status badge legible over any cover photo. */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+        <TripStatusBadge
+          status={status}
+          className="absolute left-3 top-3 shadow-sm backdrop-blur"
         />
       </Link>
 
-      <div className="flex flex-1 flex-col gap-3 p-5 sm:p-4">
-        <Link to={`/trips/${trip.id}`} className="group/title">
-          <h3 className="font-headline text-foreground group-hover/title:text-primary truncate text-2xl font-bold transition-colors sm:text-xl">
+      <div className="flex flex-1 flex-col gap-2.5 p-5 sm:p-4">
+        <Link to={`/trips/${trip.id}`}>
+          <h3 className="font-headline text-foreground group-hover:text-primary truncate text-2xl font-bold transition-colors sm:text-xl">
             {trip.title}
           </h3>
         </Link>
+
+        {trip.destinationName && (
+          <div className="text-muted-foreground flex items-center gap-2 text-sm">
+            <MapPin className="h-4 w-4 shrink-0" strokeWidth={1.75} />
+            <span className="truncate">{trip.destinationName}</span>
+          </div>
+        )}
 
         <div className="text-muted-foreground flex items-center gap-2 text-sm">
           <Calendar className="h-4 w-4 shrink-0" strokeWidth={1.75} />
@@ -43,7 +59,7 @@ export function TripCard({ trip }: TripCardProps) {
           </span>
         </div>
 
-        <div className="mt-auto flex items-center justify-between gap-3 pt-2">
+        <div className="border-border/60 mt-auto flex items-center justify-between gap-3 border-t pt-3">
           <MemberAvatars members={trip.members} />
           <span
             className="bg-muted text-muted-foreground shrink-0 rounded-full px-2.5 py-1 font-mono text-xs tracking-wider"
