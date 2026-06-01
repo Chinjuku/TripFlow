@@ -8,14 +8,6 @@
       "types": "./src/index.ts",
       "default": "./src/index.ts"
     },
-    "./types": {
-      "types": "./src/types.ts",
-      "default": "./src/types.ts"
-    },
-    "./browser": {
-      "types": "./src/browser.ts",
-      "default": "./src/browser.ts"
-    },
     "./server": {
       "types": "./src/server.ts",
       "default": "./src/server.ts"
@@ -30,7 +22,6 @@
     "db:studio": "bun --env-file ../../.env drizzle-kit studio"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.46.1",
     "drizzle-orm": "^0.45.2",
     "postgres": "^3.4.9"
   },
