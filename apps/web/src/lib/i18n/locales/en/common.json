@@ -26,6 +26,8 @@
   "createdBy": "Created by",
   "days": "{{count}} day",
   "days_other": "{{count}} days",
+  "dayUnit": "day",
+  "dayUnit_other": "days",
   "members": "{{count}} member",
   "members_other": "{{count}} members",
   "travellers": "{{count}} traveller",
