@@ -14,6 +14,9 @@ export interface TripSummary {
   endsOn: string;
   inviteCode: string;
   isDebtOptimized: boolean;
+  destinationName: string | null;
+  centerLat: number | null;
+  centerLng: number | null;
   role: 'owner' | 'member';
   createdAt: string;
   members: TripMemberProfile[];
@@ -23,6 +26,9 @@ export interface CreateTripPayload {
   title: string;
   startsOn: string;
   endsOn: string;
+  destinationName?: string | null;
+  centerLat?: number | null;
+  centerLng?: number | null;
 }
 
 export interface TripDetail extends TripSummary {

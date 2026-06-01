@@ -15,6 +15,9 @@ export interface CreateTripInput {
   title: string;
   startsOn: string;
   endsOn: string;
+  destinationName?: string | null;
+  centerLat?: number | null;
+  centerLng?: number | null;
 }
 
 export interface TripSummary {
@@ -24,6 +27,9 @@ export interface TripSummary {
   endsOn: string;
   inviteCode: string;
   isDebtOptimized: boolean;
+  destinationName: string | null;
+  centerLat: number | null;
+  centerLng: number | null;
   role: 'owner' | 'member';
   createdAt: string;
   members: TripMemberProfile[];
@@ -54,6 +60,9 @@ function toSummary(
     endsOn: trip.ends_on,
     inviteCode: trip.invite_code,
     isDebtOptimized: trip.is_debt_optimized,
+    destinationName: trip.destination_name,
+    centerLat: trip.center_lat,
+    centerLng: trip.center_lng,
     role,
     createdAt: trip.created_at,
     members,
@@ -141,6 +150,9 @@ export async function createTrip(ownerId: string, input: CreateTripInput): Promi
             title: input.title,
             starts_on: input.startsOn,
             ends_on: input.endsOn,
+            destination_name: input.destinationName ?? null,
+            center_lat: input.centerLat ?? null,
+            center_lng: input.centerLng ?? null,
             invite_code: inviteCode,
           })
           .returning();
