@@ -3,5 +3,6 @@
   "schedule": "Schedule",
   "overview": "Overview",
   "finances": "Finances",
-  "settings": "Settings"
+  "settings": "Settings",
+  "tripSettings": "Trip settings"
 }

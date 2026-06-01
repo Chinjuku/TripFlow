@@ -1,19 +1,6 @@
 import { api } from '@/lib/api';
+import { unwrap } from '@/lib/unwrap';
 import type { AddSchedulePayload, ScheduleItem, UpdateSchedulePayload } from '@/types/schedule';
-
-function unwrap<T>(value: { data: T | null; error: unknown }): T {
-  if (value.error) {
-    const message =
-      typeof value.error === 'object' && value.error !== null && 'message' in value.error
-        ? String((value.error as { message: unknown }).message)
-        : 'Request failed';
-    throw new Error(message);
-  }
-  if (value.data === null) {
-    throw new Error('Empty response');
-  }
-  return value.data;
-}
 
 export async function listSchedule(tripId: string): Promise<ScheduleItem[]> {
   const res = await api.trips[tripId]!.schedule.get();

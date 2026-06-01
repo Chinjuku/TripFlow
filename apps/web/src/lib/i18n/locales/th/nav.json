@@ -3,5 +3,6 @@
   "schedule": "ตารางเวลา",
   "overview": "ภาพรวม",
   "finances": "การเงิน",
-  "settings": "ตั้งค่า"
+  "settings": "ตั้งค่า",
+  "tripSettings": "ตั้งค่าทริป"
 }

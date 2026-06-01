@@ -61,5 +61,25 @@
   "emptyTitle": "ยังไม่มีทริป",
   "emptyDesc": "เริ่มการเดินทางใหม่ หรือเข้าร่วมด้วยรหัสเชิญ",
   "emptyFilterTitle": "ไม่มีอะไรตรงนี้",
-  "emptyFilterDesc": "ไม่มีทริปที่ตรงกับตัวกรองนี้"
+  "emptyFilterDesc": "ไม่มีทริปที่ตรงกับตัวกรองนี้",
+  "settings": {
+    "subtitle": "จัดการรายละเอียดและสมาชิกของทริปนี้",
+    "detailsTitle": "รายละเอียดทริป",
+    "detailsDesc": "แก้ชื่อ จุดหมาย และวันที่",
+    "saveChanges": "บันทึกการเปลี่ยนแปลง",
+    "saved": "บันทึกแล้ว",
+    "saveFailed": "บันทึกไม่สำเร็จ",
+    "membersTitle": "สมาชิก",
+    "membersDesc": "คนในทริปนี้",
+    "owner": "เจ้าของ",
+    "remove": "นำออก",
+    "removeMemberConfirm": "นำ {{name}} ออกจากทริปนี้?",
+    "removeMemberFailed": "นำสมาชิกออกไม่สำเร็จ",
+    "dangerTitle": "โซนอันตราย",
+    "dangerDesc": "การลบทริปเป็นการถาวรและลบข้อมูลทั้งหมด",
+    "deleteTrip": "ลบทริป",
+    "deleting": "กำลังลบ…",
+    "deleteConfirm": "ลบ \"{{title}}\"? การกระทำนี้ลบทริปและข้อมูลของทุกคนอย่างถาวร ย้อนกลับไม่ได้",
+    "deleteFailed": "ลบทริปไม่สำเร็จ"
+  }
 }

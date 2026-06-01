@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { UserPlus, Copy, Check } from 'lucide-react';
+import { UserPlus, Copy, Check, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@trip-flow/ui/components/button';
 import { Modal } from '@trip-flow/ui/components/modal';
@@ -39,47 +39,56 @@ export function InviteModal({ open, onOpenChange, trip }: InviteModalProps) {
       onOpenChange={onOpenChange}
       title={t('overview.inviteFriends')}
       hideHeader
-      className="overflow-hidden"
+      dismissable={false}
     >
-      <div className="flex flex-col">
-        {/* Header */}
-        <div className="flex flex-col items-center gap-3 px-5 pb-5 pt-3 text-center sm:px-6 sm:pb-6">
-          <div className="bg-primary/10 text-primary flex h-12 w-12 items-center justify-center rounded-full animate-pulse">
-            <UserPlus className="h-6 w-6" strokeWidth={2} />
+      {/* Header — mirrors CreateTripDialog: left-aligned icon tile + title/
+          subtitle on the modal surface, with its own close button. */}
+      <div className="relative px-5 pb-4 pt-5 sm:px-6">
+        <button
+          type="button"
+          onClick={() => onOpenChange(false)}
+          aria-label="Close"
+          className="text-muted-foreground hover:bg-muted hover:text-foreground absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors sm:right-5"
+        >
+          <X className="h-4 w-4" strokeWidth={2} />
+        </button>
+        <div className="flex items-center gap-3.5">
+          <div className="bg-tertiary text-tertiary-foreground flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl shadow-sm">
+            <UserPlus className="h-5 w-5" strokeWidth={2} />
           </div>
-          <h2 className="font-headline text-foreground text-xl font-bold">
-            {t('overview.inviteFriends')}
-          </h2>
-          <p className="text-muted-foreground max-w-xs text-sm leading-relaxed">
-            {t('overview.inviteDesc', { title: trip.title })}
-          </p>
+          <div className="space-y-0.5">
+            <h2 className="font-headline text-foreground text-lg font-bold sm:text-xl">
+              {t('overview.inviteFriends')}
+            </h2>
+            <p className="text-muted-foreground text-xs sm:text-sm">
+              {t('overview.inviteDesc', { title: trip.title })}
+            </p>
+          </div>
         </div>
+      </div>
 
-        <div className="border-border border-t" />
-
-        {/* Invite Code display */}
-        <div className="flex flex-col items-center gap-4 px-5 py-6 sm:px-6">
-          <div className="bg-muted border border-border flex items-center justify-between gap-4 w-full max-w-sm rounded-2xl px-5 py-4 shadow-inner">
-            <div className="flex flex-col">
-              <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-0.5">
-                {t('common.inviteCode')}
-              </span>
-              <span
-                className={cn(
-                  'font-mono text-2xl font-black tracking-widest transition-colors duration-200 select-all',
-                  copied ? 'text-foreground' : 'text-muted-foreground/50',
-                )}
-              >
-                {copied ? trip.inviteCode : '******'}
-              </span>
-            </div>
+      <div className="space-y-5 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-1 sm:px-6 sm:pb-6">
+        {/* Invite code */}
+        <div className="space-y-1.5">
+          <span className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
+            {t('common.inviteCode')}
+          </span>
+          <div className="bg-muted border-border flex items-center justify-between gap-4 rounded-xl border px-4 py-3">
+            <span
+              className={cn(
+                'select-all font-mono text-2xl font-black tracking-widest transition-colors',
+                copied ? 'text-foreground' : 'text-muted-foreground/50',
+              )}
+            >
+              {copied ? trip.inviteCode : '••••••'}
+            </span>
             <Button
               onClick={handleCopyCode}
               variant={copied ? 'default' : 'outline'}
               size="sm"
               className={cn(
-                'h-10 rounded-xl gap-2 font-semibold min-w-[5.5rem] transition-all',
-                copied && 'bg-green-600 hover:bg-green-600',
+                'h-10 min-w-[5.5rem] gap-2 rounded-xl font-semibold transition-all',
+                copied && 'bg-emerald-600 hover:bg-emerald-600',
               )}
             >
               {copied ? (
@@ -97,28 +106,23 @@ export function InviteModal({ open, onOpenChange, trip }: InviteModalProps) {
           </div>
         </div>
 
-        <div className="border-border border-t" />
-
-        {/* Steps */}
-        <div className="bg-muted/50 px-5 py-5 sm:px-6 text-sm flex flex-col gap-3">
-          <h4 className="font-semibold text-foreground">{t('overview.howToUseCode')}</h4>
-          <ol className="list-decimal list-inside text-muted-foreground text-xs space-y-2 leading-relaxed">
+        {/* How-to steps */}
+        <div className="bg-muted/40 border-border space-y-2 rounded-xl border p-4">
+          <h4 className="text-foreground text-sm font-semibold">{t('overview.howToUseCode')}</h4>
+          <ol className="text-muted-foreground list-inside list-decimal space-y-1.5 text-xs leading-relaxed">
             <li>{t('overview.howToStep1')}</li>
             <li>{t('overview.howToStep2')}</li>
             <li>{t('overview.howToStep3')}</li>
           </ol>
         </div>
 
-        {/* Actions */}
-        <div className="border-border border-t p-5 sm:p-6">
-          <Button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            className="bg-primary hover:bg-primary/95 text-primary-foreground h-11 w-full rounded-xl font-semibold shadow-sm"
-          >
-            {t('common.done')}
-          </Button>
-        </div>
+        <Button
+          type="button"
+          onClick={() => onOpenChange(false)}
+          className="h-12 w-full rounded-xl font-semibold"
+        >
+          {t('common.done')}
+        </Button>
       </div>
     </Modal>
   );

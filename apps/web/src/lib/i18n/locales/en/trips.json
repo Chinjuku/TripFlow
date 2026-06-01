@@ -61,5 +61,25 @@
   "emptyTitle": "No trips yet",
   "emptyDesc": "Start a new journey or join one with an invite code.",
   "emptyFilterTitle": "Nothing here",
-  "emptyFilterDesc": "No trips match this filter."
+  "emptyFilterDesc": "No trips match this filter.",
+  "settings": {
+    "subtitle": "Manage this trip's details and members.",
+    "detailsTitle": "Trip details",
+    "detailsDesc": "Update the name, destination, and dates.",
+    "saveChanges": "Save changes",
+    "saved": "Changes saved",
+    "saveFailed": "Failed to save changes",
+    "membersTitle": "Members",
+    "membersDesc": "People in this trip.",
+    "owner": "Owner",
+    "remove": "Remove",
+    "removeMemberConfirm": "Remove {{name}} from this trip?",
+    "removeMemberFailed": "Failed to remove member",
+    "dangerTitle": "Danger zone",
+    "dangerDesc": "Deleting a trip is permanent and removes all its data.",
+    "deleteTrip": "Delete trip",
+    "deleting": "Deleting…",
+    "deleteConfirm": "Delete \"{{title}}\"? This permanently removes the trip and everyone's data in it. This can't be undone.",
+    "deleteFailed": "Failed to delete trip"
+  }
 }
