@@ -64,6 +64,15 @@ export interface PoiPreview {
   openingHoursText: string | null;
 }
 
+/** Optional partial info used to paint a POI popup before details arrive. */
+interface PoiSeed {
+  lat: number;
+  lng: number;
+  name?: string;
+  rating?: number | null;
+  category?: string | null;
+}
+
 interface SearchHit {
   placeId: string;
   name: string;
@@ -192,6 +201,12 @@ function MapBody({
   const [poiLoading, setPoiLoading] = useState(false);
   /** Monotonic counter so a slow fetch can't overwrite a newer one. */
   const poiRequestRef = useRef(0);
+  /**
+   * Caches fully-enriched POI previews by placeId for the lifetime of the
+   * component. Re-opening a place the user already viewed is then instant —
+   * no "Loading…" flash and zero extra Places API calls.
+   */
+  const poiCacheRef = useRef<Map<string, PoiPreview>>(new globalThis.Map());
   const [searchQuery, setSearchQuery] = useState('');
   const [searchHits, setSearchHits] = useState<SearchHit[]>([]);
   const [searching, setSearching] = useState(false);
@@ -262,24 +277,24 @@ function MapBody({
         return;
       }
       e.stop?.();
-      // Show a placeholder popup at the click location immediately so the
-      // user sees feedback while we fetch details. Without this, slow
-      // network calls feel like the click was ignored.
-      const latLng = e.latLng;
-      if (latLng) {
-        setPoi({
-          placeId,
-          name: 'Loading…',
-          address: null,
-          category: null,
-          lat: latLng.lat(),
-          lng: latLng.lng(),
-          photoUrl: null,
-          rating: null,
-          openingHoursText: null,
-        });
+      // Already viewed? Re-show the cached preview instantly — no fetch, no
+      // "Loading…" flash.
+      const cached = poiCacheRef.current.get(placeId);
+      if (cached) {
+        poiRequestRef.current++; // cancel any in-flight fetch for an older click
+        setPoi(cached);
+        setPoiLoading(false);
+        centerOnPoi(map, cached.lat, cached.lng);
+        return;
       }
-      void loadPoi(placeId);
+      // First view: seed the popup with the click location so it appears
+      // immediately, then enrich. Without the seed a slow network call feels
+      // like the click was ignored.
+      const latLng = e.latLng;
+      void loadPoi(
+        placeId,
+        latLng ? { lat: latLng.lat(), lng: latLng.lng() } : undefined,
+      );
     });
     return () => listener.remove();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -289,10 +304,39 @@ function MapBody({
   /*  Place details fetch (Place class, new SDK)                        */
   /* ------------------------------------------------------------------ */
   const loadPoi = useCallback(
-    async (placeId: string) => {
+    async (placeId: string, seed?: PoiSeed) => {
       if (!placesLib || !map) return;
+
+      // Cache hit: show instantly, skip the network entirely.
+      const cached = poiCacheRef.current.get(placeId);
+      if (cached) {
+        poiRequestRef.current++;
+        setPoi(cached);
+        setPoiLoading(false);
+        centerOnPoi(map, cached.lat, cached.lng);
+        return;
+      }
+
       const reqId = ++poiRequestRef.current;
+
+      // Paint a seeded preview right away so the popup never shows a bare
+      // "Loading…". A search hit seeds name + rating; a raw map click seeds
+      // only the click location. Either way the user sees *something* real.
+      if (seed) {
+        setPoi({
+          placeId,
+          name: seed.name ?? '…',
+          address: null,
+          category: seed.category ?? null,
+          lat: seed.lat,
+          lng: seed.lng,
+          photoUrl: null,
+          rating: seed.rating ?? null,
+          openingHoursText: null,
+        });
+      }
       setPoiLoading(true);
+
       try {
         const place = new placesLib.Place({ id: placeId });
 
@@ -305,6 +349,7 @@ function MapBody({
         if (reqId !== poiRequestRef.current) return;
         if (!place.location) {
           setPoi(null);
+          setPoiLoading(false);
           return;
         }
 
@@ -330,15 +375,16 @@ function MapBody({
           fields: ['rating', 'regularOpeningHours', 'photos'],
         });
         if (reqId !== poiRequestRef.current) return;
+        const enriched: PoiPreview = {
+          ...preview,
+          photoUrl: place.photos?.[0]?.getURI({ maxWidth: 480 }) ?? null,
+          rating: place.rating ?? null,
+          openingHoursText: openingHoursSummary(place.regularOpeningHours ?? null),
+        };
+        // Cache only the fully-enriched preview so a later reopen is complete.
+        poiCacheRef.current.set(placeId, enriched);
         setPoi((current) =>
-          current && current.placeId === preview.placeId
-            ? {
-                ...current,
-                photoUrl: place.photos?.[0]?.getURI({ maxWidth: 480 }) ?? null,
-                rating: place.rating ?? null,
-                openingHoursText: openingHoursSummary(place.regularOpeningHours ?? null),
-              }
-            : current,
+          current && current.placeId === enriched.placeId ? enriched : current,
         );
       } catch (err) {
         console.error('[places-map] failed to load POI', err);
@@ -564,7 +610,17 @@ function MapBody({
         <AdvancedMarker
           key={`hit-${hit.placeId}`}
           position={{ lat: hit.lat, lng: hit.lng }}
-          onClick={() => void loadPoi(hit.placeId)}
+          // Seed from the hit we already have so the popup shows the name +
+          // rating with no "Loading…" while details enrich in the background.
+          onClick={() =>
+            void loadPoi(hit.placeId, {
+              lat: hit.lat,
+              lng: hit.lng,
+              name: hit.name,
+              rating: hit.rating,
+              category: hit.category,
+            })
+          }
         >
           <div
             className={cn(
