@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { ArrowRight, UserPlus } from 'lucide-react';
+import { ArrowRight, UserPlus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@trip-flow/ui/components/button';
 import { Modal } from '@trip-flow/ui/components/modal';
@@ -24,6 +24,11 @@ export function JoinTripDialog({ open, onOpenChange, onJoined }: JoinTripDialogP
     setCode('');
     setError(null);
     setSubmitting(false);
+  }
+
+  function handleClose() {
+    reset();
+    onOpenChange(false);
   }
 
   async function submit() {
@@ -57,26 +62,43 @@ export function JoinTripDialog({ open, onOpenChange, onJoined }: JoinTripDialogP
       }}
       title={t('trips.joinTrip')}
       hideHeader
-      className="overflow-hidden"
+      dismissable={false}
     >
-      <form onSubmit={handleSubmit} className="flex flex-col">
-        {/* Header */}
-        <div className="flex flex-col items-center gap-3 px-5 pb-5 pt-2 text-center sm:px-6 sm:pb-6">
-          <div className="bg-tertiary text-tertiary-foreground flex h-12 w-12 items-center justify-center rounded-full">
-            <UserPlus className="h-5 w-5" strokeWidth={1.75} />
+      {/* Custom header — mirrors CreateTripDialog: icon tile + title/subtitle on
+          the modal surface, with its own close button (hideHeader drops the
+          default chrome). Tertiary accent distinguishes "join" from "create". */}
+      <div className="relative px-5 pb-4 pt-5 sm:px-6">
+        <button
+          type="button"
+          onClick={handleClose}
+          aria-label="Close"
+          className="text-muted-foreground hover:bg-muted hover:text-foreground absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors sm:right-5"
+        >
+          <X className="h-4 w-4" strokeWidth={2} />
+        </button>
+        <div className="flex items-center gap-3.5">
+          <div className="bg-tertiary text-tertiary-foreground flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl shadow-sm">
+            <UserPlus className="h-5 w-5" strokeWidth={2} />
           </div>
-          <h2 className="font-headline text-foreground text-lg font-bold sm:text-xl">
-            {t('trips.joinTrip')}
-          </h2>
-          <p className="text-muted-foreground max-w-xs text-sm leading-relaxed">
-            {t('trips.joinTripDesc', { count: CODE_LENGTH })}
-          </p>
+          <div className="space-y-0.5">
+            <h2 className="font-headline text-foreground text-lg font-bold sm:text-xl">
+              {t('trips.joinTrip')}
+            </h2>
+            <p className="text-muted-foreground text-xs sm:text-sm">
+              {t('trips.joinTripDesc', { count: CODE_LENGTH })}
+            </p>
+          </div>
         </div>
+      </div>
 
-        <div className="border-border border-t" />
-
-        {/* Code slots */}
-        <div className="px-5 py-5 sm:px-6 sm:py-6">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-5 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-1 sm:px-6 sm:pb-6"
+      >
+        <div className="space-y-1.5">
+          <span className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
+            {t('trips.inviteCode')}
+          </span>
           <OtpInput
             length={CODE_LENGTH}
             value={code}
@@ -85,38 +107,26 @@ export function JoinTripDialog({ open, onOpenChange, onJoined }: JoinTripDialogP
             autoFocus
             disabled={submitting}
           />
-
-          {error && (
-            <p className="bg-destructive/10 text-destructive mt-4 rounded-md p-3 text-sm">
-              {error}
-            </p>
-          )}
         </div>
 
-        {/* Actions */}
-        <div className="space-y-2 px-5 pb-5 sm:px-6 sm:pb-6">
-          <Button
-            type="submit"
-            disabled={submitting || code.length !== CODE_LENGTH}
-            className="h-11 w-full gap-2"
-          >
-            {submitting ? t('trips.joining') : t('trips.joinTrip')}
-            {!submitting && <ArrowRight className="h-4 w-4" strokeWidth={2} />}
-          </Button>
-          <Button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            className="bg-tertiary text-tertiary-foreground hover:bg-tertiary/80 h-11 w-full"
-          >
-            {t('common.cancel')}
-          </Button>
-        </div>
+        {error && (
+          <p className="bg-destructive/10 text-destructive rounded-lg p-3 text-sm">{error}</p>
+        )}
 
-        {/* Footer */}
-        <div className="bg-muted/50 border-border text-muted-foreground border-t px-5 py-4 text-center text-sm sm:px-6">
+        <Button
+          type="submit"
+          disabled={submitting || code.length !== CODE_LENGTH}
+          className="h-12 w-full gap-2"
+        >
+          {!submitting && <ArrowRight className="h-5 w-5" strokeWidth={2} />}
+          {submitting ? t('trips.joining') : t('trips.joinTrip')}
+        </Button>
+
+        {/* Help hint — kept from the previous design. */}
+        <p className="text-muted-foreground text-center text-sm">
           {t('trips.dontHaveCode')}{' '}
           <span className="text-foreground font-medium">{t('trips.askFriend')}</span>
-        </div>
+        </p>
       </form>
     </Modal>
   );

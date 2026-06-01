@@ -8,11 +8,21 @@ export { useTrips, useTrip } from '@/hooks/useTrips';
 export type { TripSummary, CreateTripPayload, TripDetail, TripMemberProfile } from '@/types/trips';
 
 // * Format
-export { deriveTripStatus, formatDateRange, coverImageUrl, getInitials } from '@/utils/trips';
-export type { TripStatus, DateRangeDisplay } from '@/utils/trips';
+export {
+  deriveTripStatus,
+  formatDateRange,
+  coverImageUrl,
+  getInitials,
+  filterAndSortTrips,
+  groupTripsByTime,
+} from '@/utils/trips';
+export type { TripStatus, DateRangeDisplay, TripFilter, TripSort } from '@/utils/trips';
 
 // * Components
 export { TripCard } from './TripCard';
+export { TripStatusBadge } from './TripStatusBadge';
+export { TripsToolbar } from './TripsToolbar';
+export { TripsEmptyState } from './TripsEmptyState';
 export { TripListSkeleton } from './TripListSkeleton';
 export { StartJourneyCard } from './StartJourneyCard';
 export { CreateTripDialog } from './CreateTripDialog';
