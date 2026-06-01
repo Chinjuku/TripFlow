@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import {
   DndContext,
   DragOverlay,
@@ -15,17 +15,22 @@ import { TripPageHeader } from '@/components/shared/TripPageHeader';
 import { useTrip } from '@/components/feat/trips';
 import { useTripPlaces, type TripPlace } from '@/components/feat/places';
 import { useTranslation } from 'react-i18next';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import {
   addSchedule,
+  AddPlaceSheet,
   buildDays,
   DayTabsScroller,
   DedupeConfirmModal,
   DEFAULT_DURATION,
   DraggablePlace,
   DuplicateModeToggle,
+  EditEventSheet,
+  MobileTimeline,
   PlacePill,
   removeSchedule,
   RouteFlowCard,
+  TappablePlace,
   Timeline,
   updateSchedule,
   useSchedule,
@@ -81,6 +86,10 @@ export default function TripSchedulePage() {
   const [pendingResizeIds, setPendingResizeIds] = useState<Set<string>>(() => new Set());
   const [allowDuplicates, setAllowDuplicates] = useState(false);
   const [pendingDedupe, setPendingDedupe] = useState<ScheduleItem[] | null>(null);
+
+  const isMobile = useMediaQuery('(max-width: 639px)');
+  const [pickPlace, setPickPlace] = useState<TripPlace | null>(null);
+  const [editEvent, setEditEvent] = useState<ScheduleItem | null>(null);
 
   const placesById = useMemo(() => {
     const map = new Map<string, TripPlace>();
@@ -206,6 +215,47 @@ export default function TripSchedulePage() {
     }
   }
 
+  async function handleAddFromSheet(input: { startMinute: number; durationMinutes: number }) {
+    if (!id || !pickPlace) return;
+    try {
+      const created = await addSchedule(id, {
+        tripPlaceId: pickPlace.id,
+        dayIndex: activeDay,
+        startMinute: input.startMinute,
+        durationMinutes: input.durationMinutes,
+      });
+      mutate((prev) => [...(prev ?? []), created]);
+      setPickPlace(null);
+    } catch (err) {
+      console.error('[schedule] add from sheet failed', err);
+    }
+  }
+
+  async function handleSaveFromSheet(input: { startMinute: number; durationMinutes: number }) {
+    if (!id || !editEvent) return;
+    try {
+      const updated = await updateSchedule(id, editEvent.id, {
+        startMinute: input.startMinute,
+        durationMinutes: input.durationMinutes,
+      });
+      mutate((prev) => (prev ?? []).map((s) => (s.id === editEvent.id ? updated : s)));
+      setEditEvent(null);
+    } catch (err) {
+      console.error('[schedule] save from sheet failed', err);
+    }
+  }
+
+  async function handleRemoveFromSheet() {
+    if (!id || !editEvent) return;
+    try {
+      await removeSchedule(id, editEvent.id);
+      mutate((prev) => (prev ?? []).filter((s) => s.id !== editEvent.id));
+      setEditEvent(null);
+    } catch (err) {
+      console.error('[schedule] remove from sheet failed', err);
+    }
+  }
+
   async function handleRemove(scheduleId: string) {
     if (!id) return;
     try {
@@ -289,6 +339,145 @@ export default function TripSchedulePage() {
 
   const activeDayMeta = days[activeDay];
 
+  const dayLabel = activeDayMeta
+    ? `${activeDayMeta.date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} (${activeDayMeta.label})`
+    : t('schedule.dayFallback', 'Day');
+
+  const content = (
+    <div className="mx-auto flex max-w-6xl flex-col gap-4 px-3 sm:gap-6 sm:px-4 lg:px-0">
+      <TripPageHeader
+        backTo={`/trips/${id}`}
+        backLabel={t('overview.tripOverview')}
+        title={t('schedule.title', 'Trip Schedule')}
+        subtitle={
+          isMobile
+            ? t('schedule.subtitleMobile', 'Tap places below to add them to your day.')
+            : t(
+                'schedule.subtitle',
+                'Drag voted places onto the timeline to build each day.',
+              )
+        }
+        withBorder
+      />
+
+      <DayTabsScroller days={days} activeDay={activeDay} onSelect={handleSelectDay} />
+
+      {error && (
+        <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border p-4 text-sm">
+          {error.message}
+        </div>
+      )}
+
+      <RouteFlowCard items={itemsForDay} />
+
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="border-border bg-card rounded-2xl border p-3 sm:p-5">
+          <div className="border-border mb-4 border-b pb-3">
+            <h2 className="text-foreground font-headline text-base font-bold sm:text-lg">
+              {dayLabel}
+            </h2>
+          </div>
+
+          {isLoading && schedule === null ? (
+            <Skeleton className="h-[28rem] w-full" />
+          ) : isMobile ? (
+            <MobileTimeline items={itemsForDay} onSelect={setEditEvent} />
+          ) : (
+            <Timeline
+              items={itemsForDay}
+              onRemove={handleRemove}
+              onResize={handleResize}
+              ghost={dragging?.kind === 'new' ? dragging : null}
+              dragPreview={dragging ? dragPreview : null}
+              pendingResizeIds={pendingResizeIds}
+              timelineRef={(el) => {
+                timelineElRef.current = el;
+              }}
+            />
+          )}
+        </div>
+
+        <aside className="border-border bg-card rounded-2xl border p-3 sm:p-5 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto">
+          <div className="border-border mb-3 flex items-center justify-between gap-2 border-b pb-3">
+            <h3 className="text-foreground font-headline text-sm font-bold sm:text-base">
+              {t('schedule.topVotedPlaces', 'Top Voted Places')}
+            </h3>
+            <span className="bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold">
+              {t('schedule.itemsCount', '{{count}} items', { count: topVotedForDay.length })}
+            </span>
+          </div>
+
+          <DuplicateModeToggle value={allowDuplicates} onChange={handleModeChange} />
+
+          <p className="text-muted-foreground mb-4 mt-3 text-xs">
+            {allowDuplicates
+              ? t(
+                  'schedule.allowDuplicatesOn',
+                  'A place can repeat across days — handy for daily stops.',
+                )
+              : t(
+                  'schedule.allowDuplicatesOff',
+                  'Each place appears once across the whole trip.',
+                )}
+          </p>
+
+          {topVotedForDay.length === 0 ? (
+            <p className="text-muted-foreground text-sm">
+              {t('schedule.noMoreCandidates', 'No more candidates left to schedule.')}
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-1">
+              {topVotedForDay.slice(0, 8).map((p) =>
+                isMobile ? (
+                  <TappablePlace key={p.id} onSelect={() => setPickPlace(p)}>
+                    <PlacePill place={p} />
+                  </TappablePlace>
+                ) : (
+                  <DraggablePlace key={p.id} place={p} />
+                ),
+              )}
+            </div>
+          )}
+        </aside>
+      </div>
+    </div>
+  );
+
+  const sheets = (
+    <>
+      <DedupeConfirmModal
+        rows={pendingDedupe}
+        onCancel={() => setPendingDedupe(null)}
+        onConfirm={confirmDedupe}
+      />
+      <AddPlaceSheet
+        open={pickPlace !== null}
+        place={pickPlace}
+        dayLabel={dayLabel}
+        daySchedule={itemsForDay}
+        onCancel={() => setPickPlace(null)}
+        onConfirm={handleAddFromSheet}
+      />
+      <EditEventSheet
+        open={editEvent !== null}
+        event={editEvent}
+        daySchedule={itemsForDay}
+        onCancel={() => setEditEvent(null)}
+        onSave={handleSaveFromSheet}
+        onRemove={handleRemoveFromSheet}
+      />
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <>
+        {content}
+        {sheets}
+      </>
+    );
+  }
+
   return (
     <DndContext
       sensors={sensors}
@@ -301,93 +490,7 @@ export default function TripSchedulePage() {
       }}
       autoScroll={{ threshold: { x: 0, y: 0.2 }, acceleration: 12 }}
     >
-      <div className="mx-auto flex max-w-6xl flex-col gap-6">
-        <TripPageHeader
-          backTo={`/trips/${id}`}
-          backLabel={t('overview.tripOverview')}
-          title={t('schedule.title', 'Trip Schedule')}
-          subtitle={t(
-            'schedule.subtitle',
-            'Drag voted places onto the timeline to build each day.',
-          )}
-          withBorder
-        />
-
-        <DayTabsScroller days={days} activeDay={activeDay} onSelect={handleSelectDay} />
-
-        {error && (
-          <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border p-4 text-sm">
-            {error.message}
-          </div>
-        )}
-
-        <RouteFlowCard items={itemsForDay} />
-
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-          <div className="border-border bg-card rounded-2xl border p-5">
-            <div className="border-border mb-4 border-b pb-3">
-              <h2 className="text-foreground font-headline text-lg font-bold">
-                {activeDayMeta
-                  ? `${activeDayMeta.date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} (${activeDayMeta.label})`
-                  : t('schedule.dayFallback', 'Day')}
-              </h2>
-            </div>
-
-            {isLoading && schedule === null ? (
-              <Skeleton className="h-[28rem] w-full" />
-            ) : (
-              <Timeline
-                items={itemsForDay}
-                onRemove={handleRemove}
-                onResize={handleResize}
-                ghost={dragging?.kind === 'new' ? dragging : null}
-                dragPreview={dragging ? dragPreview : null}
-                pendingResizeIds={pendingResizeIds}
-                timelineRef={(el) => {
-                  timelineElRef.current = el;
-                }}
-              />
-            )}
-          </div>
-
-          <aside className="border-border bg-card rounded-2xl border p-5 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto">
-            <div className="border-border mb-3 flex items-center justify-between gap-2 border-b pb-3">
-              <h3 className="text-foreground font-headline text-base font-bold">
-                {t('schedule.topVotedPlaces', 'Top Voted Places')}
-              </h3>
-              <span className="bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold">
-                {t('schedule.itemsCount', '{{count}} items', { count: topVotedForDay.length })}
-              </span>
-            </div>
-
-            <DuplicateModeToggle value={allowDuplicates} onChange={handleModeChange} />
-
-            <p className="text-muted-foreground mb-4 mt-3 text-xs">
-              {allowDuplicates
-                ? t(
-                    'schedule.allowDuplicatesOn',
-                    'A place can repeat across days — handy for daily stops.',
-                  )
-                : t(
-                    'schedule.allowDuplicatesOff',
-                    'Each place appears once across the whole trip.',
-                  )}
-            </p>
-
-            {topVotedForDay.length === 0 ? (
-              <p className="text-muted-foreground text-sm">
-                {t('schedule.noMoreCandidates', 'No more candidates left to schedule.')}
-              </p>
-            ) : (
-              <div className="space-y-2.5">
-                {topVotedForDay.slice(0, 8).map((p) => (
-                  <DraggablePlace key={p.id} place={p} />
-                ))}
-              </div>
-            )}
-          </aside>
-        </div>
-      </div>
+      {content}
 
       <DragOverlay>
         {dragging?.kind === 'new' && placesById.get(dragging.tripPlaceId) ? (
@@ -399,11 +502,7 @@ export default function TripSchedulePage() {
         ) : null}
       </DragOverlay>
 
-      <DedupeConfirmModal
-        rows={pendingDedupe}
-        onCancel={() => setPendingDedupe(null)}
-        onConfirm={confirmDedupe}
-      />
+      {sheets}
     </DndContext>
   );
 }

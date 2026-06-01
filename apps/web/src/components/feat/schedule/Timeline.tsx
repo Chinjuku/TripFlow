@@ -43,14 +43,14 @@ export function Timeline({
   return (
     <div
       ref={composedRef}
-      className={cn('relative ml-12 transition-colors', isOver && 'bg-primary/5 rounded-lg')}
+      className={cn('relative ml-10 transition-colors sm:ml-12', isOver && 'bg-primary/5 rounded-lg')}
       style={{ height: TIMELINE_HEIGHT_PX }}
     >
       {hourLines.map((h, idx) => {
         const top = idx * HOUR_HEIGHT_PX;
         return (
           <div key={h} className="absolute inset-x-0 flex items-start" style={{ top }}>
-            <span className="text-muted-foreground absolute -left-12 -translate-y-1/2 text-xs tabular-nums">
+            <span className="text-muted-foreground absolute -left-10 -translate-y-1/2 text-[0.65rem] tabular-nums sm:-left-12 sm:text-xs">
               {String(h).padStart(2, '0')}:00
             </span>
             <div className="border-border/60 w-full border-t" />
