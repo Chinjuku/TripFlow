@@ -74,7 +74,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         localStorage.removeItem('tf_user');
       } catch {}
-      window.location.href = '/login';
+      window.location.href = '/auth';
     }
   }, []);
 

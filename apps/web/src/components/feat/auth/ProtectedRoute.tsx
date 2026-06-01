@@ -14,7 +14,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   if (isLoading) return <AppShellSkeleton />;
   if (!isAuthenticated) {
     const target = encodeURIComponent(location.pathname + location.search);
-    return <Navigate to={`/login?redirectTo=${target}`} replace />;
+    return <Navigate to={`/auth?redirectTo=${target}`} replace />;
   }
 
   return <>{children}</>;

@@ -8,7 +8,7 @@ const HERO_COORDINATES = {
   bottomRight: '18.7883° N · 98.9853° E',
 } as const;
 
-export function LoginHeroPanel() {
+export function AuthHeroPanel() {
   const { t } = useTranslation();
 
   const steps = [
