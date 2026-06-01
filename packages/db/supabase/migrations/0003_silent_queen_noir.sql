@@ -8,6 +8,5 @@ CREATE TABLE "users" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "trips" ALTER COLUMN "is_debt_optimized" SET DEFAULT true;--> statement-breakpoint
 CREATE UNIQUE INDEX "users_google_sub_uq" ON "users" USING btree ("google_sub");--> statement-breakpoint
 CREATE UNIQUE INDEX "users_email_uq" ON "users" USING btree ("email");

@@ -7,6 +7,7 @@ import { Label } from '@trip-flow/ui/components/label';
 import { DatePicker } from '@trip-flow/ui/components/date-picker';
 import { Modal } from '@trip-flow/ui/components/modal';
 import { createTrip } from '@/components/feat/trips';
+import { DestinationPicker, type DestinationValue } from './DestinationPicker';
 
 interface CreateTripDialogProps {
   open: boolean;
@@ -18,6 +19,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDialogProps) {
   const [title, setTitle] = useState('');
+  const [destination, setDestination] = useState<DestinationValue | null>(null);
   const [tripMode, setTripMode] = useState<'multi' | 'single'>('multi');
   const [startsOn, setStartsOn] = useState<Date | undefined>(undefined);
   const [endsOn, setEndsOn] = useState<Date | undefined>(undefined);
@@ -32,6 +34,7 @@ export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDi
 
   function reset() {
     setTitle('');
+    setDestination(null);
     setTripMode('multi');
     setStartsOn(undefined);
     setEndsOn(undefined);
@@ -62,10 +65,15 @@ export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDi
     setSubmitting(true);
     setError(null);
     try {
+      const hasCoords =
+        destination && Number.isFinite(destination.lat) && Number.isFinite(destination.lng);
       await createTrip({
         title: title.trim(),
         startsOn: startsOn.toISOString(),
         endsOn: endsOn.toISOString(),
+        destinationName: destination?.name ?? null,
+        centerLat: hasCoords ? destination.lat : null,
+        centerLng: hasCoords ? destination.lng : null,
       });
       reset();
       onCreated();
@@ -103,6 +111,20 @@ export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDi
               className="pl-10"
             />
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="trip-destination">
+            {t('trips.destination', 'จุดหมายปลายทาง')}
+            <span className="text-muted-foreground ml-1 text-xs font-normal">
+              {t('trips.optional', '(ไม่บังคับ)')}
+            </span>
+          </Label>
+          <DestinationPicker
+            value={destination}
+            onChange={setDestination}
+            placeholder={t('trips.destinationPlaceholder', 'เช่น เชียงใหม่, ภูเก็ต')}
+          />
         </div>
 
         {/* Trip Mode Toggle (Multi-day vs One-day) */}

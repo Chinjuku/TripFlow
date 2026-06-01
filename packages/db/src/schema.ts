@@ -53,6 +53,14 @@ export const trips = pgTable(
     title: text('title').notNull(),
     starts_on: timestamp('starts_on', { withTimezone: true, mode: 'string' }).notNull(),
     ends_on: timestamp('ends_on', { withTimezone: true, mode: 'string' }).notNull(),
+    /**
+     * Optional destination chosen at create time (city / province). Drives the
+     * initial map centre and biases place search on the plan page. Nullable so
+     * trips created before this column existed keep working.
+     */
+    destination_name: text('destination_name'),
+    center_lat: doublePrecision('center_lat'),
+    center_lng: doublePrecision('center_lng'),
     invite_code: text('invite_code').notNull(),
     is_debt_optimized: boolean('is_debt_optimized').default(true).notNull(),
     created_at: timestamp('created_at', { withTimezone: true, mode: 'string' })
