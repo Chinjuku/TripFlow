@@ -5,6 +5,7 @@ import {
   ProfileCard,
   AppearanceCard,
   PaymentDetailsCard,
+  NotificationsCard,
   SettingsTabs,
   useSettingsTab,
 } from '@/components/feat/settings';
@@ -54,6 +55,7 @@ export default function SettingsPage() {
           {activeTab === 'profile' && <ProfileCard />}
           {activeTab === 'appearance' && <AppearanceCard />}
           {activeTab === 'payment' && <PaymentDetailsCard />}
+          {activeTab === 'notifications' && <NotificationsCard />}
         </div>
       </div>
     </div>

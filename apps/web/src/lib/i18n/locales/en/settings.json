@@ -4,7 +4,22 @@
   "tabs": {
     "profile": "Profile",
     "appearance": "Appearance",
-    "payment": "Payment"
+    "payment": "Payment",
+    "notifications": "Notifications"
+  },
+  "signOut": "Sign out",
+  "signOutDesc": "Sign out of TripFlow on this device.",
+  "notifications": "Notifications",
+  "notificationsDesc": "Choose what TripFlow notifies you about.",
+  "notif": {
+    "settlements": "Settlement reminders",
+    "settlementsDesc": "When someone requests or confirms a repayment.",
+    "expenses": "New expenses",
+    "expensesDesc": "When an expense is added to a trip you're in.",
+    "memberJoined": "New trip members",
+    "memberJoinedDesc": "When someone joins a trip you're in.",
+    "placeAdded": "New places",
+    "placeAddedDesc": "When someone adds a place to a trip you're in."
   },
   "appearance": "Appearance",
   "appearanceDesc": "Choose how TripFlow looks.",

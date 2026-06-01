@@ -1,13 +1,14 @@
 import { useSearchParams } from 'react-router-dom';
-import { User, Palette, CreditCard } from 'lucide-react';
+import { User, Palette, CreditCard, Bell } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-export type SettingsTab = 'profile' | 'appearance' | 'payment';
+export type SettingsTab = 'profile' | 'appearance' | 'payment' | 'notifications';
 
 const TABS: { id: SettingsTab; icon: React.ElementType }[] = [
   { id: 'profile', icon: User },
   { id: 'appearance', icon: Palette },
   { id: 'payment', icon: CreditCard },
+  { id: 'notifications', icon: Bell },
 ];
 
 export function useSettingsTab(): [SettingsTab, (tab: SettingsTab) => void] {
