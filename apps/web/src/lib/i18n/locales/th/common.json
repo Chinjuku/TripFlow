@@ -26,6 +26,8 @@
   "createdBy": "สร้างโดย",
   "days": "{{count}} วัน",
   "days_other": "{{count}} วัน",
+  "dayUnit": "วัน",
+  "dayUnit_other": "วัน",
   "members": "{{count}} คน",
   "members_other": "{{count}} คน",
   "travellers": "{{count}} นักเดินทาง",

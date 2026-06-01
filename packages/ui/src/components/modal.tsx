@@ -13,6 +13,13 @@ export interface ModalProps {
   description?: string;
   /** Hide the rendered header chrome (close button, title, description). */
   hideHeader?: boolean;
+  /**
+   * When false, backdrop clicks and ESC don't close the dialog — only an
+   * explicit close control (e.g. an X button) can. Defaults to true.
+   * Use for forms where an accidental outside-click would lose input, or when
+   * the dialog hosts portalled popovers whose clicks can look like backdrop hits.
+   */
+  dismissable?: boolean;
   children: ReactNode;
   className?: string;
 }
@@ -32,6 +39,7 @@ export function Modal({
   title,
   description,
   hideHeader,
+  dismissable = true,
   children,
   className,
 }: ModalProps) {
@@ -49,8 +57,12 @@ export function Modal({
       ref={ref}
       aria-labelledby="modal-title"
       onClose={() => onOpenChange(false)}
+      // The native <dialog> fires `cancel` on ESC; block it when not dismissable.
+      onCancel={(e) => {
+        if (!dismissable) e.preventDefault();
+      }}
       onClick={(e) => {
-        if (e.target === ref.current) onOpenChange(false);
+        if (dismissable && e.target === ref.current) onOpenChange(false);
       }}
       className={cn(
         'bg-card text-card-foreground p-0 shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm border-none outline-none',
