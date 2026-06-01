@@ -22,27 +22,54 @@ export function useSettingsTab(): [SettingsTab, (tab: SettingsTab) => void] {
   return [active, setTab];
 }
 
-export function SettingsTabs() {
+interface SettingsTabsProps {
+  /**
+   * `horizontal` — pill row (mobile, stacked above content).
+   * `vertical` — stacked nav for the desktop sidebar (left of content).
+   */
+  orientation?: 'horizontal' | 'vertical';
+}
+
+export function SettingsTabs({ orientation = 'horizontal' }: SettingsTabsProps) {
   const { t } = useTranslation();
   const [active, setTab] = useSettingsTab();
+  const vertical = orientation === 'vertical';
 
   return (
-    <div className="flex gap-1 rounded-xl border border-border bg-muted/50 p-1">
+    <div
+      role="tablist"
+      aria-orientation={orientation}
+      className={
+        vertical
+          ? 'flex flex-col gap-1 rounded-2xl border border-border bg-card p-2 shadow-sm'
+          : 'flex gap-1 rounded-xl border border-border bg-muted/50 p-1'
+      }
+    >
       {TABS.map(({ id, icon: Icon }) => {
         const isActive = id === active;
         return (
           <button
             key={id}
             type="button"
+            role="tab"
+            aria-selected={isActive}
             onClick={() => setTab(id)}
-            className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
-              isActive
-                ? 'bg-background text-foreground shadow-sm border border-border/40'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted/30'
-            }`}
+            className={
+              vertical
+                ? `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+                    isActive
+                      ? 'bg-muted text-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                  }`
+                : `flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
+                    isActive
+                      ? 'bg-background text-foreground shadow-sm border border-border/40'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/30'
+                  }`
+            }
           >
             <Icon className="h-4 w-4 shrink-0" strokeWidth={1.75} />
-            <span className="hidden sm:inline">{t(`settings.tabs.${id}`)}</span>
+            <span className={vertical ? '' : 'hidden sm:inline'}>{t(`settings.tabs.${id}`)}</span>
           </button>
         );
       })}
