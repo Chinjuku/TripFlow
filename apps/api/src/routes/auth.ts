@@ -27,6 +27,8 @@ export const authRoute = new Elysia({ prefix: '/auth' })
   .get('/callback', handleCallback, {
     query: t.Object({
       code: t.Optional(t.String()),
+      state: t.Optional(t.String()),
+      error: t.Optional(t.String()),
     }),
   })
 

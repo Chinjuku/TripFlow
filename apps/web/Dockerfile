@@ -3,9 +3,8 @@
 # Build context MUST be the monorepo root.
 #
 #   docker build -f apps/web/Dockerfile \
-#     --build-arg VITE_SUPABASE_URL=... \
-#     --build-arg VITE_SUPABASE_ANON_KEY=... \
 #     --build-arg VITE_API_URL=... \
+#     --build-arg VITE_GOOGLE_MAPS_API_KEY=... \
 #     -t trip-flow-web .
 
 ARG BUN_VERSION=1.3.14
@@ -38,12 +37,10 @@ CMD ["bun", "run", "vite", "--host", "0.0.0.0", "--port", "5173"]
 # ---------- builder: Vite production build ----------
 FROM deps AS builder
 # VITE_* values are baked into the static bundle at build time.
-ARG VITE_SUPABASE_URL
-ARG VITE_SUPABASE_ANON_KEY
 ARG VITE_API_URL
-ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL \
-    VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY \
-    VITE_API_URL=$VITE_API_URL \
+ARG VITE_GOOGLE_MAPS_API_KEY
+ENV VITE_API_URL=$VITE_API_URL \
+    VITE_GOOGLE_MAPS_API_KEY=$VITE_GOOGLE_MAPS_API_KEY \
     NODE_ENV=production
 COPY tsconfig.json ./
 COPY packages packages

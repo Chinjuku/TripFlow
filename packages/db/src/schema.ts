@@ -13,8 +13,36 @@ import {
 import { sql } from 'drizzle-orm';
 
 /**
+ * Application users. This is our own identity store (we no longer rely on
+ * Supabase Auth). A row is created/updated on each Google sign-in keyed by
+ * `google_sub` (Google's stable account identifier). `id` is the UUID every
+ * other table references as the user FK.
+ */
+export const users = pgTable(
+  'users',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    /** Google's `sub` claim — stable per Google account, the login key. */
+    google_sub: text('google_sub').notNull(),
+    email: text('email').notNull(),
+    name: text('name').notNull(),
+    avatar_url: text('avatar_url'),
+    created_at: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .notNull()
+      .default(sql`now()`),
+    updated_at: timestamp('updated_at', { withTimezone: true, mode: 'string' })
+      .notNull()
+      .default(sql`now()`),
+  },
+  (table) => ({
+    googleSubUq: uniqueIndex('users_google_sub_uq').on(table.google_sub),
+    emailUq: uniqueIndex('users_email_uq').on(table.email),
+  }),
+);
+
+/**
  * A trip is the top-level workspace a group plans together.
- * `owner_id` mirrors `auth.users.id` (we don't define Supabase's auth schema here).
+ * `owner_id` references `users.id`.
  * `invite_code` lets new members join with a short shareable string.
  */
 export const trips = pgTable(
@@ -174,7 +202,7 @@ export const expenses = pgTable(
       .references(() => trips.id, { onDelete: 'cascade' }),
     description: text('description').notNull(), // Merchant or description
     amount: doublePrecision('amount').notNull(),
-    paid_by_id: uuid('paid_by_id').notNull(), // Mirrors auth.users.id (Supabase Auth)
+    paid_by_id: uuid('paid_by_id').notNull(), // References users.id
     category: text('category', { enum: ['food', 'transport', 'activity', 'lodging', 'other'] })
       .notNull()
       .default('other'),
@@ -202,7 +230,7 @@ export const expenseSplits = pgTable(
     expense_id: uuid('expense_id')
       .notNull()
       .references(() => expenses.id, { onDelete: 'cascade' }),
-    user_id: uuid('user_id').notNull(), // Mirrors auth.users.id (Supabase Auth)
+    user_id: uuid('user_id').notNull(), // References users.id
     amount: doublePrecision('amount').notNull(),
     item_paid: text('item_paid'), // Optional: name of the specific item/menu ordered (e.g., "Pad Thai")
     created_at: timestamp('created_at', { withTimezone: true, mode: 'string' })
@@ -222,8 +250,8 @@ export const settlements = pgTable(
     trip_id: uuid('trip_id')
       .notNull()
       .references(() => trips.id, { onDelete: 'cascade' }),
-    payer_id: uuid('payer_id').notNull(), // Mirrors auth.users.id (Supabase Auth)
-    payee_id: uuid('payee_id').notNull(), // Mirrors auth.users.id (Supabase Auth)
+    payer_id: uuid('payer_id').notNull(), // References users.id
+    payee_id: uuid('payee_id').notNull(), // References users.id
     amount: doublePrecision('amount').notNull(),
     status: text('status', { enum: ['pending', 'completed'] })
       .notNull()
@@ -267,7 +295,7 @@ export const userPaymentDetails = pgTable(
   'user_payment_details',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    user_id: uuid('user_id').notNull(), // Mirrors auth.users.id (Supabase Auth)
+    user_id: uuid('user_id').notNull(), // References users.id
     promptpay_id: text('promptpay_id'), // Phone number or National ID for dynamic PromptPay QR generation
     qr_code_url: text('qr_code_url'), // Static PromptPay QR Code picture URL
     bank_name: text('bank_name'), // Optional e.g. KBANK, SCB
@@ -287,6 +315,8 @@ export const userPaymentDetails = pgTable(
   }),
 );
 
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
 export type Trip = typeof trips.$inferSelect;
 export type NewTrip = typeof trips.$inferInsert;
 export type TripMember = typeof tripMembers.$inferSelect;

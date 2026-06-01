@@ -1,9 +1,9 @@
 /**
  * JWT signing and verification using the `jose` library.
  *
- * We issue our own JWTs (independent of Supabase's tokens) so that the
- * frontend is fully decoupled from Supabase. The JWT secret is loaded
- * from the environment at module initialisation.
+ * We issue our own JWTs: a Google sign-in is exchanged for an app session
+ * cookie carrying one of these. The JWT secret is loaded from the
+ * environment at module initialisation.
  */
 
 import { SignJWT, jwtVerify, errors as joseErrors } from 'jose';
@@ -23,7 +23,7 @@ const DEFAULT_EXPIRY = '7d';
  * Claims embedded in every TripFlow JWT.
  */
 export interface JwtPayload {
-  /** Supabase user ID (auth.users.id). */
+  /** Our internal user id (users.id). */
   sub: string;
   email: string;
   name: string;
