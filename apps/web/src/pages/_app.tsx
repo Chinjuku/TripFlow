@@ -2,7 +2,7 @@
  * Root application shell.
  *
  * Layout strategy:
- *   /login                  → no chrome, page renders full-screen
+ *   /auth                   → no chrome, page renders full-screen
  *   /trips/[id]/*           → TripLayout via pages/trips/[id]/_layout.tsx
  *   everything else         → GlobalLayout (topbar only, no sidebar)
  */
@@ -14,7 +14,7 @@ import { PublicRoute } from '@/components/feat/auth/PublicRoute';
 import { ThemeProvider } from '@/components/shared/ThemeProvider';
 import { GlobalLayout } from '@/components/shared/GlobalLayout';
 
-const PUBLIC_PATHS = ['/login'] as const;
+const PUBLIC_PATHS = ['/auth'] as const;
 const TRIP_DETAIL_PATTERN = '/trips/:id/*';
 
 function isPublicPath(pathname: string): boolean {

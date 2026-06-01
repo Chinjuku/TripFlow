@@ -96,7 +96,7 @@ export async function handleCallback({ query, cookie, redirect }: Context): Prom
   const fail = (reason: string) => {
     const params = new URLSearchParams({ error: reason });
     if (redirectTo) params.set('redirectTo', redirectTo);
-    return redirect(`${env.webUrl}/login?${params.toString()}`);
+    return redirect(`${env.webUrl}/auth?${params.toString()}`);
   };
 
   if (!code || !codeVerifier) return fail('missing_code');

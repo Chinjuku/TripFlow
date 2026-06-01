@@ -5,7 +5,7 @@ import { SpinningCompass } from '@/components/ui/SpinningCompass';
 import { useGoogleSignIn } from '@/hooks/useGoogleSignIn';
 import { GoogleIcon } from './GoogleIcon';
 
-export function LoginSignInPanel() {
+export function AuthSignInPanel() {
   const { signingIn, signIn } = useGoogleSignIn();
   const { t } = useTranslation();
 
