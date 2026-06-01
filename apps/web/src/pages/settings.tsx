@@ -15,7 +15,7 @@ export default function SettingsPage() {
   const [activeTab] = useSettingsTab();
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-3xl space-y-6 duration-500 ease-out">
+    <div className="animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-5xl space-y-6 duration-500 ease-out">
       <div className="space-y-1">
         <button
           onClick={() => navigate(-1)}
@@ -34,12 +34,27 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <SettingsTabs />
+      {/* Desktop: floating sidebar card (left) + content (right).
+          Mobile: horizontal pill tabs stacked above content. */}
+      <div className="md:grid md:grid-cols-[14rem_minmax(0,1fr)] md:gap-6 md:items-start">
+        {/* Mobile tabs */}
+        <div className="mb-6 md:hidden">
+          <SettingsTabs orientation="horizontal" />
+        </div>
 
-      <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-        {activeTab === 'profile' && <ProfileCard />}
-        {activeTab === 'appearance' && <AppearanceCard />}
-        {activeTab === 'payment' && <PaymentDetailsCard />}
+        {/* Desktop floating sidebar — sticky so it follows on scroll. */}
+        <aside className="hidden md:block md:sticky md:top-6">
+          <SettingsTabs orientation="vertical" />
+        </aside>
+
+        <div
+          key={activeTab}
+          className="animate-in fade-in slide-in-from-bottom-2 duration-300"
+        >
+          {activeTab === 'profile' && <ProfileCard />}
+          {activeTab === 'appearance' && <AppearanceCard />}
+          {activeTab === 'payment' && <PaymentDetailsCard />}
+        </div>
       </div>
     </div>
   );
