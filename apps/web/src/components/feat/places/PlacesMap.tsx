@@ -44,6 +44,12 @@ interface PlacesMapProps {
   onPinHover: (placeId: string | null) => void;
   /** Fires when the user clicks "Add" inside a POI preview. Caller persists it. */
   onAddPoi: (poi: PoiPreview) => Promise<void> | void;
+  /**
+   * Trip's chosen destination centre (city / province) from create time.
+   * Used as the initial map centre and the search bias fallback when no
+   * places are picked yet. Null for trips created before destinations existed.
+   */
+  center?: { lat: number; lng: number } | null;
 }
 
 export interface PoiPreview {
@@ -118,11 +124,15 @@ function PlacesMapInner(props: PlacesMapProps) {
   // previous look so this is non-breaking.
   const [mapTypeId, setMapTypeId] = useState<MapTypeId>('roadmap');
 
+  // Centre on the trip's chosen destination when set; otherwise fall back to
+  // Bangkok so legacy trips (no destination) behave as before.
+  const initialCenter = props.center ?? DEFAULT_CENTER;
+
   return (
     <div className="border-border bg-card relative h-full w-full overflow-hidden rounded-2xl border">
       <APIProvider apiKey={API_KEY!}>
         <Map
-          defaultCenter={DEFAULT_CENTER}
+          defaultCenter={initialCenter}
           defaultZoom={DEFAULT_ZOOM}
           mapId={MAP_ID}
           mapTypeId={mapTypeId}
@@ -173,6 +183,7 @@ function MapBody({
   onPinClick,
   onPinHover,
   onAddPoi,
+  center,
 }: PlacesMapProps) {
   const map = useMap();
   const placesLib = useMapsLibrary('places');
@@ -220,7 +231,14 @@ function MapBody({
   );
 
   useEffect(() => {
-    if (!map || withCoords.length === 0) return;
+    if (!map) return;
+    // No picked places yet: rest on the trip's destination centre (if any).
+    // The map's defaultCenter already handles first paint; this re-centres
+    // after the user clears all places so the view doesn't drift away.
+    if (withCoords.length === 0) {
+      if (center) map.panTo(center);
+      return;
+    }
     if (withCoords.length === 1) {
       map.panTo({ lat: withCoords[0]!.lat, lng: withCoords[0]!.lng });
       map.setZoom(14);
@@ -230,7 +248,7 @@ function MapBody({
     withCoords.forEach((p) => bounds.extend({ lat: p.lat, lng: p.lng }));
     map.fitBounds(bounds, 60);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, fitSignature]);
+  }, [map, fitSignature, center?.lat, center?.lng]);
 
   /* ------------------------------------------------------------------ */
   /*  Native POI click → load details                                   */
@@ -346,7 +364,11 @@ function MapBody({
       const { places: results } = await placesLib.Place.searchByText({
         textQuery: query,
         // Bias toward the current viewport so "cafe" near Siam finds Siam cafés.
-        locationBias: map.getBounds() ?? undefined,
+        // Fall back to the trip's destination centre when bounds aren't ready
+        // yet, so the very first search lands in the right city.
+        locationBias:
+          map.getBounds() ??
+          (center ? { center, radius: 20000 } : undefined),
         fields: ['id', 'displayName', 'location', 'rating', 'types'],
         maxResultCount: 20,
       });

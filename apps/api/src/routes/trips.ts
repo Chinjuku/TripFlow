@@ -27,6 +27,9 @@ export const tripsRoute = new Elysia({ prefix: '/trips' })
       title: t.String({ minLength: 1, maxLength: 120 }),
       startsOn: t.String({ format: 'date-time' }),
       endsOn: t.String({ format: 'date-time' }),
+      destinationName: t.Optional(t.Nullable(t.String({ maxLength: 200 }))),
+      centerLat: t.Optional(t.Nullable(t.Number({ minimum: -90, maximum: 90 }))),
+      centerLng: t.Optional(t.Nullable(t.Number({ minimum: -180, maximum: 180 }))),
     }),
   })
   .post('/join', handleJoinTripByCode, {

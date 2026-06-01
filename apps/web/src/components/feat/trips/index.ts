@@ -16,5 +16,7 @@ export { TripCard } from './TripCard';
 export { TripListSkeleton } from './TripListSkeleton';
 export { StartJourneyCard } from './StartJourneyCard';
 export { CreateTripDialog } from './CreateTripDialog';
+export { DestinationPicker } from './DestinationPicker';
+export type { DestinationValue } from './DestinationPicker';
 export { JoinTripDialog } from './JoinTripDialog';
 export { OtpInput } from './OtpInput';

@@ -111,6 +111,14 @@ export default function TripPlanPage() {
     [places],
   );
 
+  const tripCenter = useMemo(
+    () =>
+      trip?.centerLat != null && trip?.centerLng != null
+        ? { lat: trip.centerLat, lng: trip.centerLng }
+        : null,
+    [trip?.centerLat, trip?.centerLng],
+  );
+
   const memberById = useMemo(() => {
     const map = new Map<string, { name: string; avatarUrl: string | null }>();
     for (const m of trip?.members ?? []) {
@@ -354,6 +362,7 @@ export default function TripPlanPage() {
                   onPinClick={focusCard}
                   onPinHover={setHoveredPlaceId}
                   onAddPoi={handleAddPoi}
+                  center={tripCenter}
                 />
               </div>
             </aside>
