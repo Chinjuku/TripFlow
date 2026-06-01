@@ -1,0 +1,1 @@
+ALTER TABLE "trips" ALTER COLUMN "destination_name" SET NOT NULL;

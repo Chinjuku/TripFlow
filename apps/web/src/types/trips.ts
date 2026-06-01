@@ -31,6 +31,15 @@ export interface CreateTripPayload {
   centerLng?: number | null;
 }
 
+export interface UpdateTripPayload {
+  title?: string;
+  startsOn?: string;
+  endsOn?: string;
+  destinationName?: string | null;
+  centerLat?: number | null;
+  centerLng?: number | null;
+}
+
 export interface TripDetail extends TripSummary {
   ownerId: string;
 }

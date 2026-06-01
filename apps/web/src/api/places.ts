@@ -1,19 +1,6 @@
 import { api } from '@/lib/api';
+import { unwrap } from '@/lib/unwrap';
 import type { AddPlacePayload, TripPlace } from '@/types/places';
-
-function unwrap<T>(value: { data: T | null; error: unknown }): T {
-  if (value.error) {
-    const message =
-      typeof value.error === 'object' && value.error !== null && 'message' in value.error
-        ? String((value.error as { message: unknown }).message)
-        : 'Request failed';
-    throw new Error(message);
-  }
-  if (value.data === null) {
-    throw new Error('Empty response');
-  }
-  return value.data;
-}
 
 export async function listPlaces(tripId: string): Promise<TripPlace[]> {
   const res = await api.trips[tripId]!.places.get();

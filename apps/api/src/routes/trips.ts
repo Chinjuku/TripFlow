@@ -17,6 +17,9 @@ import {
   handleCreateTrip,
   handleJoinTripByCode,
   handleGetTripDetail,
+  handleUpdateTrip,
+  handleRemoveMember,
+  handleDeleteTrip,
 } from '../controllers/trips';
 
 export const tripsRoute = new Elysia({ prefix: '/trips' })
@@ -40,5 +43,25 @@ export const tripsRoute = new Elysia({ prefix: '/trips' })
   .get('/:id', handleGetTripDetail, {
     params: t.Object({
       id: t.String({ format: 'uuid' }),
+    }),
+  })
+  .patch('/:id', handleUpdateTrip, {
+    params: t.Object({ id: t.String({ format: 'uuid' }) }),
+    body: t.Object({
+      title: t.Optional(t.String({ minLength: 1, maxLength: 120 })),
+      startsOn: t.Optional(t.String({ format: 'date-time' })),
+      endsOn: t.Optional(t.String({ format: 'date-time' })),
+      destinationName: t.Optional(t.Nullable(t.String({ maxLength: 200 }))),
+      centerLat: t.Optional(t.Nullable(t.Number({ minimum: -90, maximum: 90 }))),
+      centerLng: t.Optional(t.Nullable(t.Number({ minimum: -180, maximum: 180 }))),
+    }),
+  })
+  .delete('/:id', handleDeleteTrip, {
+    params: t.Object({ id: t.String({ format: 'uuid' }) }),
+  })
+  .delete('/:id/members/:userId', handleRemoveMember, {
+    params: t.Object({
+      id: t.String({ format: 'uuid' }),
+      userId: t.String({ format: 'uuid' }),
     }),
   });

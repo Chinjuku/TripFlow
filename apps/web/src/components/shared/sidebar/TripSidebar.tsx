@@ -6,6 +6,7 @@ import {
   ChevronRight,
   Compass,
   Map,
+  Settings,
   Wallet,
   X,
   UserPlus,
@@ -14,6 +15,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { SpinningCompass } from '@/components/ui/SpinningCompass';
 import { Button } from '@trip-flow/ui/components/button';
+import { Skeleton } from '@trip-flow/ui/components/skeleton';
 import { cn } from '@trip-flow/ui/lib/cn';
 import { SidebarUserMenu } from './SidebarUserMenu';
 import { useTrip, coverImageUrl } from '@/components/feat/trips';
@@ -46,7 +48,7 @@ export function TripSidebar({ tripId, open, onOpenChange }: TripSidebarProps) {
   const [inviteOpen, setInviteOpen] = useState(false);
   const { t } = useTranslation();
 
-  const { data: trip } = useTrip(tripId);
+  const { data: trip, isLoading: tripLoading } = useTrip(tripId);
 
   useEffect(() => {
     try {
@@ -64,6 +66,10 @@ export function TripSidebar({ tripId, open, onOpenChange }: TripSidebarProps) {
     { name: t('nav.plan'), to: `/trips/${tripId}/plan`, icon: Map },
     { name: t('nav.schedule'), to: `/trips/${tripId}/schedule`, icon: Calendar },
     { name: t('nav.finances'), to: `/trips/${tripId}/finances`, icon: Wallet },
+    // Owner-only: trip settings (rename, members, …).
+    ...(trip?.role === 'owner'
+      ? [{ name: t('nav.tripSettings'), to: `/trips/${tripId}/settings`, icon: Settings }]
+      : []),
   ];
 
   return (
@@ -153,7 +159,7 @@ export function TripSidebar({ tripId, open, onOpenChange }: TripSidebarProps) {
                     'group flex items-center rounded-xl text-sm font-medium transition-colors',
                     collapsed ? 'h-12 justify-center px-2' : 'h-12 gap-4 px-4',
                     active
-                      ? 'bg-primary text-primary-foreground/80'
+                      ? 'bg-primary text-primary-foreground shadow-sm'
                       : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                   );
                 }}
@@ -165,7 +171,21 @@ export function TripSidebar({ tripId, open, onOpenChange }: TripSidebarProps) {
           })}
         </nav>
 
-        {/* Trip Info & Invite Section */}
+        {/* Trip Info & Invite Section — skeleton while the trip loads so the
+            footer doesn't pop in. Mirrors the loaded layout. */}
+        {tripLoading && !trip && (
+          <div className={cn('px-4 py-3', collapsed && 'px-2 py-3 flex justify-center')}>
+            {collapsed ? (
+              <Skeleton className="h-10 w-10 rounded-xl" />
+            ) : (
+              <div className="flex flex-col gap-3">
+                <Skeleton className="aspect-[16/9] w-full rounded-xl" />
+                <Skeleton className="h-9 w-full rounded-xl" />
+              </div>
+            )}
+          </div>
+        )}
+
         {trip && (
           <div className={cn('px-4 py-3', collapsed && 'px-2 py-3 flex justify-center')}>
             {collapsed ? (
@@ -182,7 +202,8 @@ export function TripSidebar({ tripId, open, onOpenChange }: TripSidebarProps) {
                 />
               </button>
             ) : (
-              <div className="bg-muted/40 border border-border/50 rounded-2xl p-3 flex flex-col gap-3">
+              /* No wrapper card — just the cover image, trip name, and invite. */
+              <div className="flex flex-col gap-3">
                 {/* Image and Trip Name */}
                 <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl bg-muted shadow-inner group">
                   <img

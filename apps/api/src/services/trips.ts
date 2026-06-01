@@ -137,6 +137,12 @@ export async function listTripsForUser(userId: string): Promise<TripSummary[]> {
  * partial failure can never leave an orphaned trip.
  */
 export async function createTrip(ownerId: string, input: CreateTripInput): Promise<TripSummary> {
+  // Destination is required (NOT NULL column + product rule).
+  const destinationName = input.destinationName?.trim();
+  if (!destinationName) {
+    throw new ConflictError('A destination is required to create a trip');
+  }
+
   // Retry once on the (extremely rare) collision of an 8-char code.
   for (let attempt = 0; attempt < 3; attempt++) {
     const inviteCode = generateInviteCode();
@@ -150,7 +156,7 @@ export async function createTrip(ownerId: string, input: CreateTripInput): Promi
             title: input.title,
             starts_on: input.startsOn,
             ends_on: input.endsOn,
-            destination_name: input.destinationName ?? null,
+            destination_name: destinationName,
             center_lat: input.centerLat ?? null,
             center_lng: input.centerLng ?? null,
             invite_code: inviteCode,
@@ -242,6 +248,88 @@ export async function getTripDetail(userId: string, tripId: string): Promise<Tri
     ...toSummary(trip, role, members),
     ownerId: trip.owner_id,
   };
+}
+
+export interface UpdateTripInput {
+  title?: string;
+  startsOn?: string;
+  endsOn?: string;
+  destinationName?: string | null;
+  centerLat?: number | null;
+  centerLng?: number | null;
+}
+
+/** Loads a trip and asserts the caller owns it. Throws NotFound/Forbidden. */
+async function assertOwner(userId: string, tripId: string): Promise<Trip> {
+  const [trip] = await db.select().from(trips).where(eq(trips.id, tripId)).limit(1);
+  if (!trip) throw new NotFoundError('Trip not found');
+  if (trip.owner_id !== userId) {
+    throw new ForbiddenError('Only the trip owner can do this');
+  }
+  return trip;
+}
+
+/**
+ * Updates editable trip fields (owner only). Only provided fields change;
+ * destination cleared by passing null. Returns the refreshed summary.
+ */
+export async function updateTrip(
+  userId: string,
+  tripId: string,
+  input: UpdateTripInput,
+): Promise<TripSummary> {
+  await assertOwner(userId, tripId);
+
+  const patch: Partial<typeof trips.$inferInsert> = {};
+  if (input.title !== undefined) patch.title = input.title;
+  if (input.startsOn !== undefined) patch.starts_on = input.startsOn;
+  if (input.endsOn !== undefined) patch.ends_on = input.endsOn;
+  // destination_name is required (NOT NULL) — only set it when a real value
+  // is provided; ignore null/undefined so it's never cleared.
+  if (input.destinationName) patch.destination_name = input.destinationName;
+  if (input.centerLat !== undefined) patch.center_lat = input.centerLat;
+  if (input.centerLng !== undefined) patch.center_lng = input.centerLng;
+
+  const [updated] = await db
+    .update(trips)
+    .set(patch)
+    .where(eq(trips.id, tripId))
+    .returning();
+  if (!updated) throw new NotFoundError('Trip not found');
+
+  const [membership] = await db
+    .select({ role: tripMembers.role })
+    .from(tripMembers)
+    .where(and(eq(tripMembers.trip_id, tripId), eq(tripMembers.user_id, userId)))
+    .limit(1);
+
+  return toSummary(updated, membership?.role ?? 'owner', await loadTripMembers(tripId));
+}
+
+/**
+ * Removes a member from a trip (owner only). The owner can't remove
+ * themselves — they must delete the trip instead.
+ */
+export async function removeMember(
+  ownerId: string,
+  tripId: string,
+  targetUserId: string,
+): Promise<void> {
+  const trip = await assertOwner(ownerId, tripId);
+  if (targetUserId === trip.owner_id) {
+    throw new ConflictError('The owner cannot be removed from the trip');
+  }
+
+  await db
+    .delete(tripMembers)
+    .where(and(eq(tripMembers.trip_id, tripId), eq(tripMembers.user_id, targetUserId)));
+}
+
+/** Permanently deletes a trip and everything under it (owner only). */
+export async function deleteTrip(userId: string, tripId: string): Promise<void> {
+  await assertOwner(userId, tripId);
+  // FK cascades clear members, places, schedule, expenses, etc.
+  await db.delete(trips).where(eq(trips.id, tripId));
 }
 
 function isUniqueViolation(err: unknown): boolean {

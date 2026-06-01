@@ -29,6 +29,13 @@
       "when": 1780298352038,
       "tag": "0003_silent_queen_noir",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1780324863173,
+      "tag": "0004_aspiring_roland_deschain",
+      "breakpoints": true
     }
   ]
 }

@@ -1,11 +1,25 @@
 // * API
-export { listTrips, createTrip, joinTrip, getTrip } from '@/api/trips';
+export {
+  listTrips,
+  createTrip,
+  joinTrip,
+  getTrip,
+  updateTrip,
+  deleteTrip,
+  removeTripMember,
+} from '@/api/trips';
 
 // * Hook
 export { useTrips, useTrip } from '@/hooks/useTrips';
 
 // * Type
-export type { TripSummary, CreateTripPayload, TripDetail, TripMemberProfile } from '@/types/trips';
+export type {
+  TripSummary,
+  CreateTripPayload,
+  UpdateTripPayload,
+  TripDetail,
+  TripMemberProfile,
+} from '@/types/trips';
 
 // * Format
 export {

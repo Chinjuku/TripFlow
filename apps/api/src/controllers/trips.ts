@@ -33,3 +33,28 @@ export async function handleGetTripDetail({
   const trip = await tripsService.getTripDetail(user.sub, params.id);
   return { trip };
 }
+
+export async function handleUpdateTrip({
+  user,
+  params,
+  body,
+}: AuthContext & { params: { id: string }; body: any }) {
+  const trip = await tripsService.updateTrip(user.sub, params.id, body);
+  return { trip };
+}
+
+export async function handleRemoveMember({
+  user,
+  params,
+}: AuthContext & { params: { id: string; userId: string } }) {
+  await tripsService.removeMember(user.sub, params.id, params.userId);
+  return { ok: true };
+}
+
+export async function handleDeleteTrip({
+  user,
+  params,
+}: AuthContext & { params: { id: string } }) {
+  await tripsService.deleteTrip(user.sub, params.id);
+  return { ok: true };
+}
