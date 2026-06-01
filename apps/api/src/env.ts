@@ -16,8 +16,14 @@ const optional = (key: string, fallback: string): string => process.env[key]?.tr
 export const env = {
   nodeEnv: optional('NODE_ENV', 'development'),
   port: Number.parseInt(optional('PORT', '4000'), 10),
-  supabaseUrl: required('SUPABASE_URL'),
-  supabaseServiceRoleKey: required('SUPABASE_SERVICE_ROLE_KEY'),
+  googleClientId: required('GOOGLE_CLIENT_ID'),
+  googleClientSecret: required('GOOGLE_CLIENT_SECRET'),
+  /**
+   * Absolute URL Google redirects back to after consent — must match a URI
+   * whitelisted in the Google Cloud OAuth client exactly, e.g.
+   * `http://localhost:4000/auth/callback`.
+   */
+  googleRedirectUri: required('GOOGLE_REDIRECT_URI'),
   jwtSecret: required('JWT_SECRET'),
   webUrl: required('WEB_URL'),
   databaseUrl: required('DATABASE_URL'),

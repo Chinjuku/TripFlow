@@ -13,13 +13,23 @@ export const SESSION_COOKIE = 'tf_session' as const;
 /** Name of the short-lived cookie storing the PKCE code_verifier during OAuth. */
 export const PKCE_COOKIE = 'tf_pkce_verifier' as const;
 
+/** Name of the short-lived cookie storing the OAuth anti-CSRF `state` value. */
+export const STATE_COOKIE = 'tf_oauth_state' as const;
+
+/**
+ * Name of the short-lived cookie carrying the post-login destination path.
+ * The Google redirect_uri is fixed, so we stash where the user was heading
+ * here instead of round-tripping it through the callback URL.
+ */
+export const REDIRECT_COOKIE = 'tf_oauth_redirect' as const;
+
 const isProduction = env.nodeEnv === 'production';
 
 /** Max-age for the session cookie (7 days in seconds). */
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7;
 
-/** Max-age for the PKCE cookie (10 minutes — just long enough for the OAuth round-trip). */
-const PKCE_MAX_AGE = 60 * 10;
+/** Max-age for the short-lived OAuth cookies (10 min — just enough for the round-trip). */
+const OAUTH_TEMP_MAX_AGE = 60 * 10;
 
 export interface CookieAttributes {
   value: string;
@@ -50,16 +60,18 @@ export function buildSessionCookie(token: string): CookieAttributes {
 }
 
 /**
- * Builds attributes for the temporary PKCE verifier cookie.
+ * Builds attributes for a short-lived OAuth helper cookie (PKCE verifier or
+ * `state`). Both carry an opaque value that only needs to survive the consent
+ * round-trip, so they share one builder.
  */
-export function buildPkceCookie(verifier: string): CookieAttributes {
+export function buildOAuthTempCookie(value: string): CookieAttributes {
   return {
-    value: verifier,
+    value,
     httpOnly: true,
     secure: isProduction,
     sameSite: COOKIE_SAME_SITE,
     path: '/',
-    maxAge: PKCE_MAX_AGE,
+    maxAge: OAUTH_TEMP_MAX_AGE,
     domain: COOKIE_DOMAIN,
   };
 }

@@ -12,8 +12,10 @@ import { signToken, verifyToken } from '../lib/jwt';
 import {
   SESSION_COOKIE,
   PKCE_COOKIE,
+  STATE_COOKIE,
+  REDIRECT_COOKIE,
   buildSessionCookie,
-  buildPkceCookie,
+  buildOAuthTempCookie,
   buildClearCookie,
 } from '../lib/cookie';
 import * as authService from '../services/auth';
@@ -36,51 +38,70 @@ function setCookie(
   });
 }
 
+/** Restrict post-login redirects to in-app paths so `state`/cookies can't be
+ *  used as an open redirect to an attacker's site. */
+function safeRedirectPath(raw: string | undefined): string | null {
+  if (!raw) return null;
+  // Only same-origin absolute paths: must start with a single "/".
+  return raw.startsWith('/') && !raw.startsWith('//') ? raw : null;
+}
+
 /**
  * GET /auth/google
  *
- * Generates a Google OAuth URL, stores the PKCE verifier in a temp cookie,
- * and redirects the browser to Google's consent screen.
+ * Generates a Google OAuth URL with PKCE + anti-CSRF state, stashes the
+ * verifier, state, and intended destination in short-lived cookies, then
+ * redirects the browser to Google's consent screen.
  */
 export async function handleGoogleRedirect({
   cookie,
   redirect,
   request,
 }: Context): Promise<unknown> {
-  const urlObj = new URL(request.url);
-  const redirectTo = urlObj.searchParams.get('redirectTo');
+  const redirectTo = safeRedirectPath(
+    new URL(request.url).searchParams.get('redirectTo') ?? undefined,
+  );
 
-  const origin = urlObj.origin;
-  const callbackUrl = redirectTo
-    ? `${origin}/auth/callback?redirectTo=${encodeURIComponent(redirectTo)}`
-    : `${origin}/auth/callback`;
-  const { url, codeVerifier } = await authService.getGoogleOAuthUrl(callbackUrl);
+  const { url, codeVerifier, state } = await authService.getGoogleOAuthUrl();
 
-  setCookie(cookie, PKCE_COOKIE, buildPkceCookie(codeVerifier));
+  setCookie(cookie, PKCE_COOKIE, buildOAuthTempCookie(codeVerifier));
+  setCookie(cookie, STATE_COOKIE, buildOAuthTempCookie(state));
+  if (redirectTo) setCookie(cookie, REDIRECT_COOKIE, buildOAuthTempCookie(redirectTo));
+
   return redirect(url);
 }
 
 /**
  * GET /auth/callback
  *
- * Handles the OAuth callback from Supabase:
- * 1. Reads the auth code from query params
- * 2. Reads the PKCE verifier from the temp cookie
- * 3. Exchanges both for a Supabase session
- * 4. Signs our own JWT and sets it as a session cookie
- * 5. Clears the PKCE cookie
- * 6. Redirects the browser to the frontend trips list (or custom redirectTo path)
+ * Handles Google's OAuth callback:
+ * 1. Verifies `state` matches the cookie (CSRF guard)
+ * 2. Exchanges the auth code + PKCE verifier for the user (upserts our row)
+ * 3. Signs our own JWT and sets it as the session cookie
+ * 4. Clears the temp OAuth cookies
+ * 5. Redirects to the stashed destination (or the trips list)
  */
 export async function handleCallback({ query, cookie, redirect }: Context): Promise<unknown> {
   const code = query['code'] as string | undefined;
+  const returnedState = query['state'] as string | undefined;
   const codeVerifier = cookie[PKCE_COOKIE]?.value as string | undefined;
-  const redirectTo = query['redirectTo'] as string | undefined;
+  const expectedState = cookie[STATE_COOKIE]?.value as string | undefined;
+  const redirectTo = safeRedirectPath(cookie[REDIRECT_COOKIE]?.value as string | undefined);
 
-  if (!code || !codeVerifier) {
-    const loginUrl = redirectTo
-      ? `${env.webUrl}/login?error=missing_code&redirectTo=${encodeURIComponent(redirectTo)}`
-      : `${env.webUrl}/login?error=missing_code`;
-    return redirect(loginUrl);
+  // Always clear the temp cookies, whatever the outcome.
+  setCookie(cookie, PKCE_COOKIE, buildClearCookie());
+  setCookie(cookie, STATE_COOKIE, buildClearCookie());
+  setCookie(cookie, REDIRECT_COOKIE, buildClearCookie());
+
+  const fail = (reason: string) => {
+    const params = new URLSearchParams({ error: reason });
+    if (redirectTo) params.set('redirectTo', redirectTo);
+    return redirect(`${env.webUrl}/login?${params.toString()}`);
+  };
+
+  if (!code || !codeVerifier) return fail('missing_code');
+  if (!returnedState || !expectedState || returnedState !== expectedState) {
+    return fail('state_mismatch');
   }
 
   const user = await authService.exchangeCodeForUser(code, codeVerifier);
@@ -93,10 +114,8 @@ export async function handleCallback({ query, cookie, redirect }: Context): Prom
   });
 
   setCookie(cookie, SESSION_COOKIE, buildSessionCookie(token));
-  setCookie(cookie, PKCE_COOKIE, buildClearCookie());
 
-  const targetUrl = redirectTo ? `${env.webUrl}${redirectTo}` : `${env.webUrl}/trips`;
-  return redirect(targetUrl);
+  return redirect(`${env.webUrl}${redirectTo ?? '/trips'}`);
 }
 
 /**
