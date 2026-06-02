@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMapsLibrary } from '@vis.gl/react-google-maps';
+import { useTranslation } from 'react-i18next';
 import type { PlaceDetail, PlaceReview } from '@/utils/places-map';
 
 interface UsePlaceDetailResult {
@@ -15,15 +16,20 @@ interface UsePlaceDetailResult {
  */
 export function usePlaceDetail(placeId: string | null, enabled: boolean): UsePlaceDetailResult {
   const placesLib = useMapsLibrary('places');
+  const { i18n } = useTranslation();
+  const lang = i18n.language.startsWith('en') ? 'en' : 'th';
   const [detail, setDetail] = useState<PlaceDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  // Keyed by id + language so switching the UI language refetches in that
+  // language rather than serving the previously-cached locale.
   const cacheRef = useRef<Map<string, PlaceDetail>>(new Map());
 
   useEffect(() => {
     if (!enabled || !placeId || !placesLib) return;
 
-    const cached = cacheRef.current.get(placeId);
+    const cacheKey = `${placeId}:${lang}`;
+    const cached = cacheRef.current.get(cacheKey);
     if (cached) {
       setDetail(cached);
       setLoading(false);
@@ -38,7 +44,7 @@ export function usePlaceDetail(placeId: string | null, enabled: boolean): UsePla
 
     void (async () => {
       try {
-        const place = new placesLib.Place({ id: placeId });
+        const place = new placesLib.Place({ id: placeId, requestedLanguage: lang });
         await place.fetchFields({
           fields: [
             'displayName',
@@ -75,7 +81,7 @@ export function usePlaceDetail(placeId: string | null, enabled: boolean): UsePla
           photoUrls: (place.photos ?? []).slice(0, 6).map((p) => p.getURI({ maxWidth: 800 })),
           reviews,
         };
-        cacheRef.current.set(placeId, next);
+        cacheRef.current.set(cacheKey, next);
         setDetail(next);
         setLoading(false);
       } catch (err) {
@@ -90,7 +96,7 @@ export function usePlaceDetail(placeId: string | null, enabled: boolean): UsePla
     return () => {
       cancelled = true;
     };
-  }, [placeId, enabled, placesLib]);
+  }, [placeId, enabled, placesLib, lang]);
 
   return { detail, loading, error };
 }

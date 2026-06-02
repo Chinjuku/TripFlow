@@ -9,6 +9,10 @@ export interface PoiPreview {
   placeId: string;
   name: string;
   address: string | null;
+  /** English copies fetched alongside the localized ones, so the persisted
+   *  snapshot carries both languages. Null until the second fetch resolves. */
+  nameEn: string | null;
+  addressEn: string | null;
   category: string | null;
   lat: number;
   lng: number;
@@ -127,6 +131,21 @@ export function shortAddress(address: string): string {
   const match = address.match(/(ถนน|ถ\.|ตำบล|ต\.|แขวง|\b(?:Rd|Road)\b)/);
   if (!match || match.index === undefined || match.index === 0) return address;
   return address.slice(match.index).trim();
+}
+
+/**
+ * Picks the copy matching the current UI language, falling back to the other
+ * when the chosen one is missing (older rows only have the primary/Thai copy).
+ * `lang` is the i18n language code; anything starting with "en" prefers English.
+ */
+export function localized(
+  lang: string,
+  primary: string | null | undefined,
+  english: string | null | undefined,
+): string | null {
+  const wantsEn = lang.startsWith('en');
+  const first = wantsEn ? english : primary;
+  return (first ?? primary ?? english) || null;
 }
 
 /** Bare host for display ("https://www.foo.com/x" → "foo.com"); echoes input on failure. */

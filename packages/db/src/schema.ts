@@ -114,6 +114,11 @@ export const tripPlaces = pgTable(
     external_id: text('external_id').notNull(),
     name: text('name').notNull(),
     address: text('address'),
+    /** English display name + address snapshots, so a card can match the UI
+     *  language regardless of which locale was active when the place was added.
+     *  `name`/`address` hold the Thai (primary) copies. */
+    name_en: text('name_en'),
+    address_en: text('address_en'),
     category: text('category'),
     lat: doublePrecision('lat'),
     lng: doublePrecision('lng'),

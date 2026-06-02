@@ -234,6 +234,8 @@ export default function TripPlanPage() {
         externalId: poi.placeId,
         name: poi.name,
         address: poi.address,
+        nameEn: poi.nameEn,
+        addressEn: poi.addressEn,
         category: poi.category,
         lat: poi.lat,
         lng: poi.lng,
