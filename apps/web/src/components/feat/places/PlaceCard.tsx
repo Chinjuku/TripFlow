@@ -225,18 +225,19 @@ function VoteCard({
   }
 
   return (
-    <article className="border-border bg-card flex flex-col overflow-hidden rounded-2xl border sm:flex-row">
-      {/* Left: photo with votes badge + rating badge */}
-      <div className="relative shrink-0">
+    <article className="border-border bg-card flex flex-col overflow-hidden rounded-2xl border sm:h-44 sm:flex-row">
+      {/* Left: photo with votes badge + rating badge. Fixed height so cards
+          stay uniform regardless of photo aspect ratio. */}
+      <div className="relative h-48 shrink-0 sm:h-full sm:w-56">
         {place.photoUrl ? (
           <img
             src={place.photoUrl}
             alt=""
             loading="lazy"
-            className="bg-muted h-48 w-full object-cover sm:h-full sm:w-56"
+            className="bg-muted h-full w-full object-cover"
           />
         ) : (
-          <div className="bg-muted text-muted-foreground flex h-48 w-full items-center justify-center sm:h-full sm:w-56">
+          <div className="bg-muted text-muted-foreground flex h-full w-full items-center justify-center">
             <MapPin className="h-8 w-8" strokeWidth={1.5} />
           </div>
         )}
@@ -260,7 +261,7 @@ function VoteCard({
       </div>
 
       {/* Right: details */}
-      <div className="flex min-w-0 flex-1 flex-col gap-3 p-4 sm:p-5">
+      <div className="flex min-w-0 flex-1 flex-col gap-3 overflow-hidden p-4 sm:p-5">
         <div className="min-w-0">
           <h4 className="text-foreground font-headline truncate text-lg font-bold leading-tight sm:text-xl">
             {place.name}
