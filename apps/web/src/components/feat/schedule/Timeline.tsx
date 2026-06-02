@@ -15,6 +15,8 @@ import { EventBlock } from './EventBlock';
 
 interface TimelineProps {
   items: ScheduleItem[];
+  /** Calendar weekday of the displayed day (0=Sun..6=Sat) for the hours check. */
+  weekday: number;
   onRemove: (scheduleId: string) => void;
   onResize: (scheduleId: string, durationMinutes: number) => void;
   ghost: { kind: 'new'; tripPlaceId: string } | null;
@@ -25,6 +27,7 @@ interface TimelineProps {
 
 export function Timeline({
   items,
+  weekday,
   onRemove,
   onResize,
   dragPreview,
@@ -65,6 +68,7 @@ export function Timeline({
             key={item.id}
             item={item}
             next={next}
+            weekday={weekday}
             onRemove={() => onRemove(item.id)}
             onResize={(duration) => onResize(item.id, duration)}
             dragLocked={pendingResizeIds.has(item.id)}

@@ -4,6 +4,17 @@
  * from here.
  */
 
+/**
+ * One open→close window in a place's weekly schedule. `day` is 0=Sunday..6=Saturday
+ * (matches JS Date.getDay()); `open`/`close` are "HH:MM" local time. Windows that
+ * cross midnight have a `close` that may read "24:00" or later (callers clamp).
+ */
+export interface OpeningPeriod {
+  day: number;
+  open: string;
+  close: string;
+}
+
 /** A POI preview shown in the map's InfoWindow popup. */
 export interface PoiPreview {
   placeId: string;
@@ -19,6 +30,9 @@ export interface PoiPreview {
   photoUrl: string | null;
   rating: number | null;
   openingHoursText: string | null;
+  /** Machine-readable weekly hours, persisted for the scheduler's open/closed
+   *  check. Null until enriched / unknown. */
+  openingPeriods: OpeningPeriod[] | null;
 }
 
 /** A single user review shown in the place-detail modal. */
@@ -105,6 +119,41 @@ export function centerOnPoi(map: google.maps.Map, lat: number, lng: number): voi
     const offset = Math.min(Math.max(viewportH * 0.2, 80), 160);
     map.panBy(0, -offset);
   }, 0);
+}
+
+function pad2(n: number): string {
+  return n < 10 ? `0${n}` : String(n);
+}
+
+/**
+ * Flattens Google's `regularOpeningHours.periods` into our `OpeningPeriod[]`.
+ * Each window is keyed by its open day (0=Sun..6=Sat). A null `close` means the
+ * place is open that whole day → "00:00"–"24:00". A window crossing midnight
+ * (close.day ≠ open.day) keeps the open day with a close past "24:00" so the
+ * scheduler can still match an early-morning slot. Returns null when there are
+ * no usable periods (unknown / always-open) so callers skip the check.
+ */
+export function serializeOpeningPeriods(
+  hours: google.maps.places.OpeningHours | null | undefined,
+): OpeningPeriod[] | null {
+  const periods = hours?.periods;
+  if (!periods || periods.length === 0) return null;
+
+  const out: OpeningPeriod[] = [];
+  for (const p of periods) {
+    if (!p.open) continue;
+    const open = `${pad2(p.open.hour)}:${pad2(p.open.minute)}`;
+    if (!p.close) {
+      out.push({ day: p.open.day, open: '00:00', close: '24:00' });
+      continue;
+    }
+    // Days past the open day add 24h per day so a Mon 22:00→Tue 02:00 window
+    // reads as "22:00"–"26:00" on Monday.
+    const dayDelta = (p.close.day - p.open.day + 7) % 7;
+    const closeHour = p.close.hour + dayDelta * 24;
+    out.push({ day: p.open.day, open, close: `${pad2(closeHour)}:${pad2(p.close.minute)}` });
+  }
+  return out.length > 0 ? out : null;
 }
 
 /** Today's human-readable opening hours from a Google OpeningHours object. */

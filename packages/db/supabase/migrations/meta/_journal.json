@@ -43,6 +43,13 @@
       "when": 1780401181480,
       "tag": "0005_nappy_gauntlet",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1780402961378,
+      "tag": "0006_blue_manta",
+      "breakpoints": true
     }
   ]
 }

@@ -6,7 +6,14 @@
  * `assertMember`) so routes stay thin.
  */
 
-import { db, tripMembers, tripPlaces, tripPlaceVotes, type TripPlace } from '@trip-flow/db/server';
+import {
+  db,
+  tripMembers,
+  tripPlaces,
+  tripPlaceVotes,
+  type OpeningPeriod,
+  type TripPlace,
+} from '@trip-flow/db/server';
 import { and, eq, sql } from 'drizzle-orm';
 import { ForbiddenError, NotFoundError } from '../errors/domain';
 
@@ -23,6 +30,7 @@ export interface TripPlaceWithVotes {
   photoUrl: string | null;
   rating: number | null;
   openingHoursText: string | null;
+  openingPeriods: OpeningPeriod[] | null;
   stayMinutes: number | null;
   addedByUserId: string;
   createdAt: string;
@@ -42,6 +50,7 @@ export interface AddPlaceInput {
   photoUrl?: string | null;
   rating?: number | null;
   openingHoursText?: string | null;
+  openingPeriods?: OpeningPeriod[] | null;
   stayMinutes?: number | null;
 }
 
@@ -72,6 +81,7 @@ function toRow(place: TripPlace, voteCount: number, liked: boolean): TripPlaceWi
     photoUrl: place.photo_url,
     rating: place.rating,
     openingHoursText: place.opening_hours_text,
+    openingPeriods: place.opening_periods,
     stayMinutes: place.stay_minutes,
     addedByUserId: place.added_by_user_id,
     createdAt: place.created_at,
@@ -124,6 +134,7 @@ export async function addPlace(
       photo_url: input.photoUrl ?? null,
       rating: input.rating ?? null,
       opening_hours_text: input.openingHoursText ?? null,
+      opening_periods: input.openingPeriods ?? null,
       stay_minutes: input.stayMinutes ?? null,
       added_by_user_id: userId,
     })

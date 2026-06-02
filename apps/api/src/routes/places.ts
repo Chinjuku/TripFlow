@@ -39,6 +39,18 @@ export const placesRoute = new Elysia()
       photoUrl: t.Optional(t.Nullable(t.String({ maxLength: 1000 }))),
       rating: t.Optional(t.Nullable(t.Number({ minimum: 0, maximum: 5 }))),
       openingHoursText: t.Optional(t.Nullable(t.String({ maxLength: 200 }))),
+      openingPeriods: t.Optional(
+        t.Nullable(
+          t.Array(
+            t.Object({
+              day: t.Integer({ minimum: 0, maximum: 6 }),
+              open: t.String({ maxLength: 5 }),
+              close: t.String({ maxLength: 6 }),
+            }),
+            { maxItems: 50 },
+          ),
+        ),
+      ),
       stayMinutes: t.Optional(t.Nullable(t.Integer({ minimum: 5, maximum: 1440 }))),
     }),
   })

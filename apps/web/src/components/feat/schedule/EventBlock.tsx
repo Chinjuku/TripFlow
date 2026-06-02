@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { AlertTriangle, Trash2 } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@trip-flow/ui/lib/cn';
 import type { DragPayload, ScheduleItem } from '@/types/schedule';
 import {
@@ -9,6 +10,7 @@ import {
   HOURS_END,
   MIN_DURATION_MINUTES,
   minuteToPx,
+  openingStatusFor,
   RESIZE_STEP_MINUTES,
   HOUR_HEIGHT_PX,
   toneFor,
@@ -18,17 +20,33 @@ import { TravelGap } from './Timeline';
 interface EventBlockProps {
   item: ScheduleItem;
   next: ScheduleItem | undefined;
+  /** Calendar weekday of this event's day (0=Sun..6=Sat) for the hours check. */
+  weekday: number;
   onRemove: () => void;
   onResize: (durationMinutes: number) => void;
   dragLocked: boolean;
 }
 
-export function EventBlock({ item, next, onRemove, onResize, dragLocked }: EventBlockProps) {
+export function EventBlock({ item, next, weekday, onRemove, onResize, dragLocked }: EventBlockProps) {
+  const { t } = useTranslation();
   const top = minuteToPx(item.startMinute);
   const tone = toneFor(item.id);
 
   const [draftDuration, setDraftDuration] = useState<number | null>(null);
   const effectiveDuration = draftDuration ?? item.durationMinutes;
+
+  // Re-check against opening hours using the live (draft) duration so the
+  // warning updates as the user resizes.
+  const openingStatus = openingStatusFor(
+    { startMinute: item.startMinute, durationMinutes: effectiveDuration, place: item.place },
+    weekday,
+  );
+  const hoursWarning =
+    openingStatus === 'closed'
+      ? t('schedule.hoursClosed', 'Place is closed at this time')
+      : openingStatus === 'partial'
+        ? t('schedule.hoursPartial', 'Runs outside opening hours')
+        : null;
   const height = (effectiveDuration / 60) * HOUR_HEIGHT_PX;
   const isResizing = draftDuration !== null;
 
@@ -116,14 +134,30 @@ export function EventBlock({ item, next, onRemove, onResize, dragLocked }: Event
           tone.border,
           dragLocked ? 'cursor-wait' : 'cursor-grab active:cursor-grabbing',
           isResizing && 'ring-primary/60 ring-2',
+          // Amber ring flags an event that doesn't fit the place's hours.
+          hoursWarning && 'ring-2 ring-amber-400',
         )}
       >
         <div className="min-w-0 flex-1">
-          <p className={cn('truncate text-sm font-bold', tone.text)}>{item.place.name}</p>
+          <p className={cn('flex items-center gap-1 truncate text-sm font-bold', tone.text)}>
+            {hoursWarning && (
+              <AlertTriangle
+                className="h-3.5 w-3.5 shrink-0 text-amber-300"
+                strokeWidth={2.25}
+                aria-label={hoursWarning}
+              />
+            )}
+            <span className="truncate">{item.place.name}</span>
+          </p>
           <p className="text-primary-foreground/80 mt-0.5 truncate text-xs">
             {formatTime(item.startMinute)} - {formatTime(item.startMinute + effectiveDuration)}
             <span className="ml-1 opacity-70">({formatDuration(effectiveDuration)})</span>
           </p>
+          {hoursWarning && (
+            <p className="mt-0.5 flex items-center gap-1 truncate text-[0.65rem] font-medium text-amber-200">
+              {hoursWarning}
+            </p>
+          )}
         </div>
         <button
           type="button"

@@ -242,6 +242,7 @@ export default function TripPlanPage() {
         photoUrl: poi.photoUrl,
         rating: poi.rating,
         openingHoursText: poi.openingHoursText,
+        openingPeriods: poi.openingPeriods,
         stayMinutes: 90,
       });
       mutate((prev) => {

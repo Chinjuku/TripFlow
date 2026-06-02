@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import {
   centerOnPoi,
   openingHoursSummary,
+  serializeOpeningPeriods,
   type PoiPreview,
   type PoiSeed,
 } from '@/utils/places-map';
@@ -67,6 +68,7 @@ export function usePoiPreview(
           photoUrl: null,
           rating: seed.rating ?? null,
           openingHoursText: null,
+          openingPeriods: null,
         });
         centerOnPoi(map, seed.lat, seed.lng);
       }
@@ -105,6 +107,7 @@ export function usePoiPreview(
             photoUrl: null,
             rating: null,
             openingHoursText: null,
+            openingPeriods: null,
           };
           setPoi(preview);
           setLoading(false);
@@ -121,6 +124,7 @@ export function usePoiPreview(
             photoUrl: place.photos?.[0]?.getURI({ maxWidth: 480 }) ?? null,
             rating: place.rating ?? null,
             openingHoursText: openingHoursSummary(place.regularOpeningHours ?? null),
+            openingPeriods: serializeOpeningPeriods(place.regularOpeningHours),
           };
           cacheRef.current.set(placeId, enriched);
           setPoi((current) =>

@@ -1,3 +1,5 @@
+import type { OpeningPeriod } from '@/utils/places-map';
+
 export interface SchedulePlace {
   id: string;
   /** Google place_id (or "mock_…" for legacy rows). */
@@ -10,6 +12,8 @@ export interface SchedulePlace {
   photoUrl: string | null;
   rating: number | null;
   openingHoursText: string | null;
+  /** Machine-readable weekly hours for the open/closed check; null = unknown. */
+  openingPeriods: OpeningPeriod[] | null;
 }
 
 export interface ScheduleItem {

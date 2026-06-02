@@ -338,6 +338,8 @@ export default function TripSchedulePage() {
   if (!id) return null;
 
   const activeDayMeta = days[activeDay];
+  // 0=Sun..6=Sat — drives the opening-hours check for events on this day.
+  const activeWeekday = activeDayMeta ? activeDayMeta.date.getDay() : new Date().getDay();
 
   const dayLabel = activeDayMeta
     ? `${activeDayMeta.date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} (${activeDayMeta.label})`
@@ -381,10 +383,11 @@ export default function TripSchedulePage() {
           {isLoading && schedule === null ? (
             <Skeleton className="h-[28rem] w-full" />
           ) : isMobile ? (
-            <MobileTimeline items={itemsForDay} onSelect={setEditEvent} />
+            <MobileTimeline items={itemsForDay} weekday={activeWeekday} onSelect={setEditEvent} />
           ) : (
             <Timeline
               items={itemsForDay}
+              weekday={activeWeekday}
               onRemove={handleRemove}
               onResize={handleResize}
               ghost={dragging?.kind === 'new' ? dragging : null}
