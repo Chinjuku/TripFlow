@@ -4,6 +4,7 @@ import { Button } from '@trip-flow/ui/components/button';
 import { cn } from '@trip-flow/ui/lib/cn';
 import { getInitials } from '@/components/feat/trips';
 import { removePlace, setLike } from '@/api/places';
+import { shortAddress } from '@/utils/places';
 import type { TripPlace } from '@/types/places';
 
 interface PlaceCardProps {
@@ -134,7 +135,7 @@ function PlanCard({
         </div>
         {place.address && (
           <p className="text-muted-foreground line-clamp-2 text-xs leading-snug sm:text-[0.8rem]">
-            {place.address}
+            {shortAddress(place.address)}
           </p>
         )}
         {/* Trash action — always visible (not hover-only) so the place's
@@ -225,19 +226,20 @@ function VoteCard({
   }
 
   return (
-    <article className="border-border bg-card flex flex-col overflow-hidden rounded-2xl border sm:h-44 sm:flex-row">
-      {/* Left: photo with votes badge + rating badge. Fixed height so cards
-          stay uniform regardless of photo aspect ratio. */}
-      <div className="relative h-48 shrink-0 sm:h-full sm:w-56">
+    <article className="border-border bg-card flex flex-col overflow-hidden rounded-2xl border sm:min-h-44 sm:flex-row">
+      {/* Left: photo with votes badge + rating badge. Photo fills the column
+          height with object-cover so its aspect ratio never drives the card
+          size — the card grows with its content instead. */}
+      <div className="relative h-48 shrink-0 sm:h-auto sm:w-56">
         {place.photoUrl ? (
           <img
             src={place.photoUrl}
             alt=""
             loading="lazy"
-            className="bg-muted h-full w-full object-cover"
+            className="bg-muted h-full w-full object-cover sm:absolute sm:inset-0 sm:h-full"
           />
         ) : (
-          <div className="bg-muted text-muted-foreground flex h-full w-full items-center justify-center">
+          <div className="bg-muted text-muted-foreground flex h-full w-full items-center justify-center sm:absolute sm:inset-0">
             <MapPin className="h-8 w-8" strokeWidth={1.5} />
           </div>
         )}
@@ -261,7 +263,7 @@ function VoteCard({
       </div>
 
       {/* Right: details */}
-      <div className="flex min-w-0 flex-1 flex-col gap-3 overflow-hidden p-4 sm:p-5">
+      <div className="flex min-w-0 flex-1 flex-col gap-3 p-4 sm:p-5">
         <div className="min-w-0">
           <h4 className="text-foreground font-headline truncate text-lg font-bold leading-tight sm:text-xl">
             {place.name}
@@ -269,19 +271,17 @@ function VoteCard({
           {place.address && (
             <p className="text-muted-foreground mt-1 flex items-start gap-1.5 text-sm">
               <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
-              <span className="line-clamp-2 min-w-0">{place.address}</span>
+              <span className="line-clamp-2 min-w-0">{shortAddress(place.address)}</span>
             </p>
           )}
         </div>
 
-        {/* Info pills */}
+        {/* Opening hours pill */}
         {place.openingHoursText && (
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="bg-muted text-muted-foreground inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs">
-              <Clock className="h-3 w-3" strokeWidth={2} />
-              {place.openingHoursText}
-            </span>
-          </div>
+          <span className="bg-muted text-muted-foreground inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-xs">
+            <Clock className="h-3 w-3" strokeWidth={2} />
+            {place.openingHoursText}
+          </span>
         )}
 
         {/* Bottom row: added-by + Vote button */}

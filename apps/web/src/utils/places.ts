@@ -27,3 +27,15 @@ export function bucketFor(category: string | null | undefined): PlaceBucket {
   if (/shop|store|mall|market|boutique/.test(c)) return 'shopping';
   return 'other';
 }
+
+/**
+ * Trims a Google formatted address to start at the sub-district, dropping the
+ * house number / soi / road prefix that's too granular for a card. Matches the
+ * Thai (ตำบล/แขวง/ต.) and English (Tambon/Khwaeng) markers; falls back to the
+ * full string when no marker is found.
+ */
+export function shortAddress(address: string | null | undefined): string {
+  if (!address) return '';
+  const m = address.match(/(ตำบล|แขวง|ต\.|Tambon|Khwaeng)/);
+  return m && m.index !== undefined ? address.slice(m.index).trim() : address;
+}
