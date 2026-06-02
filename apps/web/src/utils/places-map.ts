@@ -116,6 +116,19 @@ export function openingHoursSummary(
   return colon >= 0 ? desc.slice(colon + 1).trim() : desc;
 }
 
+/**
+ * Trims the leading premise (house number, sub-numbers, หมู่ที่/Moo) off a
+ * Thai formatted address so vote cards show a tighter "road → province" scope.
+ * Cuts at the first road/locality token; falls back to the full string when
+ * none is found (e.g. a place with no street component).
+ */
+export function shortAddress(address: string): string {
+  // First of: road (ถ./ถนน/Rd), sub-district (ตำบล/ต./แขวง), or English road.
+  const match = address.match(/(ถนน|ถ\.|ตำบล|ต\.|แขวง|\b(?:Rd|Road)\b)/);
+  if (!match || match.index === undefined || match.index === 0) return address;
+  return address.slice(match.index).trim();
+}
+
 /** Bare host for display ("https://www.foo.com/x" → "foo.com"); echoes input on failure. */
 export function hostname(url: string): string {
   try {
