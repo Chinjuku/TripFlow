@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Wallet, ArrowDownLeft, ArrowUpRight, Plus, Sparkles } from 'lucide-react';
 import { Card, CardContent } from '@trip-flow/ui/components/card';
 import { Button } from '@trip-flow/ui/components/button';
-import type { FinanceSummary, DebtRelation } from '../types';
+import type { FinanceSummary, DebtRelation } from './types';
 import { Link, useParams } from 'react-router-dom';
 
 interface ExpenseSummaryProps {

@@ -1,11 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '@trip-flow/ui/components/modal';
 import { Button } from '@trip-flow/ui/components/button';
-import { Check, Copy, QrCode, CreditCard, CheckCircle2, CloudUpload, Loader2, AlertCircle } from 'lucide-react';
-import type { DebtRelation, UserPaymentDetail } from '../types';
+import {
+  Check,
+  Copy,
+  QrCode,
+  CreditCard,
+  CheckCircle2,
+  CloudUpload,
+  Loader2,
+  AlertCircle,
+} from 'lucide-react';
+import type { DebtRelation, UserPaymentDetail } from './types';
 import { useTranslation, Trans } from 'react-i18next';
 import { findBank } from '@/utils/thai-banks';
-import { verifySlip } from '../api';
+import { verifySlip } from './api';
 
 interface SettleUpModalProps {
   open: boolean;
@@ -27,19 +36,23 @@ export function SettleUpModal({
   onVerified,
 }: SettleUpModalProps) {
   const [copiedText, setCopiedText] = useState<string | null>(null);
-  
+
   // ตัดโหมด qr_image ออกไป เหลือแค่ Bank Account และ PromptPay
   const [method, setMethod] = useState<'promptpay_id' | 'bank' | null>(null);
   const { t, i18n } = useTranslation();
 
   // E-Slip Verification states
-  const [uploadedFile, setUploadedFile] = useState<{ name: string; size: string; file: File } | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<{
+    name: string;
+    size: string;
+    file: File;
+  } | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
   const [pendingSettlementId, setPendingSettlementId] = useState<string | null>(null);
 
   const activeMethods: ('promptpay_id' | 'bank')[] = [];
-  
+
   // ดึงข้อมูล Bank Account มาแสดง (ถ้ามีข้อมูล)
   if (paymentDetails?.bank_name && paymentDetails?.bank_account_number) {
     activeMethods.push('bank');
@@ -74,7 +87,9 @@ export function SettleUpModal({
     ? `https://promptpay.io/${promptPayId}/${payee.amount.toFixed(2)}.png`
     : null;
 
-  const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>) => {
+  const handleReceiptUpload = async (
+    e: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>,
+  ) => {
     let file: File | null = null;
     if ('files' in e.target && e.target.files) {
       file = e.target.files[0] || null;
@@ -101,22 +116,26 @@ export function SettleUpModal({
         setPendingSettlementId(createdSettlement.id);
         settlementId = createdSettlement.id;
       }
-      
+
       // 2. Call API to verify slip
       const result = await verifySlip(settlementId as string, file);
-      
+
       if (result.isMatch) {
         onVerified?.();
         onOpenChange(false);
       } else {
-        setScanError(result.reason || "ไม่สามารถตรวจสอบสลิปนี้ได้ หรือสลิปนี้อาจถูกใช้งานไปแล้ว");
+        setScanError(result.reason || 'ไม่สามารถตรวจสอบสลิปนี้ได้ หรือสลิปนี้อาจถูกใช้งานไปแล้ว');
         setUploadedFile(null); // allow re-upload if failed
         setPendingSettlementId(null);
         onVerified?.(true); // refresh silently to remove pending status without blinking
       }
     } catch (err) {
       console.error('Verify slip error:', err);
-      setScanError(err instanceof Error ? err.message : "ไม่สามารถตรวจสอบสลิปนี้ได้ หรือสลิปนี้อาจถูกใช้งานไปแล้ว");
+      setScanError(
+        err instanceof Error
+          ? err.message
+          : 'ไม่สามารถตรวจสอบสลิปนี้ได้ หรือสลิปนี้อาจถูกใช้งานไปแล้ว',
+      );
       setUploadedFile(null); // allow re-upload
       setPendingSettlementId(null);
       onVerified?.(true); // refresh silently to remove pending status without blinking
@@ -130,7 +149,7 @@ export function SettleUpModal({
   };
 
   const handleConfirm = async () => {
-    // Note: Manual confirm button was removed per requirements, 
+    // Note: Manual confirm button was removed per requirements,
     // but we keep this function in case it's needed in the future or invoked programmatically.
     await onSubmit(payee.userId, payee.amount);
     onOpenChange(false);
@@ -141,7 +160,10 @@ export function SettleUpModal({
       open={open}
       onOpenChange={onOpenChange}
       title={t('finances.settleUpDebt', 'Settle Up Debt')}
-      description={t('finances.payOffBalance', { name: payee.name, defaultValue: `Pay off your balance to ${payee.name}` })}
+      description={t('finances.payOffBalance', {
+        name: payee.name,
+        defaultValue: `Pay off your balance to ${payee.name}`,
+      })}
       className="sm:max-w-md font-sans"
     >
       <div className="space-y-5 pt-2">
@@ -160,12 +182,16 @@ export function SettleUpModal({
               </div>
             )}
             <div>
-              <span className="text-muted-foreground text-xs block">{t('finances.sendingRepaymentTo', 'Sending to')}</span>
+              <span className="text-muted-foreground text-xs block">
+                {t('finances.sendingRepaymentTo', 'Sending to')}
+              </span>
               <span className="text-foreground text-sm font-bold">{payee.name}</span>
             </div>
           </div>
           <div className="text-right">
-            <span className="text-muted-foreground text-xs block">{t('finances.amountDue', 'Amount Due')}</span>
+            <span className="text-muted-foreground text-xs block">
+              {t('finances.amountDue', 'Amount Due')}
+            </span>
             <span className="text-destructive font-headline text-lg font-extrabold">
               ฿{payee.amount.toFixed(2)}
             </span>
@@ -210,28 +236,41 @@ export function SettleUpModal({
         {method === 'bank' && (
           <div className="space-y-3 bg-muted/20 border border-border rounded-xl p-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="flex items-center justify-between border-b border-border pb-3 last:border-0">
-              <span className="text-muted-foreground text-xs font-semibold">{t('finances.bankName', 'Bank')}</span>
+              <span className="text-muted-foreground text-xs font-semibold">
+                {t('finances.bankName', 'Bank')}
+              </span>
               <span className="text-foreground text-xs font-bold uppercase">
                 {(() => {
                   const bank = findBank(paymentDetails?.bank_name || '');
                   return bank
-                    ? (i18n.language.startsWith('th') ? bank.thaiName : bank.niceName)
+                    ? i18n.language.startsWith('th')
+                      ? bank.thaiName
+                      : bank.niceName
                     : paymentDetails?.bank_name;
                 })()}
               </span>
             </div>
 
             <div className="flex items-center justify-between border-b border-border pb-3 last:border-0">
-              <span className="text-muted-foreground text-xs font-semibold">{t('finances.accountName', 'Account Name')}</span>
-              <span className="text-foreground text-xs font-bold uppercase truncate max-w-[200px]" title={paymentDetails?.bank_account_name ?? undefined}>
+              <span className="text-muted-foreground text-xs font-semibold">
+                {t('finances.accountName', 'Account Name')}
+              </span>
+              <span
+                className="text-foreground text-xs font-bold uppercase truncate max-w-[200px]"
+                title={paymentDetails?.bank_account_name ?? undefined}
+              >
                 {paymentDetails?.bank_account_name || '-'}
               </span>
             </div>
 
             <div className="flex items-center justify-between border-b border-border pb-3 last:border-0">
-              <span className="text-muted-foreground text-xs font-semibold">{t('finances.accountNumber', 'Account Number')}</span>
+              <span className="text-muted-foreground text-xs font-semibold">
+                {t('finances.accountNumber', 'Account Number')}
+              </span>
               <div className="flex items-center gap-2">
-                <span className="text-foreground text-xs font-bold font-mono tracking-wide">{paymentDetails?.bank_account_number}</span>
+                <span className="text-foreground text-xs font-bold font-mono tracking-wide">
+                  {paymentDetails?.bank_account_number}
+                </span>
                 <button
                   type="button"
                   onClick={() => handleCopy(paymentDetails?.bank_account_number || '', 'bank')}
@@ -247,9 +286,13 @@ export function SettleUpModal({
             </div>
 
             <div className="flex items-center justify-between py-1 last:border-0">
-              <span className="text-muted-foreground text-xs font-semibold">{t('finances.amountDue', 'Transfer Amount')}</span>
+              <span className="text-muted-foreground text-xs font-semibold">
+                {t('finances.amountDue', 'Transfer Amount')}
+              </span>
               <div className="flex items-center gap-2">
-                <span className="text-destructive text-xs font-bold font-mono tracking-wide">฿{payee.amount.toFixed(2)}</span>
+                <span className="text-destructive text-xs font-bold font-mono tracking-wide">
+                  ฿{payee.amount.toFixed(2)}
+                </span>
                 <button
                   type="button"
                   onClick={() => handleCopy(payee.amount.toFixed(2), 'amount')}
@@ -287,7 +330,9 @@ export function SettleUpModal({
                 <span className="text-[10px] font-bold text-[#113566] dark:text-blue-300 uppercase">
                   {t('finances.promptPayId', 'PromptPay ID')}:
                 </span>
-                <span className="text-foreground text-sm font-bold font-mono tracking-wide">{promptPayId}</span>
+                <span className="text-foreground text-sm font-bold font-mono tracking-wide">
+                  {promptPayId}
+                </span>
                 <button
                   type="button"
                   onClick={() => handleCopy(promptPayId, 'promptpay')}
@@ -319,7 +364,10 @@ export function SettleUpModal({
               {t('finances.noPaymentDetails', 'No Payment Info')}
             </h4>
             <p className="leading-relaxed">
-              {t('finances.noPaymentDetailsDesc', { name: payee.name, defaultValue: `${payee.name} hasn't provided any payment details yet.` })}
+              {t('finances.noPaymentDetailsDesc', {
+                name: payee.name,
+                defaultValue: `${payee.name} hasn't provided any payment details yet.`,
+              })}
             </p>
           </div>
         )}
@@ -365,9 +413,7 @@ export function SettleUpModal({
                     <p className="text-xs font-semibold text-primary flex items-center gap-1 justify-center">
                       <Check className="w-3.5 h-3.5" /> แนบสลิปแล้ว
                     </p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
-                      {uploadedFile.name}
-                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{uploadedFile.name}</p>
                   </div>
                 ) : (
                   <div className="z-20">

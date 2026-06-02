@@ -8,10 +8,9 @@ import {
   ChevronDown,
   ArrowRightLeft,
   CheckCircle2,
-  AlertCircle,
 } from 'lucide-react';
 import { Button } from '@trip-flow/ui/components/button';
-import type { HydratedExpense, HydratedSettlement, HydratedExpenseSplit } from '../types';
+import type { HydratedExpense, HydratedSettlement, HydratedExpenseSplit } from './types';
 import { Link, useParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -243,7 +242,9 @@ export function ExpenseList({
                             <div
                               key={split.id}
                               className={`flex items-center justify-between p-3 rounded-xl border shadow-sm ${
-                                isPayer ? 'bg-primary/5 border-primary/20' : 'bg-muted/30 border-border'
+                                isPayer
+                                  ? 'bg-primary/5 border-primary/20'
+                                  : 'bg-muted/30 border-border'
                               }`}
                             >
                               <div className="flex items-center gap-3">
@@ -256,7 +257,9 @@ export function ExpenseList({
                                 ) : (
                                   <div
                                     className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold shadow-inner ${
-                                      isPayer ? 'bg-primary text-primary-foreground' : 'bg-muted-foreground text-white'
+                                      isPayer
+                                        ? 'bg-primary text-primary-foreground'
+                                        : 'bg-muted-foreground text-white'
                                     }`}
                                   >
                                     {initials}
@@ -275,11 +278,16 @@ export function ExpenseList({
                                   </span>
                                   {exp.split_method === 'exact_amount' && split.item_paid && (
                                     <div className="flex flex-wrap gap-1 mt-1">
-                                      {split.item_paid.split(',').map((item: string, idx: number) => (
-                                        <span key={idx} className="bg-background text-muted-foreground border border-border px-2 py-0.5 rounded-md text-[10px] font-medium shadow-sm">
-                                          {item.trim()}
-                                        </span>
-                                      ))}
+                                      {split.item_paid
+                                        .split(',')
+                                        .map((item: string, idx: number) => (
+                                          <span
+                                            key={idx}
+                                            className="bg-background text-muted-foreground border border-border px-2 py-0.5 rounded-md text-[10px] font-medium shadow-sm"
+                                          >
+                                            {item.trim()}
+                                          </span>
+                                        ))}
                                     </div>
                                   )}
                                 </div>
