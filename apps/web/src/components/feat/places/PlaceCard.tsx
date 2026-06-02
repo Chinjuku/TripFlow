@@ -5,6 +5,7 @@ import { cn } from '@trip-flow/ui/lib/cn';
 import { getInitials } from '@/components/feat/trips';
 import { removePlace, setLike } from '@/api/places';
 import type { TripPlace } from '@/types/places';
+import { PlaceDetailModal } from './components/PlaceDetailModal';
 
 interface PlaceCardProps {
   place: TripPlace;
@@ -33,25 +34,37 @@ export function PlaceCard({
   onChange,
   onRemove,
 }: PlaceCardProps) {
-  if (mode === 'vote') {
-    return (
-      <VoteCard
-        place={place}
-        tripId={tripId}
-        addedByName={addedByName}
-        addedByAvatarUrl={addedByAvatarUrl}
-        onChange={onChange}
-      />
-    );
-  }
+  const [detailOpen, setDetailOpen] = useState(false);
+  const viewDetails = () => setDetailOpen(true);
+
   return (
-    <PlanCard
-      place={place}
-      tripId={tripId}
-      canRemove={canRemove}
-      onChange={onChange}
-      onRemove={onRemove}
-    />
+    <>
+      {mode === 'vote' ? (
+        <VoteCard
+          place={place}
+          tripId={tripId}
+          addedByName={addedByName}
+          addedByAvatarUrl={addedByAvatarUrl}
+          onChange={onChange}
+          onViewDetails={viewDetails}
+        />
+      ) : (
+        <PlanCard
+          place={place}
+          tripId={tripId}
+          canRemove={canRemove}
+          onChange={onChange}
+          onRemove={onRemove}
+          onViewDetails={viewDetails}
+        />
+      )}
+      <PlaceDetailModal
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        placeId={place.externalId}
+        placeName={place.name}
+      />
+    </>
   );
 }
 
@@ -65,12 +78,14 @@ function PlanCard({
   canRemove,
   onChange,
   onRemove,
+  onViewDetails,
 }: {
   place: TripPlace;
   tripId: string;
   canRemove: boolean;
   onChange: (p: TripPlace) => void;
   onRemove: (id: string) => void;
+  onViewDetails: () => void;
 }) {
   const [busy, setBusy] = useState(false);
 
@@ -127,9 +142,15 @@ function PlanCard({
 
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex items-start justify-between gap-2">
-          <h4 className="text-foreground truncate text-sm font-semibold leading-tight sm:text-[0.95rem]">
-            {place.name}
-          </h4>
+          <button
+            type="button"
+            onClick={onViewDetails}
+            className="min-w-0 text-left"
+          >
+            <h4 className="text-foreground hover:text-primary truncate text-sm font-semibold leading-tight transition-colors sm:text-[0.95rem]">
+              {place.name}
+            </h4>
+          </button>
           <VoteChip count={place.voteCount} liked={place.liked} onClick={toggleLike} busy={busy} />
         </div>
         {place.address && (
@@ -203,12 +224,14 @@ function VoteCard({
   addedByName,
   addedByAvatarUrl,
   onChange,
+  onViewDetails,
 }: {
   place: TripPlace;
   tripId: string;
   addedByName?: string;
   addedByAvatarUrl?: string | null;
   onChange: (p: TripPlace) => void;
+  onViewDetails: () => void;
 }) {
   const [busy, setBusy] = useState(false);
 
@@ -263,9 +286,15 @@ function VoteCard({
       {/* Right: details */}
       <div className="flex min-w-0 flex-1 flex-col gap-3 overflow-hidden p-4 sm:p-5">
         <div className="min-w-0">
-          <h4 className="text-foreground font-headline truncate text-lg font-bold leading-tight sm:text-xl">
-            {place.name}
-          </h4>
+          <button
+            type="button"
+            onClick={onViewDetails}
+            className="hover:text-primary block max-w-full text-left transition-colors"
+          >
+            <h4 className="text-foreground font-headline truncate text-lg font-bold leading-tight hover:text-primary sm:text-xl">
+              {place.name}
+            </h4>
+          </button>
           {place.address && (
             <p className="text-muted-foreground mt-1 flex items-start gap-1.5 text-sm">
               <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />

@@ -47,5 +47,14 @@
   "poiAdd": "เพิ่มเข้ารายการ",
   "poiAdded": "เพิ่มแล้ว",
   "poiAdding": "กำลังเพิ่ม…",
-  "poiLoading": "กำลังโหลด…"
+  "poiLoading": "กำลังโหลด…",
+  "detailAddress": "ที่อยู่",
+  "detailPhone": "โทรศัพท์",
+  "detailWebsite": "เว็บไซต์",
+  "detailFailed": "โหลดรายละเอียดสถานที่ไม่สำเร็จ",
+  "detailReviews": "{{count}} รีวิว",
+  "detailHours": "เวลาเปิดทำการ",
+  "detailReviewsHeading": "รีวิว",
+  "detailOpenMaps": "เปิดใน Google Maps",
+  "viewDetails": "ดูรายละเอียด"
 }

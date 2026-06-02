@@ -21,6 +21,12 @@ export interface ModalProps {
    */
   dismissable?: boolean;
   children: ReactNode;
+  /**
+   * Optional pinned footer rendered below the scrollable body — stays visible
+   * without scrolling (e.g. a primary action). Sits inside the dialog's safe
+   * area on mobile.
+   */
+  footer?: ReactNode;
   className?: string;
 }
 
@@ -41,6 +47,7 @@ export function Modal({
   hideHeader,
   dismissable = true,
   children,
+  footer,
   className,
 }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -112,14 +119,28 @@ export function Modal({
         )}
         <div
           className={cn(
-            'overflow-y-auto',
+            'min-h-0 flex-1 overflow-y-auto',
+            // Slim, rounded, low-contrast scrollbar that brightens on hover —
+            // avoids the chunky default track fighting the modal's soft surface.
+            '[scrollbar-width:thin] [scrollbar-color:theme(colors.border)_transparent]',
+            '[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent',
+            '[&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-thumb]:rounded-full',
+            '[&::-webkit-scrollbar-thumb]:hover:bg-muted-foreground/40',
             hideHeader
               ? ''
-              : 'px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:px-6 sm:pb-6',
+              : footer
+                ? 'px-5 pt-4 sm:px-6'
+                : 'px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:px-6 sm:pb-6',
           )}
         >
           {children}
         </div>
+        {footer && (
+          // Pinned action area — outside the scroll body so it stays visible.
+          <div className="border-border bg-card shrink-0 border-t px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:px-6 sm:pb-4">
+            {footer}
+          </div>
+        )}
       </div>
     </dialog>
   );

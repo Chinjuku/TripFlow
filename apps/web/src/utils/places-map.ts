@@ -17,6 +17,30 @@ export interface PoiPreview {
   openingHoursText: string | null;
 }
 
+/** A single user review shown in the place-detail modal. */
+export interface PlaceReview {
+  author: string;
+  authorPhotoUrl: string | null;
+  rating: number | null;
+  text: string;
+  relativeTime: string | null;
+}
+
+/** Full place detail for the deep-dive modal (fetched on demand). */
+export interface PlaceDetail {
+  name: string;
+  address: string | null;
+  rating: number | null;
+  ratingCount: number | null;
+  phone: string | null;
+  website: string | null;
+  googleMapsUri: string | null;
+  /** All weekday opening-hours lines, e.g. "Monday: 9 AM – 6 PM". */
+  hours: string[];
+  photoUrls: string[];
+  reviews: PlaceReview[];
+}
+
 /** Partial info used to paint a POI popup before details arrive. */
 export interface PoiSeed {
   lat: number;
@@ -90,4 +114,13 @@ export function openingHoursSummary(
   if (!desc) return null;
   const colon = desc.indexOf(':');
   return colon >= 0 ? desc.slice(colon + 1).trim() : desc;
+}
+
+/** Bare host for display ("https://www.foo.com/x" → "foo.com"); echoes input on failure. */
+export function hostname(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
 }
