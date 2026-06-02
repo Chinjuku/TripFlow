@@ -1,15 +1,11 @@
-import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Map, Share2 } from 'lucide-react';
+import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@trip-flow/ui/components/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrip } from '@/components/feat/trips';
 import { BackLink } from '@/components/shared/BackLink';
 import { TripPageHeader } from '@/components/shared/TripPageHeader';
 import {
   TripBoardSkeleton,
-  InviteModal,
   TripOverviewCard,
   CollaboratorsPanel,
   TripPlacesSummaryCard,
@@ -19,7 +15,6 @@ export default function TripBoardPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const { data: trip, error } = useTrip(id);
-  const [inviteOpen, setInviteOpen] = useState(false);
   const { t } = useTranslation();
 
   if (error) {
@@ -50,21 +45,6 @@ export default function TripBoardPage() {
           </>
         }
         withBorder
-        actions={
-          <>
-            <Button variant="outline" className="gap-2" onClick={() => setInviteOpen(true)}>
-              <Share2 className="h-4 w-4" />
-              {t('overview.invite')}
-            </Button>
-            <Link
-              to={`/trips/${trip.id}/plan`}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring inline-flex h-10 items-center gap-2 rounded-md px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-            >
-              <Map className="h-4 w-4" />
-              {t('overview.planPlaces')}
-            </Link>
-          </>
-        }
       />
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 lg:h-[calc(100vh-14rem)] lg:overflow-hidden">
@@ -86,8 +66,6 @@ export default function TripBoardPage() {
           </div>
         </div>
       </div>
-
-      <InviteModal open={inviteOpen} onOpenChange={setInviteOpen} trip={trip} />
     </div>
   );
 }

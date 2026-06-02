@@ -29,6 +29,16 @@ export function deriveTripStatus(trip: TripSummary, now: Date = new Date()): Tri
   return 'planning';
 }
 
+/**
+ * Whole days from `now` until the trip starts. Positive = upcoming (starts in
+ * N days), 0 = starts today, negative = already started/past. Lets the UI pick
+ * the right countdown copy without re-deriving dates.
+ */
+export function daysUntilStart(trip: TripSummary, now: Date = new Date()): number {
+  const start = new Date(trip.startsOn);
+  return Math.ceil((start.getTime() - now.getTime()) / DAY_MS);
+}
+
 export interface DateRangeDisplay {
   range: string;
   duration: string;

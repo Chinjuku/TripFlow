@@ -138,22 +138,26 @@ export function TripPlacesSummaryCard({ trip, className = '' }: TripPlacesSummar
             <Skeleton className="h-12 w-full rounded-xl" />
           </div>
         ) : totalScheduled === 0 ? (
-          <div className="flex flex-col items-center justify-center text-center py-8 px-4 border border-dashed border-border rounded-xl bg-muted/20">
-            <Calendar className="text-muted-foreground h-8 w-8 mb-2 opacity-50" />
-            <p className="text-foreground text-sm font-semibold">
-              {t('overview.noPlacesScheduled', 'No places scheduled yet')}
-            </p>
-            <p className="text-muted-foreground mt-1 text-xs max-w-sm">
-              {t(
-                'overview.noPlacesScheduledDesc',
-                'Drag and schedule your voted candidate places on the time grid to build a beautiful timeline.',
-              )}
-            </p>
+          <div className="flex h-full flex-col items-center justify-center gap-3 px-6 py-10 text-center">
+            <div className="bg-primary/10 text-primary flex h-14 w-14 items-center justify-center rounded-2xl">
+              <Calendar className="h-7 w-7" strokeWidth={1.75} />
+            </div>
+            <div className="space-y-1">
+              <p className="text-foreground text-base font-bold">
+                {t('overview.noPlacesScheduled', 'No places scheduled yet')}
+              </p>
+              <p className="text-muted-foreground mx-auto max-w-xs text-sm leading-relaxed">
+                {t(
+                  'overview.noPlacesScheduledDesc',
+                  'Drag and schedule your voted candidate places on the time grid to build a beautiful timeline.',
+                )}
+              </p>
+            </div>
             <Link
               to={`/trips/${trip.id}/schedule`}
-              className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring inline-flex h-8 items-center gap-1.5 rounded-lg px-3.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring mt-1 inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
             >
-              <Sparkles className="h-3.5 w-3.5" />
+              <Sparkles className="h-4 w-4" strokeWidth={2} />
               {t('overview.createSchedule', 'Create schedule')}
             </Link>
           </div>
