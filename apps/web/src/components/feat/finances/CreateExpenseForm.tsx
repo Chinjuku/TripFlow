@@ -22,7 +22,7 @@ import { Button } from '@trip-flow/ui/components/button';
 import { Input } from '@trip-flow/ui/components/input';
 import { Label } from '@trip-flow/ui/components/label';
 import { useTranslation } from 'react-i18next';
-import { extractReceipt } from '../api';
+import { extractReceipt } from './api';
 
 // Zod schema for validation
 const createExpenseSchema = z.object({
@@ -561,7 +561,8 @@ export function CreateExpenseForm({
               <p className="text-[10px] text-primary font-bold flex items-center gap-1 mt-1.5 animate-slide-down">
                 <Sparkles className="w-3 h-3 text-primary shrink-0" />
                 <span>
-                  แสกนพบผู้โอน: <b className="font-extrabold text-foreground">{extractedSenderName}</b>
+                  แสกนพบผู้โอน:{' '}
+                  <b className="font-extrabold text-foreground">{extractedSenderName}</b>
                   {extractedBankName && ` (${extractedBankName})`}
                 </span>
               </p>

@@ -27,7 +27,7 @@ import {
 } from '@/components/feat/finances';
 
 import { TripFinancesAllSkeleton } from './TripFinancesAllSkeleton';
-import { TripFinancesAllExpensesSkeleton } from './TripFinancesAllExpensesSkeleton';
+import { TripFinancesAllExpensesSkeleton } from './all-expenses/TripFinancesAllExpensesSkeleton';
 import { TripFinancesRepaymentsSkeleton } from './TripFinancesRepaymentsSkeleton';
 import { TripFinancesFallbackSkeleton } from './TripFinancesFallbackSkeleton';
 
@@ -69,12 +69,15 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   const { t } = useTranslation();
   const isToReceive = location.pathname.endsWith('/to-receive');
 
-  const TABS = useMemo(() => [
-    { id: 'all' as TabId, label: t('common.all'), path: 'finances' },
-    { id: 'all-expense' as TabId, label: t('finances.allExpenses'), path: 'all-expenses' },
-    { id: 'settlements' as TabId, label: t('finances.settlements'), path: 'to-receive' },
-    { id: 'monitoring' as TabId, label: t('finances.monitoring'), path: 'monitoring' },
-  ], [t]);
+  const TABS = useMemo(
+    () => [
+      { id: 'all' as TabId, label: t('common.all'), path: 'finances' },
+      { id: 'all-expense' as TabId, label: t('finances.allExpenses'), path: 'all-expenses' },
+      { id: 'settlements' as TabId, label: t('finances.settlements'), path: 'to-receive' },
+      { id: 'monitoring' as TabId, label: t('finances.monitoring'), path: 'monitoring' },
+    ],
+    [t],
+  );
 
   const [createOpen, setCreateOpen] = useState(false);
   const [settleOpen, setSettleOpen] = useState(false);
@@ -91,7 +94,12 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Load general trip detail & members
-  const { data: trip, error: tripError, isLoading: isTripLoading, refresh: refreshTrip } = useTrip(id);
+  const {
+    data: trip,
+    error: tripError,
+    isLoading: isTripLoading,
+    refresh: refreshTrip,
+  } = useTrip(id);
 
   const isOptimized = trip?.isDebtOptimized ?? false;
 
@@ -100,10 +108,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
     setErrorMsg(null);
     try {
       await optimizeTrip(id, val);
-      await Promise.all([
-        refreshFinances(),
-        refreshTrip(),
-      ]);
+      await Promise.all([refreshFinances(), refreshTrip()]);
     } catch (err) {
       console.error('[finances] failed to toggle optimization', err);
       setErrorMsg(err instanceof Error ? err.message : 'Failed to update optimization setting');
@@ -236,12 +241,15 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   };
 
   // Dynamic header settings configuration mapping based on activeTab
-  const TABS_SETTING_HEADERS: Record<TabId, { title: string; subtitle: React.ReactNode; actions: React.ReactNode }> = {
+  const TABS_SETTING_HEADERS: Record<
+    TabId,
+    { title: string; subtitle: React.ReactNode; actions: React.ReactNode }
+  > = {
     all: {
       title: t('finances.title'),
       subtitle: trip ? (
-        <Trans 
-          i18nKey="finances.managingCostsFor" 
+        <Trans
+          i18nKey="finances.managingCostsFor"
           values={{ title: trip.title, range: formatDateRange(trip.startsOn, trip.endsOn).range }}
           components={{ b: <b /> }}
         />
@@ -306,7 +314,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
                 'px-4 py-1.5 text-xs font-bold rounded-lg transition-all h-[2.125rem] font-label',
                 isToReceive
                   ? 'bg-card text-primary shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
+                  : 'text-muted-foreground hover:text-foreground',
               )}
             >
               {t('finances.toReceive')}
@@ -317,7 +325,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
                 'px-4 py-1.5 text-xs font-bold rounded-lg transition-all h-[2.125rem] font-label',
                 !isToReceive
                   ? 'bg-card text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
+                  : 'text-muted-foreground hover:text-foreground',
               )}
             >
               {t('finances.toPay')}
@@ -337,7 +345,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
               'px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 h-[2.125rem] font-label',
               isOptimized
                 ? 'bg-primary text-primary-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
+                : 'text-muted-foreground hover:text-foreground',
             )}
           >
             <Sparkles className="w-3.5 h-3.5 shrink-0" />
@@ -385,7 +393,11 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
         <div className="flex flex-col flex-1 min-h-0 space-y-6">
           {/* 2. Tabs Selector */}
           <div className="border-border flex items-center justify-between gap-3 border-b shrink-0">
-            <div className="flex gap-2 overflow-x-auto scrollbar-none" role="tablist" aria-label="Finances view">
+            <div
+              className="flex gap-2 overflow-x-auto scrollbar-none"
+              role="tablist"
+              aria-label="Finances view"
+            >
               {TABS.map((t) => (
                 <button
                   key={t.id}
@@ -484,5 +496,3 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
     </TripFinancesContext.Provider>
   );
 }
-
-

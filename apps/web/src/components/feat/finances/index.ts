@@ -11,13 +11,16 @@ export {
   verifySlip,
   extractReceipt,
 } from './api';
-export { ExpenseSummary } from './components/ExpenseSummary';
-export { ExpenseList } from './components/ExpenseList';
-export { CreateExpenseModal } from './components/CreateExpenseModal';
-export { SettleUpModal } from './components/SettleUpModal';
-export { BudgetModal } from './components/BudgetModal';
-export { PaymentDetailsModal } from './components/PaymentDetailsModal';
-export { TripFinancesLayout, useTripFinancesContext } from './components/TripFinancesLayout';
+export { ExpenseSummary } from './ExpenseSummary';
+export { ExpenseList } from './ExpenseList';
+export { CreateExpenseModal } from './CreateExpenseModal';
+export { SettleUpModal } from './SettleUpModal';
+export { BudgetModal } from './BudgetModal';
+export { PaymentDetailsModal } from './PaymentDetailsModal';
+export { TripFinancesLayout, useTripFinancesContext } from './TripFinancesLayout';
+export { SettlementHelpNote } from './SettlementHelpNote';
+export { CreditorCard } from './to-pay/CreditorCard';
+export { DebtorCard } from './to-receive/DebtorCard';
 export type {
   FinancesData,
   FinanceSummary,

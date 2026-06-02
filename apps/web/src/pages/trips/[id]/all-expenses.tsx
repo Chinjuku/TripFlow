@@ -7,9 +7,9 @@ import { DatePicker } from '@trip-flow/ui/components/date-picker';
 import {
   TripFinancesLayout,
   useTripFinancesContext,
-} from '@/components/feat/finances/components/TripFinancesLayout';
-import { AllExpenseItem } from '@/components/feat/finances/components/AllExpenseItem';
-import { AllExpensesSkeleton } from '@/components/feat/finances/components/AllExpensesSkeleton';
+} from '@/components/feat/finances/TripFinancesLayout';
+import { AllExpenseItem } from '@/components/feat/finances/all-expenses/AllExpenseItem';
+import { AllExpensesSkeleton } from '@/components/feat/finances/all-expenses/AllExpensesSkeleton';
 import type { HydratedExpense } from '@/components/feat/finances';
 
 export default function AllExpensePage() {
