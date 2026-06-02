@@ -9,8 +9,21 @@ import {
   uniqueIndex,
   index,
   boolean,
+  jsonb,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
+
+/**
+ * One open→close window in a place's weekly schedule. `day` is 0=Sunday..6=Saturday
+ * (matches JS Date.getDay()); `open`/`close` are "HH:MM" in the place's local time.
+ * A window crossing midnight has `close.day` ≠ `open.day` — flattened here to the
+ * open day with a `close` that may be "24:00"+ (callers clamp).
+ */
+export interface OpeningPeriod {
+  day: number;
+  open: string;
+  close: string;
+}
 
 /**
  * Application users. This is our own identity store (we no longer rely on
@@ -127,6 +140,10 @@ export const tripPlaces = pgTable(
     rating: doublePrecision('rating'),
     /** Human-readable hours snapshot from Google, e.g. "Open until 6:00 PM". */
     opening_hours_text: text('opening_hours_text'),
+    /** Machine-readable weekly opening windows (Google regularOpeningHours,
+     *  normalized) so the scheduler can flag events placed outside hours.
+     *  Null = unknown (older rows / no hours / always-open). */
+    opening_periods: jsonb('opening_periods').$type<OpeningPeriod[]>(),
     /** How long the group plans to stay, set by the adder. */
     stay_minutes: integer('stay_minutes'),
     added_by_user_id: uuid('added_by_user_id').notNull(),

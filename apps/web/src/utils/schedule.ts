@@ -145,3 +145,63 @@ export type Tone = typeof TONE;
 export function toneFor(_scheduleId: string): Tone {
   return TONE;
 }
+
+/* -------------------------------------------------------------------------- */
+/*  Opening-hours check                                                       */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Whether a scheduled event fits the place's opening hours on its day:
+ * - `open`    — the whole event falls inside an open window
+ * - `partial` — the event starts open but runs past close (or starts before open)
+ * - `closed`  — the place isn't open at all during the event
+ * - `unknown` — no hours data (older rows / always-open) → don't warn
+ */
+export type OpeningStatus = 'open' | 'partial' | 'closed' | 'unknown';
+
+/** "HH:MM" (or "26:00" for past-midnight) → minutes since that day's 00:00. */
+function hhmmToMinutes(hhmm: string): number {
+  const [h, m] = hhmm.split(':').map(Number);
+  return (h || 0) * 60 + (m || 0);
+}
+
+/**
+ * Checks an event against the place's weekly hours. `weekday` is 0=Sun..6=Sat
+ * (use the event's real calendar date — `buildDays()[dayIndex].date.getDay()`).
+ * Windows are matched on their open day; past-midnight windows extend beyond
+ * 1440 so an early event still matches the prior day's late window is handled
+ * by the caller passing both days — here we only test same-open-day windows.
+ */
+export function openingStatusFor(
+  item: Pick<ScheduleItem, 'startMinute' | 'durationMinutes' | 'place'>,
+  weekday: number,
+): OpeningStatus {
+  const periods = item.place.openingPeriods;
+  if (!periods || periods.length === 0) return 'unknown';
+
+  const start = item.startMinute;
+  const end = item.startMinute + item.durationMinutes;
+
+  // Candidate windows in *this day's* minute space:
+  //  - windows opening today (as stored), plus
+  //  - yesterday's windows that cross midnight (close > 24:00), shifted back a
+  //    day so e.g. Fri 18:00–26:00 covers Sat 00:00–02:00.
+  const yesterday = (weekday + 6) % 7;
+  const windows = periods
+    .filter((p) => p.day === weekday)
+    .map((p) => ({ open: hhmmToMinutes(p.open), close: hhmmToMinutes(p.close) }))
+    .concat(
+      periods
+        .filter((p) => p.day === yesterday && hhmmToMinutes(p.close) > 24 * 60)
+        .map((p) => ({ open: 0, close: hhmmToMinutes(p.close) - 24 * 60 })),
+    );
+
+  if (windows.length === 0) return 'closed';
+
+  let overlaps = false;
+  for (const w of windows) {
+    if (start >= w.open && end <= w.close) return 'open';
+    if (start < w.close && end > w.open) overlaps = true;
+  }
+  return overlaps ? 'partial' : 'closed';
+}

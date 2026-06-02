@@ -1,0 +1,1 @@
+ALTER TABLE "trip_places" ADD COLUMN "opening_periods" jsonb;

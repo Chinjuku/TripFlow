@@ -1,3 +1,5 @@
+import { AlertTriangle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@trip-flow/ui/lib/cn';
 import type { ScheduleItem } from '@/types/schedule';
 import {
@@ -7,16 +9,20 @@ import {
   HOURS_START,
   HOUR_HEIGHT_PX,
   minuteToPx,
+  openingStatusFor,
   TIMELINE_HEIGHT_PX,
   toneFor,
 } from '@/utils/schedule';
 
 interface MobileTimelineProps {
   items: ScheduleItem[];
+  /** Calendar weekday of the displayed day (0=Sun..6=Sat) for the hours check. */
+  weekday: number;
   onSelect: (item: ScheduleItem) => void;
 }
 
-export function MobileTimeline({ items, onSelect }: MobileTimelineProps) {
+export function MobileTimeline({ items, weekday, onSelect }: MobileTimelineProps) {
+  const { t } = useTranslation();
   const hourLines = Array.from({ length: HOURS_END - HOURS_START + 1 }, (_, i) => HOURS_START + i);
 
   return (
@@ -37,6 +43,13 @@ export function MobileTimeline({ items, onSelect }: MobileTimelineProps) {
         const top = minuteToPx(item.startMinute);
         const height = (item.durationMinutes / 60) * HOUR_HEIGHT_PX;
         const tone = toneFor(item.id);
+        const status = openingStatusFor(item, weekday);
+        const hoursWarning =
+          status === 'closed'
+            ? t('schedule.hoursClosed', 'Place is closed at this time')
+            : status === 'partial'
+              ? t('schedule.hoursPartial', 'Runs outside opening hours')
+              : null;
         return (
           <button
             key={item.id}
@@ -48,15 +61,30 @@ export function MobileTimeline({ items, onSelect }: MobileTimelineProps) {
               tone.bg,
               tone.border,
               'active:shadow-md focus-visible:ring-primary/60 focus-visible:ring-2 focus-visible:outline-none',
+              hoursWarning && 'ring-2 ring-amber-400',
             )}
           >
             <div className="min-w-0 flex-1">
-              <p className={cn('truncate text-sm font-bold', tone.text)}>{item.place.name}</p>
+              <p className={cn('flex items-center gap-1 truncate text-sm font-bold', tone.text)}>
+                {hoursWarning && (
+                  <AlertTriangle
+                    className="h-3.5 w-3.5 shrink-0 text-amber-300"
+                    strokeWidth={2.25}
+                    aria-label={hoursWarning}
+                  />
+                )}
+                <span className="truncate">{item.place.name}</span>
+              </p>
               <p className="text-primary-foreground/80 mt-0.5 truncate text-xs">
                 {formatTime(item.startMinute)} -{' '}
                 {formatTime(item.startMinute + item.durationMinutes)}
                 <span className="ml-1 opacity-70">({formatDuration(item.durationMinutes)})</span>
               </p>
+              {hoursWarning && (
+                <p className="mt-0.5 truncate text-[0.65rem] font-medium text-amber-200">
+                  {hoursWarning}
+                </p>
+              )}
             </div>
           </button>
         );

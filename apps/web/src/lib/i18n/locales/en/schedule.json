@@ -1,5 +1,7 @@
 {
   "title": "Schedule",
+  "hoursClosed": "Place is closed at this time",
+  "hoursPartial": "Runs outside opening hours",
   "day": "Day {{number}}",
   "allDay": "All Day",
   "noEvents": "No events scheduled",

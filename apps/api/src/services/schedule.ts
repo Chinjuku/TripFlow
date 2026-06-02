@@ -10,6 +10,7 @@ import {
   tripMembers,
   tripPlaces,
   tripScheduleItems,
+  type OpeningPeriod,
   type TripPlace,
   type TripScheduleItem,
 } from '@trip-flow/db/server';
@@ -37,6 +38,7 @@ export interface ScheduleItem {
     photoUrl: string | null;
     rating: number | null;
     openingHoursText: string | null;
+    openingPeriods: OpeningPeriod[] | null;
   };
 }
 
@@ -87,6 +89,7 @@ function toScheduleItem(item: TripScheduleItem, place: TripPlace): ScheduleItem 
       photoUrl: place.photo_url,
       rating: place.rating,
       openingHoursText: place.opening_hours_text,
+      openingPeriods: place.opening_periods,
     },
   };
 }
