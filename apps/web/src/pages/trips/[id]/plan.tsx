@@ -27,6 +27,8 @@ interface TabMeta {
   label: string;
   heading: string;
   helper: string;
+  /** Count shown as a pill next to the label (e.g. picked places / voted). */
+  count: number;
 }
 
 // We'll generate TABS dynamically inside the component since they use translations.
@@ -56,12 +58,16 @@ export default function TripPlanPage() {
 
   const tab: PlanTab = searchParams.get('tab') === 'vote' ? 'vote' : 'plan';
 
+  const placeCount = places?.length ?? 0;
+  const votedCount = (places ?? []).filter((p) => p.voteCount > 0).length;
+
   const TABS: TabMeta[] = [
     {
       id: 'plan',
       label: t('plan.suggestions', 'Suggestions'),
       heading: t('plan.planPlaces', 'Plan places'),
       helper: t('plan.planPlacesHelper', 'Pick candidate places to put up for the group.'),
+      count: placeCount,
     },
     {
       id: 'vote',
@@ -71,6 +77,7 @@ export default function TripPlanPage() {
         'plan.votePlacesHelper',
         'Help decide the itinerary by voting for your favorite spots.',
       ),
+      count: votedCount,
     },
   ];
 
@@ -270,7 +277,7 @@ export default function TripPlanPage() {
                 aria-selected={tab === t.id}
                 onClick={() => setTab(t.id)}
                 className={cn(
-                  'relative -mb-px px-3 py-2.5 text-sm font-semibold transition-colors sm:px-4',
+                  'relative -mb-px inline-flex items-center gap-2 px-3 py-2.5 text-sm font-semibold transition-colors sm:px-4',
                   'border-b-2',
                   tab === t.id
                     ? 'border-primary text-foreground'
@@ -278,6 +285,18 @@ export default function TripPlanPage() {
                 )}
               >
                 {t.label}
+                {t.count > 0 && (
+                  <span
+                    className={cn(
+                      'inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-bold tabular-nums',
+                      tab === t.id
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground',
+                    )}
+                  >
+                    {t.count}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -354,16 +373,23 @@ export default function TripPlanPage() {
         ) : (
           <div className="flex flex-col gap-6 h-full lg:grid lg:grid-cols-[minmax(0,1fr)_24rem] lg:flex-1 lg:min-h-0">
             <aside className="shrink-0 lg:h-full lg:min-h-0">
-              <div className="h-[45vh] min-h-[300px] lg:h-full rounded-2xl overflow-hidden shadow-sm border border-border">
-                <PlacesMap
-                  places={places ?? []}
-                  pickedExternalIds={pickedExternalIds}
-                  hoveredId={hoveredPlaceId}
-                  onPinClick={focusCard}
-                  onPinHover={setHoveredPlaceId}
-                  onAddPoi={handleAddPoi}
-                  center={tripCenter}
-                />
+              <div className="h-[45vh] min-h-[300px] lg:h-full rounded-2xl overflow-hidden border border-border shadow-md ring-1 ring-border/50">
+                {/* Wait for the trip (and its centre) before mounting the map,
+                    so it opens straight on the destination instead of starting
+                    at the Bangkok fallback and panning over. */}
+                {trip ? (
+                  <PlacesMap
+                    places={places ?? []}
+                    pickedExternalIds={pickedExternalIds}
+                    hoveredId={hoveredPlaceId}
+                    onPinClick={focusCard}
+                    onPinHover={setHoveredPlaceId}
+                    onAddPoi={handleAddPoi}
+                    center={tripCenter}
+                  />
+                ) : (
+                  <div className="bg-muted h-full w-full animate-pulse" />
+                )}
               </div>
             </aside>
             <div className="lg:overflow-y-auto px-1 py-1 lg:p-2">
