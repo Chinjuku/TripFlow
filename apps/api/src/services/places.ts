@@ -15,6 +15,8 @@ export interface TripPlaceWithVotes {
   externalId: string;
   name: string;
   address: string | null;
+  nameEn: string | null;
+  addressEn: string | null;
   category: string | null;
   lat: number | null;
   lng: number | null;
@@ -32,6 +34,8 @@ export interface AddPlaceInput {
   externalId: string;
   name: string;
   address?: string | null;
+  nameEn?: string | null;
+  addressEn?: string | null;
   category?: string | null;
   lat?: number | null;
   lng?: number | null;
@@ -60,6 +64,8 @@ function toRow(place: TripPlace, voteCount: number, liked: boolean): TripPlaceWi
     externalId: place.external_id,
     name: place.name,
     address: place.address,
+    nameEn: place.name_en,
+    addressEn: place.address_en,
     category: place.category,
     lat: place.lat,
     lng: place.lng,
@@ -110,6 +116,8 @@ export async function addPlace(
       external_id: input.externalId,
       name: input.name,
       address: input.address ?? null,
+      name_en: input.nameEn ?? null,
+      address_en: input.addressEn ?? null,
       category: input.category ?? null,
       lat: input.lat ?? null,
       lng: input.lng ?? null,

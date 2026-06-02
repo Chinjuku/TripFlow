@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Clock, Heart, MapPin, Star, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@trip-flow/ui/components/button';
 import { cn } from '@trip-flow/ui/lib/cn';
 import { getInitials } from '@/components/feat/trips';
 import { removePlace, setLike } from '@/api/places';
-import { shortAddress } from '@/utils/places-map';
+import { localized, shortAddress } from '@/utils/places-map';
 import type { TripPlace } from '@/types/places';
 import { PlaceDetailModal } from './components/PlaceDetailModal';
 
@@ -37,6 +38,12 @@ export function PlaceCard({
 }: PlaceCardProps) {
   const [detailOpen, setDetailOpen] = useState(false);
   const viewDetails = () => setDetailOpen(true);
+  const { i18n } = useTranslation();
+
+  // Resolve the copy matching the UI language once; subcomponents render these
+  // so they don't each need the i18n hook. Falls back when a row only has Thai.
+  const displayName = localized(i18n.language, place.name, place.nameEn) ?? place.name;
+  const displayAddress = localized(i18n.language, place.address, place.addressEn);
 
   return (
     <>
@@ -44,6 +51,8 @@ export function PlaceCard({
         <VoteCard
           place={place}
           tripId={tripId}
+          displayName={displayName}
+          displayAddress={displayAddress}
           addedByName={addedByName}
           addedByAvatarUrl={addedByAvatarUrl}
           onChange={onChange}
@@ -53,6 +62,8 @@ export function PlaceCard({
         <PlanCard
           place={place}
           tripId={tripId}
+          displayName={displayName}
+          displayAddress={displayAddress}
           canRemove={canRemove}
           onChange={onChange}
           onRemove={onRemove}
@@ -63,7 +74,7 @@ export function PlaceCard({
         open={detailOpen}
         onOpenChange={setDetailOpen}
         placeId={place.externalId}
-        placeName={place.name}
+        placeName={displayName}
       />
     </>
   );
@@ -76,6 +87,8 @@ export function PlaceCard({
 function PlanCard({
   place,
   tripId,
+  displayName,
+  displayAddress,
   canRemove,
   onChange,
   onRemove,
@@ -83,6 +96,8 @@ function PlanCard({
 }: {
   place: TripPlace;
   tripId: string;
+  displayName: string;
+  displayAddress: string | null;
   canRemove: boolean;
   onChange: (p: TripPlace) => void;
   onRemove: (id: string) => void;
@@ -103,7 +118,7 @@ function PlanCard({
   }
 
   async function handleRemove() {
-    if (!confirm(`Remove "${place.name}" from this trip?`)) return;
+    if (!confirm(`Remove "${displayName}" from this trip?`)) return;
     setBusy(true);
     try {
       await removePlace(tripId, place.id);
@@ -149,14 +164,14 @@ function PlanCard({
             className="min-w-0 text-left"
           >
             <h4 className="text-foreground hover:text-primary truncate text-sm font-semibold leading-tight transition-colors sm:text-[0.95rem]">
-              {place.name}
+              {displayName}
             </h4>
           </button>
           <VoteChip count={place.voteCount} liked={place.liked} onClick={toggleLike} busy={busy} />
         </div>
-        {place.address && (
+        {displayAddress && (
           <p className="text-muted-foreground line-clamp-2 text-xs leading-snug sm:text-[0.8rem]">
-            {place.address}
+            {displayAddress}
           </p>
         )}
         {/* Trash action — always visible (not hover-only) so the place's
@@ -222,6 +237,8 @@ function VoteChip({
 function VoteCard({
   place,
   tripId,
+  displayName,
+  displayAddress,
   addedByName,
   addedByAvatarUrl,
   onChange,
@@ -229,6 +246,8 @@ function VoteCard({
 }: {
   place: TripPlace;
   tripId: string;
+  displayName: string;
+  displayAddress: string | null;
   addedByName?: string;
   addedByAvatarUrl?: string | null;
   onChange: (p: TripPlace) => void;
@@ -249,7 +268,7 @@ function VoteCard({
   }
 
   return (
-    <article className="border-border bg-card flex flex-col overflow-hidden rounded-2xl border sm:h-48 sm:flex-row">
+    <article className="border-border bg-card flex flex-col overflow-hidden rounded-2xl border sm:h-56 sm:flex-row">
       {/* Left: photo with votes badge + rating badge. Fixed height so cards
           stay uniform regardless of photo aspect ratio. */}
       <div className="relative h-48 shrink-0 sm:h-full sm:w-56">
@@ -293,13 +312,13 @@ function VoteCard({
             className="hover:text-primary block max-w-full text-left transition-colors"
           >
             <h4 className="text-foreground font-headline truncate text-lg font-bold leading-tight hover:text-primary sm:text-xl">
-              {place.name}
+              {displayName}
             </h4>
           </button>
-          {place.address && (
+          {displayAddress && (
             <p className="text-muted-foreground mt-1 flex items-start gap-1.5 text-sm">
               <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
-              <span className="line-clamp-2 min-w-0">{shortAddress(place.address)}</span>
+              <span className="line-clamp-3 min-w-0">{shortAddress(displayAddress)}</span>
             </p>
           )}
         </div>

@@ -3,6 +3,9 @@ export interface TripPlace {
   externalId: string;
   name: string;
   address: string | null;
+  /** English snapshots; null on older rows. Render falls back to name/address. */
+  nameEn: string | null;
+  addressEn: string | null;
   category: string | null;
   lat: number | null;
   lng: number | null;
@@ -20,6 +23,8 @@ export interface AddPlacePayload {
   externalId: string;
   name: string;
   address?: string | null;
+  nameEn?: string | null;
+  addressEn?: string | null;
   category?: string | null;
   lat?: number | null;
   lng?: number | null;

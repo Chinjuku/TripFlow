@@ -31,6 +31,8 @@ export const placesRoute = new Elysia()
       externalId: t.String({ minLength: 1, maxLength: 200 }),
       name: t.String({ minLength: 1, maxLength: 200 }),
       address: t.Optional(t.Nullable(t.String({ maxLength: 500 }))),
+      nameEn: t.Optional(t.Nullable(t.String({ maxLength: 200 }))),
+      addressEn: t.Optional(t.Nullable(t.String({ maxLength: 500 }))),
       category: t.Optional(t.Nullable(t.String({ maxLength: 64 }))),
       lat: t.Optional(t.Nullable(t.Number())),
       lng: t.Optional(t.Nullable(t.Number())),
