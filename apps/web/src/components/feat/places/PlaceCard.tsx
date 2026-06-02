@@ -4,6 +4,7 @@ import { Button } from '@trip-flow/ui/components/button';
 import { cn } from '@trip-flow/ui/lib/cn';
 import { getInitials } from '@/components/feat/trips';
 import { removePlace, setLike } from '@/api/places';
+import { shortAddress } from '@/utils/places-map';
 import type { TripPlace } from '@/types/places';
 import { PlaceDetailModal } from './components/PlaceDetailModal';
 
@@ -248,7 +249,7 @@ function VoteCard({
   }
 
   return (
-    <article className="border-border bg-card flex flex-col overflow-hidden rounded-2xl border sm:h-44 sm:flex-row">
+    <article className="border-border bg-card flex flex-col overflow-hidden rounded-2xl border sm:h-48 sm:flex-row">
       {/* Left: photo with votes badge + rating badge. Fixed height so cards
           stay uniform regardless of photo aspect ratio. */}
       <div className="relative h-48 shrink-0 sm:h-full sm:w-56">
@@ -298,7 +299,7 @@ function VoteCard({
           {place.address && (
             <p className="text-muted-foreground mt-1 flex items-start gap-1.5 text-sm">
               <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
-              <span className="line-clamp-2 min-w-0">{place.address}</span>
+              <span className="line-clamp-2 min-w-0">{shortAddress(place.address)}</span>
             </p>
           )}
         </div>
