@@ -2,6 +2,7 @@ import { Check } from 'lucide-react';
 import { cn } from '@trip-flow/ui/lib/cn';
 import { useTheme } from '@/hooks/useTheme';
 import type { Theme } from '@/types/theme';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Theme picker rendered as visual mock-ups instead of a toggle. Each card
@@ -21,10 +22,10 @@ interface Swatch {
   primary: string;
 }
 
-const PREVIEWS: { value: Theme; label: string; swatch: Swatch }[] = [
+const PREVIEWS: { value: Theme; labelKey: 'settings.themeLight' | 'settings.themeDark'; swatch: Swatch }[] = [
   {
     value: 'light',
-    label: 'Light',
+    labelKey: 'settings.themeLight',
     swatch: {
       background: 'hsl(210 40% 98%)',
       card: 'hsl(0 0% 100%)',
@@ -36,7 +37,7 @@ const PREVIEWS: { value: Theme; label: string; swatch: Swatch }[] = [
   },
   {
     value: 'dark',
-    label: 'Dark',
+    labelKey: 'settings.themeDark',
     swatch: {
       background: 'hsl(222 47% 11%)',
       card: 'hsl(222 47% 14%)',
@@ -50,10 +51,11 @@ const PREVIEWS: { value: Theme; label: string; swatch: Swatch }[] = [
 
 export function ThemePicker() {
   const { theme, setTheme } = useTheme();
+  const { t } = useTranslation();
 
   return (
     <div role="radiogroup" aria-label="Theme preference" className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-      {PREVIEWS.map(({ value, label, swatch }) => {
+      {PREVIEWS.map(({ value, labelKey, swatch }) => {
         const isActive = theme === value;
         return (
           <button
@@ -97,7 +99,7 @@ export function ThemePicker() {
 
             {/* Label + selected indicator */}
             <div className="bg-card border-border flex items-center justify-between border-t px-3 py-2">
-              <span className="text-foreground text-sm font-semibold">{label}</span>
+              <span className="text-foreground text-sm font-semibold">{t(labelKey)}</span>
               <span
                 className={cn(
                   'flex h-4 w-4 items-center justify-center rounded-full border transition-colors',

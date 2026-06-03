@@ -289,7 +289,7 @@ export function TripPlacesSummaryCard({ trip, className = '' }: TripPlacesSummar
                             )}
                             <Link
                               to={`/trips/${trip.id}/schedule?day=${day.index}`}
-                              className="bg-secondary text-secondary-foreground hover:bg-secondary/80 inline-flex items-center justify-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
+                              className="bg-primary text-primary-foreground hover:bg-primary/80 inline-flex items-center justify-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
                             >
                               {t('overview.editSchedule', 'Edit Schedule')}
                               <ChevronRight className="h-3.5 w-3.5" />

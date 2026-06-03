@@ -8,6 +8,7 @@ import {
 import { Palette } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ThemePicker } from './appearance/ThemePicker';
+import { ColorThemePicker } from './appearance/ColorThemePicker';
 import { LanguagePicker } from './appearance/LanguagePicker';
 
 export function AppearanceCard() {
@@ -30,6 +31,15 @@ export function AppearanceCard() {
             <p className="text-muted-foreground text-xs">{t('settings.themeDesc')}</p>
           </div>
           <ThemePicker />
+        </div>
+
+        {/* Color Theme — visual color swatch picker */}
+        <div className="border-border space-y-3 border-t pt-5">
+          <div>
+            <p className="text-foreground text-sm font-medium">{t('settings.colorTheme')}</p>
+            <p className="text-muted-foreground text-xs">{t('settings.colorThemeDesc')}</p>
+          </div>
+          <ColorThemePicker />
         </div>
 
         {/* Language — visual card picker */}

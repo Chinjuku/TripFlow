@@ -228,7 +228,7 @@ export function PaymentDetailsModal({
         {/* PromptPay section */}
         {preferredChannel === 'promptpay' && (
           <div className="space-y-3 p-3 bg-blue-50/30 border border-blue-100 rounded-xl dark:bg-slate-900/30 dark:border-blue-950/20">
-            <h4 className="text-xs font-bold text-blue-700 dark:text-blue-400 flex items-center gap-1.5 uppercase">
+            <h4 className="text-xs font-bold text-primary dark:text-primary/40 flex items-center gap-1.5 uppercase">
               <QrCode className="w-3.5 h-3.5" /> {t('finances.promptPayTransfer')}
             </h4>
             <div className="space-y-1">
@@ -248,7 +248,7 @@ export function PaymentDetailsModal({
                 {t('finances.orPromptPayQrLabel')}
               </Label>
               {uploadError && (
-                <p className="text-[10px] text-rose-500 font-semibold">{uploadError}</p>
+                <p className="text-[10px] text-destructive font-semibold">{uploadError}</p>
               )}
               {qrCodeUrl ? (
                 <div className="relative group overflow-hidden rounded-xl border border-border bg-muted/20 p-2 flex flex-col items-center gap-2 transition-all">
@@ -306,7 +306,7 @@ export function PaymentDetailsModal({
         {/* Bank transfer section */}
         {preferredChannel === 'banking' && (
           <div className="space-y-3 p-3 bg-purple-50/30 border border-purple-100 rounded-xl dark:bg-slate-900/30 dark:border-purple-950/20">
-            <h4 className="text-xs font-bold text-purple-700 dark:text-purple-400 flex items-center gap-1.5 uppercase">
+            <h4 className="text-xs font-bold text-primary dark:text-primary/40 flex items-center gap-1.5 uppercase">
               <CreditCard className="w-3.5 h-3.5" /> {t('finances.bankAccountTransfer')}
             </h4>
             <div className="grid grid-cols-2 gap-3">
@@ -370,7 +370,7 @@ export function PaymentDetailsModal({
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="bg-emerald-600 text-white hover:bg-emerald-700 text-xs h-9 px-5 rounded-xl font-bold shadow-sm shadow-emerald-600/10 transition-colors"
+            className="bg-primary text-white hover:bg-primary/70 text-xs h-9 px-5 rounded-xl font-bold shadow-sm shadow-emerald-600/10 transition-colors"
           >
             {isSubmitting ? t('finances.saving') : t('finances.saveDetails')}
           </Button>
