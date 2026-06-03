@@ -22,6 +22,7 @@ export interface CreateExpensePayload {
   category: 'food' | 'transport' | 'activity' | 'lodging' | 'other';
   splitMethod: 'equally' | 'exact_amount';
   expenseDate?: string;
+  isCentralFund?: boolean;
   splits: {
     userId: string;
     amount: number;
@@ -33,11 +34,18 @@ export interface CreateSettlementPayload {
   tripId: string;
   payeeId: string;
   amount: number;
+  isCentralFund?: boolean;
 }
 
 export interface UpdateBudgetPayload {
   tripId: string;
   amount: number;
+}
+
+export interface UpdateCentralFundPayload {
+  tripId: string;
+  treasurerId: string | null;
+  centralFundPerPerson: number | null;
 }
 
 export interface SavePaymentDetailsPayload {

@@ -21,9 +21,10 @@ interface SettleUpModalProps {
   onOpenChange: (open: boolean) => void;
   payee: DebtRelation | null;
   paymentDetails: UserPaymentDetail | undefined;
-  onSubmit: (payeeId: string, amount: number) => Promise<any>;
+  onSubmit: (payeeId: string, amount: number, isCentralFund?: boolean) => Promise<any>;
   isSubmitting: boolean;
   onVerified?: (silent?: boolean) => void;
+  defaultIsCentralFund?: boolean;
 }
 
 export function SettleUpModal({
@@ -34,8 +35,10 @@ export function SettleUpModal({
   onSubmit,
   isSubmitting,
   onVerified,
+  defaultIsCentralFund = false,
 }: SettleUpModalProps) {
   const [copiedText, setCopiedText] = useState<string | null>(null);
+  const [isCentralFund, setIsCentralFund] = useState(defaultIsCentralFund);
 
   // ตัดโหมด qr_image ออกไป เหลือแค่ Bank Account และ PromptPay
   const [method, setMethod] = useState<'promptpay_id' | 'bank' | null>(null);
@@ -108,7 +111,7 @@ export function SettleUpModal({
       // 1. Create the pending settlement first if not already created
       let settlementId = pendingSettlementId;
       if (!settlementId) {
-        const createdSettlement = await onSubmit(payee.userId, payee.amount);
+        const createdSettlement = await onSubmit(payee.userId, payee.amount, isCentralFund);
         if (!createdSettlement) {
           setIsScanning(false);
           return;
@@ -151,7 +154,7 @@ export function SettleUpModal({
   const handleConfirm = async () => {
     // Note: Manual confirm button was removed per requirements,
     // but we keep this function in case it's needed in the future or invoked programmatically.
-    await onSubmit(payee.userId, payee.amount);
+    await onSubmit(payee.userId, payee.amount, isCentralFund);
     onOpenChange(false);
   };
 
@@ -372,6 +375,25 @@ export function SettleUpModal({
           </div>
         )}
 
+        {/* Central Fund Toggle */}
+        <div className="flex items-center justify-between border border-border rounded-xl p-4 bg-primary/[0.03]">
+          <div className="space-y-1">
+            <span className="text-xs font-bold text-foreground block">
+              Pay from Central Fund?
+            </span>
+            <span className="text-[10px] text-muted-foreground block">
+              Mark this payment as using the shared pool.
+            </span>
+          </div>
+          <input
+            type="checkbox"
+            className="w-4 h-4 accent-primary cursor-pointer"
+            checked={isCentralFund}
+            onChange={(e) => setIsCentralFund(e.target.checked)}
+            disabled={isScanning}
+          />
+        </div>
+
         {/* OCR Dropzone (Only show if payment methods exist) */}
         {activeMethods.length > 0 && (
           <div className="border-t border-border pt-4">
@@ -428,6 +450,43 @@ export function SettleUpModal({
               </div>
             </div>
           </div>
+        )}
+
+        {/* Confirm Settlement Buttons */}
+        <div className="pt-2 flex flex-col gap-2">
+          {/* Removed manual confirmation button per request */}
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isScanning}
+            onClick={() => onOpenChange(false)}
+            className="w-full text-xs h-10 rounded-xl border border-border hover:bg-muted font-bold transition-colors"
+          >
+            {t('common.cancel', 'Cancel')}
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+                        <Check className="w-3.5 h-3.5" /> {t('finances.centralFund.slipAttached', 'Slip attached')}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{uploadedFile.name}</p>
+                    </div>
+                  ) : (
+                    <div className="z-20">
+                      <p className="text-xs font-semibold text-muted-foreground">
+                        {t('finances.centralFund.uploadSlip', 'Upload transfer slip')}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {t('finances.centralFund.autoVerificationDesc', 'The system will automatically verify the amount.')}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )
         )}
 
         {/* Confirm Settlement Buttons */}

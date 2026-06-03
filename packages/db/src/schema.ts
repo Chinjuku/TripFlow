@@ -77,6 +77,8 @@ export const trips = pgTable(
     center_lng: doublePrecision('center_lng'),
     invite_code: text('invite_code').notNull(),
     is_debt_optimized: boolean('is_debt_optimized').default(true).notNull(),
+    treasurer_id: uuid('treasurer_id'), // References users.id, set if central fund is enabled
+    central_fund_per_person: doublePrecision('central_fund_per_person'),
     created_at: timestamp('created_at', { withTimezone: true, mode: 'string' })
       .notNull()
       .default(sql`now()`),
@@ -233,6 +235,7 @@ export const expenses = pgTable(
       .notNull()
       .default('equally'), // Added to support showing split type in UI (Equally vs Exact Amount)
     receipt_url: text('receipt_url'),
+    is_central_fund: boolean('is_central_fund').default(false).notNull(),
     expense_date: timestamp('expense_date', { withTimezone: true, mode: 'string' })
       .notNull()
       .default(sql`now()`),
@@ -279,6 +282,7 @@ export const settlements = pgTable(
     status: text('status', { enum: ['pending', 'completed'] })
       .notNull()
       .default('pending'),
+    is_central_fund: boolean('is_central_fund').default(false).notNull(),
     created_at: timestamp('created_at', { withTimezone: true, mode: 'string' })
       .notNull()
       .default(sql`now()`),

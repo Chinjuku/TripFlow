@@ -164,11 +164,14 @@ function TripToReceiveContent() {
   const { t } = useTranslation();
 
   // Reconstruct debtors list from context
+  const nonCentralExpenses = finances.expenses.filter((e: any) => !e.is_central_fund);
+  const nonCentralSettlements = finances.settlements.filter((s: any) => !s.is_central_fund);
+
   const debtors = buildDebtorsList(
     user.id,
     finances.summary.whoOwesYou,
-    finances.expenses,
-    finances.settlements,
+    nonCentralExpenses,
+    nonCentralSettlements,
     t,
     isOptimized,
   );

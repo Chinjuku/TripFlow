@@ -5,6 +5,7 @@ import { Card, CardContent } from '@trip-flow/ui/components/card';
 import { Button } from '@trip-flow/ui/components/button';
 import type { FinanceSummary, DebtRelation } from './types';
 import { Link, useParams } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ExpenseSummaryProps {
   summary: FinanceSummary;
@@ -13,6 +14,8 @@ interface ExpenseSummaryProps {
   onSetBudget: () => void;
   isOptimized: boolean;
   onToggleOptimize: () => void;
+  tripOwnerId: string;
+  onRefresh: () => void;
 }
 
 export function ExpenseSummary({
@@ -22,6 +25,8 @@ export function ExpenseSummary({
   onSetBudget,
   isOptimized,
   onToggleOptimize,
+  tripOwnerId,
+  onRefresh,
 }: ExpenseSummaryProps) {
   const {
     totalGroupCost,
@@ -34,6 +39,11 @@ export function ExpenseSummary({
   } = summary;
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  
+  // Trip owner is determined from trip data, but since we don't have it directly in summary,
+  // wait, members array might have a 'role' or we can pass `isOwner` from parent.
+  // We'll pass `isOwner` from parent to ExpenseSummary. Let's add it to props.
 
   // Calculate budget progress
   const budgetAmount = budget?.amount ?? 0;

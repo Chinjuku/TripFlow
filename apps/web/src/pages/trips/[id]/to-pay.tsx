@@ -158,11 +158,14 @@ function TripToPayContent() {
   const { t } = useTranslation();
 
   // Reconstruct creditors list from context
+  const nonCentralExpenses = finances.expenses.filter((e: any) => !e.is_central_fund);
+  const nonCentralSettlements = finances.settlements.filter((s: any) => !s.is_central_fund);
+  
   const creditors = buildCreditorsList(
-    user.id,
+    user?.id || '',
     finances.summary.whatYouOwe,
-    finances.expenses,
-    finances.settlements,
+    nonCentralExpenses,
+    nonCentralSettlements,
     t,
     isOptimized,
   );
