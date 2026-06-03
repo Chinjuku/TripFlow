@@ -208,6 +208,7 @@
     "suggestAmount": "แนะนำ ฿{{amount}}",
     "amountDesc": "ยอดเงินนี้จะถูกนำไปคำวณเพื่อหายอดเงินกองกลางทั้งหมด",
     "manageCommonExpenses": "จัดการค่าใช้จ่ายร่วมกัน",
-    "payContribution": "จ่ายเงินสมทบกองกลาง (฿{{amount}})"
+    "payContribution": "จ่ายเงินสมทบกองกลาง (฿{{amount}})",
+    "saveConfiguration": "บันทึกการตั้งค่า"
   }
 }

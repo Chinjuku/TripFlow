@@ -47,13 +47,13 @@ export function CentralFundModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!treasurerId || !perPerson) {
-      setError('Please select a treasurer and enter amount per person.');
+      setError(t('finances.centralFund.errorRequiredFields', 'Please select a treasurer and enter amount per person.'));
       return;
     }
 
     const numAmount = parseFloat(perPerson);
     if (isNaN(numAmount) || numAmount < 0) {
-      setError('Invalid amount.');
+      setError(t('finances.centralFund.errorInvalidAmount', 'Invalid amount.'));
       return;
     }
 
@@ -69,7 +69,7 @@ export function CentralFundModal({
       onSuccess();
       onOpenChange(false);
     } catch (err: any) {
-      setError(err.message || 'Failed to update central fund.');
+      setError(err.message || t('finances.centralFund.errorFailedUpdate', 'Failed to update central fund.'));
     } finally {
       setLoading(false);
     }
@@ -85,8 +85,8 @@ export function CentralFundModal({
     <Modal
       open={isOpen}
       onOpenChange={onOpenChange}
-      title="Configure Central Fund"
-      description="Set up a central fund to manage shared group expenses. The trip owner can assign a treasurer."
+      title={t('finances.centralFund.configureTitle', 'Configure Central Fund')}
+      description={t('finances.centralFund.configureDesc', 'Set up a central fund to manage shared group expenses. The trip owner can assign a treasurer.')}
       className="sm:max-w-md font-sans"
     >
       <div className="space-y-4 pt-2">
@@ -94,14 +94,14 @@ export function CentralFundModal({
           {error && <div className="text-destructive text-sm font-medium">{error}</div>}
 
           <div className="space-y-2">
-            <Label>Treasurer</Label>
+            <Label>{t('finances.centralFund.treasurerLabel', 'Treasurer')}</Label>
             <select
               value={treasurerId}
               onChange={(e) => setTreasurerId(e.target.value)}
               className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold"
             >
               <option value="" disabled>
-                Select a treasurer
+                {t('finances.centralFund.selectTreasurer', 'Select a treasurer')}
               </option>
               {members.map((m) => (
                 <option key={m.userId} value={m.userId}>
@@ -112,7 +112,7 @@ export function CentralFundModal({
           </div>
 
           <div className="space-y-2">
-            <Label>Amount per Person (฿)</Label>
+            <Label>{t('finances.centralFund.amountPerPersonLabel', 'Amount per Person (฿)')}</Label>
             <div className="flex items-center gap-2">
               <Input
                 type="number"
@@ -124,21 +124,21 @@ export function CentralFundModal({
               />
               {suggestedPerPerson !== undefined && suggestedPerPerson > 0 && (
                 <Button type="button" variant="outline" size="sm" onClick={applySuggested}>
-                  Suggest ฿{suggestedPerPerson.toFixed(0)}
+                  {t('finances.centralFund.suggestAmount', 'Suggest ฿{{amount}}', { amount: suggestedPerPerson.toFixed(0) })}
                 </Button>
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              This amount will be used to calculate the total central fund size.
+              {t('finances.centralFund.amountDesc', 'This amount will be used to calculate the total central fund size.')}
             </p>
           </div>
 
           <div className="pt-4 flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t('common.cancel', 'Cancel')}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Saving...' : 'Save Configuration'}
+              {loading ? t('common.saving', 'Saving...') : t('finances.centralFund.saveConfiguration', 'Save Configuration')}
             </Button>
           </div>
         </form>

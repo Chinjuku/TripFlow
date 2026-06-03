@@ -50,7 +50,7 @@ export function CentralFundCard({
           <div className="flex justify-between items-start mb-4">
             <div className="flex items-center gap-2 text-primary text-[10px] font-bold tracking-wider uppercase font-label">
               <Landmark className="h-4 w-4" />
-              Central Fund (กองกลาง)
+              {t('finances.centralFund.title', 'Central Fund')}
             </div>
             {isOwner && (
               <Button
@@ -60,7 +60,7 @@ export function CentralFundCard({
                 onClick={() => setModalOpen(true)}
               >
                 <Settings2 className="w-3.5 h-3.5 mr-1.5" />
-                Configure
+                {t('finances.centralFund.configure', 'Configure')}
               </Button>
             )}
           </div>
@@ -68,16 +68,16 @@ export function CentralFundCard({
           {!isConfigured ? (
             <div className="flex flex-col items-center justify-center py-6 text-center z-10 relative">
               <p className="text-sm text-muted-foreground mb-4">
-                No central fund configured. Pool money together for shared expenses.
+                {t('finances.centralFund.notConfiguredDesc', 'No central fund configured. Pool money together for shared expenses.')}
               </p>
               {isOwner ? (
                 <Button onClick={() => setModalOpen(true)} variant="outline" className="gap-2">
                   <PlusCircle className="w-4 h-4" />
-                  Set up Central Fund
+                  {t('finances.centralFund.setUp', 'Set up Central Fund')}
                 </Button>
               ) : (
                 <p className="text-xs text-muted-foreground italic">
-                  Only the trip owner can set this up.
+                  {t('finances.centralFund.ownerOnly', 'Only the trip owner can set this up.')}
                 </p>
               )}
             </div>
@@ -85,7 +85,9 @@ export function CentralFundCard({
             <div className="space-y-6 z-10 relative">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <div className="text-muted-foreground text-xs font-medium">Total Pool</div>
+                  <div className="text-muted-foreground text-xs font-medium">
+                    {t('finances.centralFund.totalPool', 'Total Pool')}
+                  </div>
                   <div className="text-foreground text-2xl font-bold">
                     ฿
                     {summary.centralFundTotal.toLocaleString(undefined, {
@@ -94,12 +96,14 @@ export function CentralFundCard({
                     })}
                   </div>
                   <div className="text-muted-foreground text-[10px]">
-                    ฿{summary.centralFundPerPerson?.toLocaleString()} per person
+                    ฿{summary.centralFundPerPerson?.toLocaleString()} {t('finances.centralFund.perPerson', 'per person')}
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <div className="text-muted-foreground text-xs font-medium">Remaining</div>
+                  <div className="text-muted-foreground text-xs font-medium">
+                    {t('finances.centralFund.remaining', 'Remaining')}
+                  </div>
                   <div
                     className={`text-2xl font-bold ${remaining < 0 ? 'text-destructive' : 'text-emerald-500'}`}
                   >
@@ -124,10 +128,10 @@ export function CentralFundCard({
                 </div>
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-muted-foreground font-medium">
-                    {progressPercent}% spent
+                    {t('finances.centralFund.percentSpent', '{{percent}}% spent', { percent: progressPercent })}
                   </span>
                   <span className="text-muted-foreground">
-                    ฿{summary.centralFundSpent.toLocaleString()} used
+                    {t('finances.centralFund.amountUsed', '{{amount}} used', { amount: `฿${summary.centralFundSpent.toLocaleString()}` })}
                   </span>
                 </div>
               </div>

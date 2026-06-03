@@ -208,6 +208,7 @@
     "suggestAmount": "Suggest ฿{{amount}}",
     "amountDesc": "This amount will be used to calculate the total central fund size.",
     "manageCommonExpenses": "Manage common expenses",
-    "payContribution": "Pay Contribution (฿{{amount}})"
+    "payContribution": "Pay Contribution (฿{{amount}})",
+    "saveConfiguration": "Save Configuration"
   }
 }
