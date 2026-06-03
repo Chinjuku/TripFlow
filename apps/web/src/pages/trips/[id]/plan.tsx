@@ -19,7 +19,7 @@ import {
   PlacesMap,
 } from '@/components/feat/places';
 import type { PlaceBucket } from '@/components/feat/places';
-import type { FilterKey, SortKey, PlanTab, TripPlace } from '@/types/places';
+import type { SortKey, PlanTab, TripPlace } from '@/types/places';
 import type { PoiPreview } from '@/components/feat/places';
 
 interface TabMeta {
@@ -50,7 +50,6 @@ export default function TripPlanPage() {
   const [hoveredPlaceId, setHoveredPlaceId] = useState<string | null>(null);
   const cardRefs = useRef<Map<string, HTMLElement>>(new Map());
   const [addError, setAddError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<FilterKey>('all');
   const [sortKey, setSortKey] = useState<SortKey>('votes');
   const [bulkMode, setBulkMode] = useState(false);
   const [bulkSelected, setBulkSelected] = useState<Set<string>>(() => new Set());
@@ -150,19 +149,7 @@ export default function TripPlanPage() {
 
   const processedPlaces = useMemo(() => {
     const list = places ?? [];
-    const filtered = list.filter((p) => {
-      switch (filter) {
-        case 'voted':
-          return p.voteCount > 0;
-        case 'mine':
-          return p.addedByUserId === user?.id;
-        case 'photos':
-          return !!p.photoUrl;
-        default:
-          return true;
-      }
-    });
-    return [...filtered].sort((a, b) => {
+    return [...list].sort((a, b) => {
       switch (sortKey) {
         case 'name':
           return a.name.localeCompare(b.name);
@@ -173,7 +160,7 @@ export default function TripPlanPage() {
           return a.createdAt.localeCompare(b.createdAt);
       }
     });
-  }, [places, filter, sortKey, user?.id]);
+  }, [places, sortKey]);
 
   const availableBuckets = useMemo(() => {
     const set = new Set<PlaceBucket>();
@@ -320,8 +307,6 @@ export default function TripPlanPage() {
         {/* Toolbar */}
         {tab === 'plan' && (places?.length ?? 0) > 0 && (
           <ListToolbar
-            filter={filter}
-            onFilterChange={setFilter}
             sortKey={sortKey}
             onSortChange={setSortKey}
             bulkMode={bulkMode}
@@ -332,7 +317,6 @@ export default function TripPlanPage() {
             bulkSelected={bulkSelected}
             onBulkDelete={handleBulkDelete}
             bulkBusy={bulkBusy}
-            places={places ?? []}
           />
         )}
       </div>
