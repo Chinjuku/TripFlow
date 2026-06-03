@@ -4,6 +4,7 @@ import { CentralFundCard } from '@/components/feat/finances/central-fund/Central
 import { CentralFundMembers } from '@/components/feat/finances/central-fund/CentralFundMembers';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Button } from '@trip-flow/ui/components/button';
 
 export default function TripCentralFundPage() {
   return (
@@ -14,7 +15,15 @@ export default function TripCentralFundPage() {
 }
 
 function TripCentralFundContent() {
-  const { trip, finances, user, handleSettleUpTrigger, refreshFinances } = useTripFinancesContext();
+  const {
+    trip,
+    finances,
+    user,
+    handleSettleUpTrigger,
+    refreshFinances,
+    confirmingSettlementId,
+    handleConfirmSettlementReceived,
+  } = useTripFinancesContext();
   const { t, i18n } = useTranslation();
 
   const { summary, expenses, settlements } = finances;
@@ -46,12 +55,20 @@ function TripCentralFundContent() {
         user: s.payerName,
         avatarUrl: s.payerAvatarUrl,
         status: s.status,
+        payeeId: s.payee_id,
+        payerId: s.payer_id,
       }));
 
     return [...centralExpenses, ...centralSettlements].sort(
       (a, b) => b.date.getTime() - a.date.getTime(),
     );
   }, [expenses, settlements, t]);
+
+  const pendingCentralSettlements = useMemo(() => {
+    return settlements.filter(
+      (s: any) => s.is_central_fund && s.status === 'pending' && s.payee_id === user?.id
+    );
+  }, [settlements, user?.id]);
 
   return (
     <div className="flex flex-col flex-1 overflow-y-auto lg:overflow-hidden gap-6 h-full min-h-0">
@@ -64,6 +81,71 @@ function TripCentralFundContent() {
           onRefresh={refreshFinances}
         />
       </div>
+
+      {isTreasurer && pendingCentralSettlements.length > 0 && (
+        <div className="shrink-0 bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
+          <h3 className="text-sm font-bold text-foreground font-headline uppercase tracking-wider flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+            {t('finances.centralFund.pendingApprovals', 'Pending Approvals')}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {pendingCentralSettlements.map((set: any) => (
+              <div
+                key={set.id}
+                className="flex items-center justify-between p-4 bg-muted/35 border border-border rounded-2xl shadow-sm"
+              >
+                <div className="flex items-center gap-3">
+                  {set.payerAvatarUrl ? (
+                    <img
+                      src={set.payerAvatarUrl}
+                      alt={set.payerName}
+                      className="w-10 h-10 rounded-full object-cover shrink-0"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0 text-sm">
+                      {set.payerName.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div>
+                    <div className="font-semibold text-sm text-foreground">
+                      {set.payerName}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {t('finances.centralFund.contribution', 'Contribution')} • {new Intl.DateTimeFormat(i18n.language.startsWith('th') ? 'th-TH' : 'en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false,
+                      }).format(new Date(set.created_at))}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <span className="font-extrabold text-sm text-foreground font-headline block">
+                      ฿{set.amount.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </span>
+                  </div>
+                  <Button
+                    size="sm"
+                    disabled={confirmingSettlementId === set.id}
+                    onClick={() => handleConfirmSettlementReceived?.(set.id)}
+                    className="bg-[#059669] hover:bg-[#047857] text-white font-bold text-xs px-3 py-1.5 h-auto rounded-xl shadow-sm transition-all font-label"
+                  >
+                    {confirmingSettlementId === set.id
+                      ? t('finances.confirming', 'Confirming...')
+                      : t('finances.centralFund.confirmReceipt', 'Confirm Receipt')}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col lg:grid lg:grid-cols-2 gap-6 flex-1 min-h-0 lg:overflow-hidden pb-6 lg:pb-0">
         {/* Left Column: Member Contributions */}

@@ -30,6 +30,11 @@ function TripFinancesMonitoringContent() {
   const isOverBudget = totalCost > budgetAmount && budgetAmount > 0;
   const remainingBudget = Math.max(0, budgetAmount - totalCost);
 
+  const centralFundTotal = finances.summary.centralFundTotal;
+  const centralFundSpent = finances.summary.centralFundSpent;
+  const centralFundProgressPercent = centralFundTotal > 0 ? (centralFundSpent / centralFundTotal) * 100 : 0;
+  const isCentralFundLow = centralFundSpent > centralFundTotal;
+
   // Group costs by category
   const categoryTotals: Record<string, number> = {};
   finances.expenses.forEach((exp: HydratedExpense) => {
@@ -135,29 +140,55 @@ function TripFinancesMonitoringContent() {
         {/* Budget Progress Meter */}
         <Card className="rounded-2xl border-border bg-card shadow-sm flex flex-col justify-between">
           <CardContent className="p-6 space-y-6">
-            <h3 className="font-headline font-bold text-foreground text-lg flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              {t('finances.budgetConsumption')}
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-headline font-bold text-foreground text-lg flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                {t('finances.budgetConsumption')}
+              </h3>
+            </div>
 
-            <div className="space-y-4">
-              <div className="flex justify-between items-center text-xs font-bold text-muted-foreground font-label">
-                <span>{t('finances.spent')}</span>
-                <span>{Math.round(progressPercent)}%</span>
-              </div>
+            <div className="space-y-6">
+              {/* Central Fund Progress */}
+              {centralFundTotal > 0 && (
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center text-xs font-bold text-muted-foreground font-label">
+                    <span>{t('finances.centralFund.title', 'Central Fund')}</span>
+                    <span className={isCentralFundLow ? 'text-destructive' : 'text-primary'}>
+                      {Math.round(centralFundProgressPercent)}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-muted h-5 rounded-full overflow-hidden p-1 border border-border">
+                    <div
+                      className={`h-full rounded-full transition-all duration-1000 ease-out ${isCentralFundLow ? 'bg-destructive' : 'bg-primary'}`}
+                      style={{ width: `${Math.min(100, centralFundProgressPercent)}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-[10px] font-extrabold text-muted-foreground uppercase font-label">
+                    <span>{t('finances.spent', 'Spent')}: ฿{centralFundSpent.toLocaleString()}</span>
+                    {isCentralFundLow && <span className="text-destructive font-bold">{t('finances.lowLiquidity', 'Low Liquidity!')}</span>}
+                    <span>{t('finances.centralFund.totalPool', 'Pool')}: ฿{centralFundTotal.toLocaleString()}</span>
+                  </div>
+                </div>
+              )}
 
-              {/* Styled Progress Bar */}
-              <div className="w-full bg-muted h-5 rounded-full overflow-hidden p-1 border border-border">
-                <div
-                  className={`h-full rounded-full transition-all duration-1000 ease-out ${isOverBudget ? 'bg-destructive' : 'bg-primary'}`}
-                  style={{ width: `${Math.min(100, progressPercent)}%` }}
-                />
-              </div>
-
-              <div className="flex justify-between text-[10px] font-extrabold text-muted-foreground uppercase font-label">
-                <span>฿0.00</span>
-                <span>฿{(budgetAmount / 2).toLocaleString()}</span>
-                <span>฿{budgetAmount.toLocaleString()}</span>
+              {/* Total Budget Progress */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center text-xs font-bold text-muted-foreground font-label">
+                  <span>{t('finances.totalTripBudget', 'Total Trip Budget')}</span>
+                  <span className={isOverBudget ? 'text-destructive' : ''}>
+                    {Math.round(progressPercent)}%
+                  </span>
+                </div>
+                <div className="w-full bg-muted h-5 rounded-full overflow-hidden p-1 border border-border">
+                  <div
+                    className={`h-full rounded-full transition-all duration-1000 ease-out ${isOverBudget ? 'bg-destructive' : 'bg-muted-foreground'}`}
+                    style={{ width: `${Math.min(100, progressPercent)}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-[10px] font-extrabold text-muted-foreground uppercase font-label">
+                  <span>{t('finances.spent', 'Spent')}: ฿{totalCost.toLocaleString()}</span>
+                  <span>{t('finances.budgetLimit', 'Budget')}: ฿{budgetAmount.toLocaleString()}</span>
+                </div>
               </div>
             </div>
           </CardContent>

@@ -19,6 +19,7 @@ export interface CreateTripInput {
   destinationNameEn?: string | null;
   centerLat?: number | null;
   centerLng?: number | null;
+  centralFundPerPerson?: number | null;
 }
 
 export interface TripSummary {
@@ -32,6 +33,7 @@ export interface TripSummary {
   destinationNameEn: string | null;
   centerLat: number | null;
   centerLng: number | null;
+  centralFundPerPerson?: number | null;
   role: 'owner' | 'member';
   createdAt: string;
   members: TripMemberProfile[];
@@ -66,6 +68,7 @@ function toSummary(
     destinationNameEn: trip.destination_name_en,
     centerLat: trip.center_lat,
     centerLng: trip.center_lng,
+    centralFundPerPerson: trip.central_fund_per_person,
     role,
     createdAt: trip.created_at,
     members,
@@ -163,6 +166,7 @@ export async function createTrip(ownerId: string, input: CreateTripInput): Promi
             destination_name_en: input.destinationNameEn?.trim() || null,
             center_lat: input.centerLat ?? null,
             center_lng: input.centerLng ?? null,
+            central_fund_per_person: input.centralFundPerPerson ?? null,
             invite_code: inviteCode,
           })
           .returning();
@@ -262,6 +266,7 @@ export interface UpdateTripInput {
   destinationNameEn?: string | null;
   centerLat?: number | null;
   centerLng?: number | null;
+  centralFundPerPerson?: number | null;
 }
 
 /** Loads a trip and asserts the caller owns it. Throws NotFound/Forbidden. */
@@ -296,6 +301,7 @@ export async function updateTrip(
   if (input.destinationName) patch.destination_name_en = input.destinationNameEn?.trim() || null;
   if (input.centerLat !== undefined) patch.center_lat = input.centerLat;
   if (input.centerLng !== undefined) patch.center_lng = input.centerLng;
+  if (input.centralFundPerPerson !== undefined) patch.central_fund_per_person = input.centralFundPerPerson;
 
   const [updated] = await db
     .update(trips)

@@ -119,6 +119,7 @@ function EditTripSection({
     destinationNameEn: string | null;
     centerLat: number | null;
     centerLng: number | null;
+    centralFundPerPerson?: number | null;
   };
   onSaved: () => void;
 }) {
@@ -138,6 +139,9 @@ function EditTripSection({
     from: new Date(trip.startsOn),
     to: new Date(trip.endsOn),
   });
+  const [centralFundPerPerson, setCentralFundPerPerson] = useState<number | ''>(
+    trip.centralFundPerPerson ?? ''
+  );
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<'idle' | 'ok' | 'error'>('idle');
 
@@ -157,6 +161,7 @@ function EditTripSection({
         destinationNameEn: destination?.nameEn ?? null,
         centerLat: hasCoords ? destination!.lat : null,
         centerLng: hasCoords ? destination!.lng : null,
+        centralFundPerPerson: centralFundPerPerson === '' ? null : Number(centralFundPerPerson),
       });
       setStatus('ok');
       onSaved();
@@ -218,6 +223,21 @@ function EditTripSection({
             value={range}
             onChange={setRange}
             placeholder={t('trips.datesPlaceholder')}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="central-fund-per-person" className="text-xs font-semibold uppercase tracking-wide">
+            {t('finances.centralFund.amountPerPersonLabel', 'Central Fund Target (per person)')}
+          </Label>
+          <Input
+            id="central-fund-per-person"
+            type="number"
+            min="0"
+            step="any"
+            value={centralFundPerPerson}
+            onChange={(e) => setCentralFundPerPerson(e.target.value === '' ? '' : Number(e.target.value))}
+            placeholder={t('finances.centralFund.amountDesc', 'Amount that each person should contribute')}
           />
         </div>
 
