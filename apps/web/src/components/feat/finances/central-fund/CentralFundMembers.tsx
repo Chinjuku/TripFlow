@@ -137,8 +137,8 @@ export function CentralFundMembers({
             <div className="shrink-0 flex items-center pl-2">
               {member.status === 'treasurer' || member.status === 'paid' ? (
                 <div className="flex flex-col items-end gap-0.5">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                  <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider">
+                  <CheckCircle2 className="w-5 h-5 text-primary" />
+                  <span className="text-[9px] font-bold text-primary uppercase tracking-wider">
                     {t('finances.centralFund.paid', 'Paid')}
                   </span>
                 </div>

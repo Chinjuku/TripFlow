@@ -29,7 +29,11 @@ export function LanguagePicker() {
               {meta[code].flag}
             </span>
             <span className="text-foreground flex-1 text-sm font-semibold">
-              {meta[code].label}
+              {(() => {
+                const label = meta[code].label;
+                const translated = t(code === 'en' ? 'settings.english' : 'settings.thai');
+                return label === translated ? label : `${label} (${translated})`;
+              })()}
             </span>
             <span
               className={`flex h-4 w-4 items-center justify-center rounded-full border transition-colors ${
