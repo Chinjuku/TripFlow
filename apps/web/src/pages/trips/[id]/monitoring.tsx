@@ -4,7 +4,7 @@ import { Wallet, AlertTriangle, TrendingUp, PieChart, Target, Users } from 'luci
 import {
   TripFinancesLayout,
   useTripFinancesContext,
-} from '@/components/feat/finances/components/TripFinancesLayout';
+} from '@/components/feat/finances/TripFinancesLayout';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@trip-flow/ui/components/card';
 import type { HydratedExpense } from '@/components/feat/finances';

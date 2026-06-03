@@ -22,7 +22,7 @@ import { Button } from '@trip-flow/ui/components/button';
 import { Input } from '@trip-flow/ui/components/input';
 import { Label } from '@trip-flow/ui/components/label';
 import { useTranslation } from 'react-i18next';
-import { extractReceipt } from '../api';
+import { extractReceipt } from './api';
 
 // Zod schema for validation
 const createExpenseSchema = z.object({
@@ -35,6 +35,7 @@ const createExpenseSchema = z.object({
   category: z.enum(['food', 'transport', 'activity', 'lodging', 'other']),
   splitMethod: z.enum(['equally', 'exact_amount']),
   expenseDate: z.string().min(1, 'Date is required'),
+  isCentralFund: z.boolean().optional(),
   splits: z.array(
     z.object({
       userId: z.string().uuid(),
@@ -53,6 +54,7 @@ interface CreateExpenseFormProps {
   onSubmit: (values: any) => Promise<void>;
   onCancel: () => void;
   isSubmitting: boolean;
+  hasCentralFund?: boolean;
 }
 
 // Avatar color helper based on member's name string length/chars to match design screenshots perfectly
@@ -75,6 +77,7 @@ export function CreateExpenseForm({
   onSubmit,
   onCancel,
   isSubmitting,
+  hasCentralFund = false,
 }: CreateExpenseFormProps) {
   // OCR Scan state variables
   const [isScanning, setIsScanning] = useState(false);
@@ -87,12 +90,17 @@ export function CreateExpenseForm({
   const addPersonRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
 
+  // Calculate local timezone ISO string
+  const tzOffset = new Date().getTimezoneOffset() * 60000;
+  const localISOTime = new Date(Date.now() - tzOffset).toISOString().substring(0, 16);
+
   const {
     register,
     control,
     handleSubmit,
     watch,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm<ExpenseFormValues>({
     resolver: zodResolver(createExpenseSchema),
@@ -102,7 +110,8 @@ export function CreateExpenseForm({
       paidById: currentUserId,
       category: 'food',
       splitMethod: 'equally',
-      expenseDate: new Date().toISOString().substring(0, 16), // datetime-local format: YYYY-MM-DDTHH:mm
+      expenseDate: localISOTime,
+      isCentralFund: false,
       splits: members.map((m) => ({
         userId: m.userId,
         amount: 0,
@@ -123,6 +132,23 @@ export function CreateExpenseForm({
   const watchSplits = watch('splits') || [];
   const watchDescription = watch('description') || '';
   const watchPaidById = watch('paidById');
+  const watchIsCentralFund = watch('isCentralFund');
+
+  // When 'isCentralFund' is toggled to true, default to 'equally' and select everyone
+  useEffect(() => {
+    if (watchIsCentralFund) {
+      if (getValues('splitMethod') !== 'equally') {
+        setValue('splitMethod', 'equally');
+      }
+      const currentSplits = getValues('splits') || [];
+      currentSplits.forEach((split, index) => {
+        if (!split.checked) {
+          setValue(`splits.${index}.checked`, true);
+        }
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchIsCentralFund, setValue]);
 
   const checkedCount = watchSplits.filter((s) => s.checked).length;
   const lastDescriptionRef = useRef(watchDescription);
@@ -319,7 +345,8 @@ export function CreateExpenseForm({
       paidById: data.paidById,
       category: data.category,
       splitMethod: data.splitMethod,
-      expenseDate: new Date(data.expenseDate).toISOString(),
+      expenseDate: localISOTime,
+      isCentralFund: data.isCentralFund,
       splits: activeSplits,
     });
   };
@@ -546,28 +573,57 @@ export function CreateExpenseForm({
             <Label htmlFor="paidById" className="text-xs font-bold text-muted-foreground">
               {t('finances.paidBy')}
             </Label>
-            <select
-              id="paidById"
-              className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold"
-              {...register('paidById')}
-            >
-              {members.map((m) => (
-                <option key={m.userId} value={m.userId}>
-                  {m.userId === currentUserId ? t('common.you') : m.name}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                id="paidById"
+                className="flex h-11 w-full rounded-xl border border-input bg-muted/50 px-3 pl-9 py-2 text-sm focus-visible:outline-none text-foreground font-semibold pointer-events-none opacity-90"
+                tabIndex={-1}
+                {...register('paidById')}
+              >
+                {members.map((m) => (
+                  <option key={m.userId} value={m.userId}>
+                    {m.userId === currentUserId ? t('common.you') : m.name}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute left-3.5 top-3.5 h-4 w-4 rounded-full bg-primary/20 flex items-center justify-center text-[8px] font-bold text-primary">
+                {members.find((m) => m.userId === watchPaidById)?.name.charAt(0).toUpperCase()}
+              </div>
+            </div>
             {extractedSenderName && (
               <p className="text-[10px] text-primary font-bold flex items-center gap-1 mt-1.5 animate-slide-down">
                 <Sparkles className="w-3 h-3 text-primary shrink-0" />
                 <span>
-                  แสกนพบผู้โอน: <b className="font-extrabold text-foreground">{extractedSenderName}</b>
+                  แสกนพบผู้โอน:{' '}
+                  <b className="font-extrabold text-foreground">{extractedSenderName}</b>
                   {extractedBankName && ` (${extractedBankName})`}
                 </span>
               </p>
             )}
           </div>
         </div>
+
+        {/* Central Fund Toggle */}
+        {hasCentralFund && (
+          <div className="flex items-center justify-between border border-border rounded-2xl p-5 bg-primary/[0.03]">
+            <div className="space-y-1">
+              <Label htmlFor="isCentralFund" className="text-xs font-bold text-foreground">
+                Deduct from Central Fund?
+              </Label>
+              <p className="text-[11px] text-muted-foreground">
+                Use the trip&apos;s pooled money to pay for this expense.
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="isCentralFund"
+                className="w-5 h-5 accent-primary cursor-pointer"
+                {...register('isCentralFund')}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Split Method Pill selector */}
         <div className="space-y-2">

@@ -6,7 +6,14 @@
  * `assertMember`) so routes stay thin.
  */
 
-import { db, tripMembers, tripPlaces, tripPlaceVotes, type TripPlace } from '@trip-flow/db/server';
+import {
+  db,
+  tripMembers,
+  tripPlaces,
+  tripPlaceVotes,
+  type OpeningPeriod,
+  type TripPlace,
+} from '@trip-flow/db/server';
 import { and, eq, sql } from 'drizzle-orm';
 import { ForbiddenError, NotFoundError } from '../errors/domain';
 
@@ -15,12 +22,15 @@ export interface TripPlaceWithVotes {
   externalId: string;
   name: string;
   address: string | null;
+  nameEn: string | null;
+  addressEn: string | null;
   category: string | null;
   lat: number | null;
   lng: number | null;
   photoUrl: string | null;
   rating: number | null;
   openingHoursText: string | null;
+  openingPeriods: OpeningPeriod[] | null;
   stayMinutes: number | null;
   addedByUserId: string;
   createdAt: string;
@@ -32,12 +42,15 @@ export interface AddPlaceInput {
   externalId: string;
   name: string;
   address?: string | null;
+  nameEn?: string | null;
+  addressEn?: string | null;
   category?: string | null;
   lat?: number | null;
   lng?: number | null;
   photoUrl?: string | null;
   rating?: number | null;
   openingHoursText?: string | null;
+  openingPeriods?: OpeningPeriod[] | null;
   stayMinutes?: number | null;
 }
 
@@ -60,12 +73,15 @@ function toRow(place: TripPlace, voteCount: number, liked: boolean): TripPlaceWi
     externalId: place.external_id,
     name: place.name,
     address: place.address,
+    nameEn: place.name_en,
+    addressEn: place.address_en,
     category: place.category,
     lat: place.lat,
     lng: place.lng,
     photoUrl: place.photo_url,
     rating: place.rating,
     openingHoursText: place.opening_hours_text,
+    openingPeriods: place.opening_periods,
     stayMinutes: place.stay_minutes,
     addedByUserId: place.added_by_user_id,
     createdAt: place.created_at,
@@ -110,12 +126,15 @@ export async function addPlace(
       external_id: input.externalId,
       name: input.name,
       address: input.address ?? null,
+      name_en: input.nameEn ?? null,
+      address_en: input.addressEn ?? null,
       category: input.category ?? null,
       lat: input.lat ?? null,
       lng: input.lng ?? null,
       photo_url: input.photoUrl ?? null,
       rating: input.rating ?? null,
       opening_hours_text: input.openingHoursText ?? null,
+      opening_periods: input.openingPeriods ?? null,
       stay_minutes: input.stayMinutes ?? null,
       added_by_user_id: userId,
     })

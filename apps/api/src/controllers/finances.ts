@@ -42,6 +42,18 @@ export async function handleUpdateTripBudget({ user, body }: AuthContext & { bod
   return await financesService.updateTripBudget(user.sub, body);
 }
 
+export async function handleUpdateCentralFund({
+  user,
+  params,
+  body,
+}: AuthContext & { params: { tripId: string }; body: any }) {
+  return await financesService.updateCentralFund(user.sub, {
+    tripId: params.tripId,
+    treasurerId: body.treasurerId ?? null,
+    centralFundPerPerson: body.centralFundPerPerson ?? null,
+  });
+}
+
 export async function handleUpdateTripOptimization({
   user,
   params,

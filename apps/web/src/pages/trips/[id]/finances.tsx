@@ -1,7 +1,7 @@
 import {
   TripFinancesLayout,
   useTripFinancesContext,
-} from '@/components/feat/finances/components/TripFinancesLayout';
+} from '@/components/feat/finances/TripFinancesLayout';
 import { ExpenseSummary, ExpenseList } from '@/components/feat/finances';
 
 export default function TripFinancesPage() {
@@ -23,6 +23,7 @@ function TripFinancesAllContent() {
     handleConfirmSettlementReceived,
     handleSettleUpTrigger,
     setBudgetOpen,
+    refreshFinances,
   } = useTripFinancesContext();
 
   return (
@@ -36,14 +37,16 @@ function TripFinancesAllContent() {
           onSetBudget={() => setBudgetOpen(true)}
           isOptimized={isOptimized}
           onToggleOptimize={() => setIsOptimized(!isOptimized)}
+          tripOwnerId={trip.ownerId}
+          onRefresh={refreshFinances}
         />
       </div>
 
       {/* 3. Recent Activity Feed */}
       <div className="flex-1 overflow-y-auto pr-2 min-h-0">
         <ExpenseList
-          expenses={finances.expenses}
-          settlements={finances.settlements}
+          expenses={finances.expenses.filter((e: any) => !e.is_central_fund)}
+          settlements={finances.settlements.filter((s: any) => !s.is_central_fund)}
           currentUserId={user?.id || ''}
           onConfirmSettlement={handleConfirmSettlementReceived}
           confirmingId={confirmingSettlementId}

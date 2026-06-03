@@ -4,7 +4,7 @@ import { Input } from '@trip-flow/ui/components/input';
 import { Label } from '@trip-flow/ui/components/label';
 import { Button } from '@trip-flow/ui/components/button';
 import { QrCode, CreditCard, Banknote, User, Upload, X, AlertCircle } from 'lucide-react';
-import type { UserPaymentDetail } from '../types';
+import type { UserPaymentDetail } from './types';
 import { BankSelect } from '@/components/feat/finances/BankSelect';
 import jsQR from 'jsqr';
 import { parse } from 'promptparse';

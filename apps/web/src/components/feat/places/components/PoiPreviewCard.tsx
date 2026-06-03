@@ -3,7 +3,7 @@ import { Check, Clock, ImageOff, MapPin, Plus, Star, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@trip-flow/ui/components/button';
 import { bucketFor, BUCKETS } from '@/utils/places';
-import type { PoiPreview } from '@/utils/places-map';
+import { localized, type PoiPreview } from '@/utils/places-map';
 
 interface PoiPreviewCardProps {
   poi: PoiPreview;
@@ -15,8 +15,11 @@ interface PoiPreviewCardProps {
 
 /** Content of the map's POI InfoWindow — hero photo/rating, name, hours, add. */
 export function PoiPreviewCard({ poi, loading, alreadyPicked, onAdd, onClose }: PoiPreviewCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [adding, setAdding] = useState(false);
+
+  const displayName = localized(i18n.language, poi.name, poi.nameEn) ?? poi.name;
+  const displayAddress = localized(i18n.language, poi.address, poi.addressEn);
 
   async function handleAdd() {
     setAdding(true);
@@ -74,17 +77,17 @@ export function PoiPreviewCard({ poi, loading, alreadyPicked, onAdd, onClose }: 
             </span>
           )}
           <h4 className="font-headline truncate text-base font-bold leading-snug text-white drop-shadow">
-            {poi.name}
+            {displayName}
           </h4>
         </div>
       </div>
 
       {/* Body */}
       <div className="space-y-3 p-3.5">
-        {poi.address && (
+        {displayAddress && (
           <p className="text-muted-foreground flex items-start gap-1.5 text-xs leading-relaxed">
             <MapPin className="text-primary mt-0.5 h-3.5 w-3.5 shrink-0" strokeWidth={2} />
-            <span className="line-clamp-2">{poi.address}</span>
+            <span className="line-clamp-2">{displayAddress}</span>
           </p>
         )}
 

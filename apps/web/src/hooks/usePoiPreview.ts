@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import {
   centerOnPoi,
   openingHoursSummary,
+  serializeOpeningPeriods,
   type PoiPreview,
   type PoiSeed,
 } from '@/utils/places-map';
@@ -59,12 +60,15 @@ export function usePoiPreview(
           placeId,
           name: seed.name ?? '…',
           address: null,
+          nameEn: null,
+          addressEn: null,
           category: seed.category ?? null,
           lat: seed.lat,
           lng: seed.lng,
           photoUrl: null,
           rating: seed.rating ?? null,
           openingHoursText: null,
+          openingPeriods: null,
         });
         centerOnPoi(map, seed.lat, seed.lng);
       }
@@ -72,33 +76,44 @@ export function usePoiPreview(
 
       void (async () => {
         try {
-          const place = new placesLib.Place({ id: placeId });
+          // Fetch the same essentials in both languages so the persisted
+          // snapshot carries Thai (primary) + English copies, independent of
+          // the UI language. The Thai request drives the popup geometry.
+          const placeTh = new placesLib.Place({ id: placeId, requestedLanguage: 'th' });
+          const placeEn = new placesLib.Place({ id: placeId, requestedLanguage: 'en' });
+          const ESSENTIALS = ['id', 'displayName', 'formattedAddress', 'location', 'types'];
 
-          // Essentials SKU — fast (~100-200ms), enough for a usable preview.
-          await place.fetchFields({
-            fields: ['id', 'displayName', 'formattedAddress', 'location', 'types'],
-          });
+          const [, enResult] = await Promise.allSettled([
+            placeTh.fetchFields({ fields: ESSENTIALS }),
+            placeEn.fetchFields({ fields: ESSENTIALS }),
+          ]);
           if (reqId !== reqRef.current) return;
-          if (!place.location) {
+          if (!placeTh.location) {
             setPoi(null);
             setLoading(false);
             return;
           }
 
+          const enOk = enResult.status === 'fulfilled';
           const preview: PoiPreview = {
-            placeId: place.id ?? placeId,
-            name: place.displayName ?? 'Unknown place',
-            address: place.formattedAddress ?? null,
-            category: place.types?.[0] ?? null,
-            lat: place.location.lat(),
-            lng: place.location.lng(),
+            placeId: placeTh.id ?? placeId,
+            name: placeTh.displayName ?? 'Unknown place',
+            address: placeTh.formattedAddress ?? null,
+            nameEn: enOk ? (placeEn.displayName ?? null) : null,
+            addressEn: enOk ? (placeEn.formattedAddress ?? null) : null,
+            category: placeTh.types?.[0] ?? null,
+            lat: placeTh.location.lat(),
+            lng: placeTh.location.lng(),
             photoUrl: null,
             rating: null,
             openingHoursText: null,
+            openingPeriods: null,
           };
           setPoi(preview);
           setLoading(false);
           centerOnPoi(map, preview.lat, preview.lng);
+          // The Thai place handle drives the enrichment fetch below.
+          const place = placeTh;
 
           // Pro/Enterprise fields — slower + pricier, fetched after the popup
           // is already on screen.
@@ -109,6 +124,7 @@ export function usePoiPreview(
             photoUrl: place.photos?.[0]?.getURI({ maxWidth: 480 }) ?? null,
             rating: place.rating ?? null,
             openingHoursText: openingHoursSummary(place.regularOpeningHours ?? null),
+            openingPeriods: serializeOpeningPeriods(place.regularOpeningHours),
           };
           cacheRef.current.set(placeId, enriched);
           setPoi((current) =>

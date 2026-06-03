@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Clock, Heart, MapPin, Star, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@trip-flow/ui/components/button';
 import { cn } from '@trip-flow/ui/lib/cn';
 import { getInitials } from '@/components/feat/trips';
 import { removePlace, setLike } from '@/api/places';
 import { shortAddress } from '@/utils/places';
 import type { TripPlace } from '@/types/places';
+import { PlaceDetailModal } from './components/PlaceDetailModal';
 
 interface PlaceCardProps {
   place: TripPlace;
@@ -34,25 +36,47 @@ export function PlaceCard({
   onChange,
   onRemove,
 }: PlaceCardProps) {
-  if (mode === 'vote') {
-    return (
-      <VoteCard
-        place={place}
-        tripId={tripId}
-        addedByName={addedByName}
-        addedByAvatarUrl={addedByAvatarUrl}
-        onChange={onChange}
-      />
-    );
-  }
+  const [detailOpen, setDetailOpen] = useState(false);
+  const viewDetails = () => setDetailOpen(true);
+  const { i18n } = useTranslation();
+
+  // Resolve the copy matching the UI language once; subcomponents render these
+  // so they don't each need the i18n hook. Falls back when a row only has Thai.
+  const displayName = localized(i18n.language, place.name, place.nameEn) ?? place.name;
+  const displayAddress = localized(i18n.language, place.address, place.addressEn);
+
   return (
-    <PlanCard
-      place={place}
-      tripId={tripId}
-      canRemove={canRemove}
-      onChange={onChange}
-      onRemove={onRemove}
-    />
+    <>
+      {mode === 'vote' ? (
+        <VoteCard
+          place={place}
+          tripId={tripId}
+          displayName={displayName}
+          displayAddress={displayAddress}
+          addedByName={addedByName}
+          addedByAvatarUrl={addedByAvatarUrl}
+          onChange={onChange}
+          onViewDetails={viewDetails}
+        />
+      ) : (
+        <PlanCard
+          place={place}
+          tripId={tripId}
+          displayName={displayName}
+          displayAddress={displayAddress}
+          canRemove={canRemove}
+          onChange={onChange}
+          onRemove={onRemove}
+          onViewDetails={viewDetails}
+        />
+      )}
+      <PlaceDetailModal
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        placeId={place.externalId}
+        placeName={displayName}
+      />
+    </>
   );
 }
 
@@ -63,15 +87,21 @@ export function PlaceCard({
 function PlanCard({
   place,
   tripId,
+  displayName,
+  displayAddress,
   canRemove,
   onChange,
   onRemove,
+  onViewDetails,
 }: {
   place: TripPlace;
   tripId: string;
+  displayName: string;
+  displayAddress: string | null;
   canRemove: boolean;
   onChange: (p: TripPlace) => void;
   onRemove: (id: string) => void;
+  onViewDetails: () => void;
 }) {
   const [busy, setBusy] = useState(false);
 
@@ -88,7 +118,7 @@ function PlanCard({
   }
 
   async function handleRemove() {
-    if (!confirm(`Remove "${place.name}" from this trip?`)) return;
+    if (!confirm(`Remove "${displayName}" from this trip?`)) return;
     setBusy(true);
     try {
       await removePlace(tripId, place.id);
@@ -128,12 +158,18 @@ function PlanCard({
 
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex items-start justify-between gap-2">
-          <h4 className="text-foreground truncate text-sm font-semibold leading-tight sm:text-[0.95rem]">
-            {place.name}
-          </h4>
+          <button
+            type="button"
+            onClick={onViewDetails}
+            className="min-w-0 text-left"
+          >
+            <h4 className="text-foreground hover:text-primary truncate text-sm font-semibold leading-tight transition-colors sm:text-[0.95rem]">
+              {displayName}
+            </h4>
+          </button>
           <VoteChip count={place.voteCount} liked={place.liked} onClick={toggleLike} busy={busy} />
         </div>
-        {place.address && (
+        {displayAddress && (
           <p className="text-muted-foreground line-clamp-2 text-xs leading-snug sm:text-[0.8rem]">
             {shortAddress(place.address)}
           </p>
@@ -201,15 +237,21 @@ function VoteChip({
 function VoteCard({
   place,
   tripId,
+  displayName,
+  displayAddress,
   addedByName,
   addedByAvatarUrl,
   onChange,
+  onViewDetails,
 }: {
   place: TripPlace;
   tripId: string;
+  displayName: string;
+  displayAddress: string | null;
   addedByName?: string;
   addedByAvatarUrl?: string | null;
   onChange: (p: TripPlace) => void;
+  onViewDetails: () => void;
 }) {
   const [busy, setBusy] = useState(false);
 
@@ -265,10 +307,16 @@ function VoteCard({
       {/* Right: details */}
       <div className="flex min-w-0 flex-1 flex-col gap-3 p-4 sm:p-5">
         <div className="min-w-0">
-          <h4 className="text-foreground font-headline truncate text-lg font-bold leading-tight sm:text-xl">
-            {place.name}
-          </h4>
-          {place.address && (
+          <button
+            type="button"
+            onClick={onViewDetails}
+            className="hover:text-primary block max-w-full text-left transition-colors"
+          >
+            <h4 className="text-foreground font-headline truncate text-lg font-bold leading-tight hover:text-primary sm:text-xl">
+              {displayName}
+            </h4>
+          </button>
+          {displayAddress && (
             <p className="text-muted-foreground mt-1 flex items-start gap-1.5 text-sm">
               <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
               <span className="line-clamp-2 min-w-0">{shortAddress(place.address)}</span>

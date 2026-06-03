@@ -163,5 +163,24 @@
   "categoryBreakdown": "แบ่งตามหมวดหมู่",
   "totalYouOwe": "ยอดที่คุณติด",
   "equally": "เท่ากัน",
-  "exact": "แน่นอน"
+  "exact": "แน่นอน",
+  "centralFund": {
+    "activityLog": "บันทึกกิจกรรม",
+    "noActivity": "ยังไม่มีกิจกรรมเงินกองกลางในขณะนี้",
+    "contribution": "เงินสมทบกองกลาง",
+    "defaultExpense": "รายจ่ายเงินกองกลาง",
+    "payFromCentral": "จ่ายจากเงินกองกลาง?",
+    "payFromCentralDesc": "ทำเครื่องหมายรายการชำระเงินนี้เป็นการใช้จ่ายเงินกองกลาง",
+    "confirmDevMode": "ยืนยันการจ่ายเงิน (โหมดพัฒนา)",
+    "confirmDevError": "เกิดข้อผิดพลาดในการยืนยันรายการ",
+    "verifyingSlip": "กำลังตรวจสอบสลิป กรุณารอสักครู่...",
+    "slipAttached": "แนบสลิปแล้ว",
+    "uploadSlip": "อัปโหลดสลิปโอนเงิน",
+    "autoVerificationDesc": "ระบบจะช่วยตรวจสอบยอดเงินให้โดยอัตโนมัติ",
+    "memberContributions": "การจ่ายเงินกองกลางของสมาชิก",
+    "treasurer": "เหรัญญิก",
+    "holdingMoney": "ถือเงินกองกลาง",
+    "paid": "จ่ายแล้ว",
+    "unpaid": "ยังไม่จ่าย"
+  }
 }

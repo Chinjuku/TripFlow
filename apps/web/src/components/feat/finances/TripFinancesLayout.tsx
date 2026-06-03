@@ -27,11 +27,12 @@ import {
 } from '@/components/feat/finances';
 
 import { TripFinancesAllSkeleton } from './TripFinancesAllSkeleton';
-import { TripFinancesAllExpensesSkeleton } from './TripFinancesAllExpensesSkeleton';
+import { TripFinancesAllExpensesSkeleton } from './all-expenses/TripFinancesAllExpensesSkeleton';
 import { TripFinancesRepaymentsSkeleton } from './TripFinancesRepaymentsSkeleton';
 import { TripFinancesFallbackSkeleton } from './TripFinancesFallbackSkeleton';
+import { CentralFundSkeleton } from '@/components/feat/finances/central-fund/CentralFundSkeleton';
 
-type TabId = 'all' | 'all-expense' | 'settlements' | 'monitoring';
+type TabId = 'all' | 'all-expense' | 'settlements' | 'monitoring' | 'central-fund';
 
 interface TripFinancesContextType {
   trip: any;
@@ -42,8 +43,9 @@ interface TripFinancesContextType {
   setIsOptimized: (v: boolean) => void;
   confirmingSettlementId: string | null;
   handleConfirmSettlementReceived: (settlementId: string) => Promise<void>;
-  handleSettleUpTrigger: (payee: DebtRelation) => void;
+  handleSettleUpTrigger: (payee: DebtRelation, isCentralFund?: boolean) => void;
   setBudgetOpen: (v: boolean) => void;
+  refreshFinances: () => Promise<any>;
 }
 
 const TripFinancesContext = createContext<TripFinancesContextType | null>(null);
@@ -69,16 +71,21 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   const { t } = useTranslation();
   const isToReceive = location.pathname.endsWith('/to-receive');
 
-  const TABS = useMemo(() => [
-    { id: 'all' as TabId, label: t('common.all'), path: 'finances' },
-    { id: 'all-expense' as TabId, label: t('finances.allExpenses'), path: 'all-expenses' },
-    { id: 'settlements' as TabId, label: t('finances.settlements'), path: 'to-receive' },
-    { id: 'monitoring' as TabId, label: t('finances.monitoring'), path: 'monitoring' },
-  ], [t]);
+  const TABS = useMemo(
+    () => [
+      { id: 'all' as TabId, label: t('common.all'), path: 'finances' },
+      { id: 'all-expense' as TabId, label: t('finances.allExpenses'), path: 'all-expenses' },
+      { id: 'settlements' as TabId, label: t('finances.settlements'), path: 'to-receive' },
+      { id: 'central-fund' as TabId, label: 'Central Fund', path: 'central-fund' },
+      { id: 'monitoring' as TabId, label: t('finances.monitoring'), path: 'monitoring' },
+    ],
+    [t],
+  );
 
   const [createOpen, setCreateOpen] = useState(false);
   const [settleOpen, setSettleOpen] = useState(false);
   const [activeSettlePayee, setActiveSettlePayee] = useState<DebtRelation | null>(null);
+  const [defaultIsCentralFund, setDefaultIsCentralFund] = useState(false);
   const [budgetOpen, setBudgetOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
 
@@ -91,7 +98,12 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Load general trip detail & members
-  const { data: trip, error: tripError, isLoading: isTripLoading, refresh: refreshTrip } = useTrip(id);
+  const {
+    data: trip,
+    error: tripError,
+    isLoading: isTripLoading,
+    refresh: refreshTrip,
+  } = useTrip(id);
 
   const isOptimized = trip?.isDebtOptimized ?? false;
 
@@ -100,10 +112,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
     setErrorMsg(null);
     try {
       await optimizeTrip(id, val);
-      await Promise.all([
-        refreshFinances(),
-        refreshTrip(),
-      ]);
+      await Promise.all([refreshFinances(), refreshTrip()]);
     } catch (err) {
       console.error('[finances] failed to toggle optimization', err);
       setErrorMsg(err instanceof Error ? err.message : 'Failed to update optimization setting');
@@ -157,7 +166,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   };
 
   // Handle Recording a P2P Settlement
-  const handleSettleUpSubmit = async (payeeId: string, amount: number) => {
+  const handleSettleUpSubmit = async (payeeId: string, amount: number, isCentralFund?: boolean) => {
     if (!id) return null;
     setIsSubmittingSettlement(true);
     setErrorMsg(null);
@@ -166,6 +175,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
         tripId: id,
         payeeId,
         amount,
+        isCentralFund,
       });
       await refreshFinances(true);
       // setSettleOpen(false) is now handled by the modal to support slip upload wait
@@ -230,18 +240,48 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
     }
   };
 
-  const handleSettleUpTrigger = (payee: DebtRelation) => {
+  const handleSettleUpTrigger = (payee: DebtRelation, isCentralFund?: boolean) => {
     setActiveSettlePayee(payee);
+    setDefaultIsCentralFund(isCentralFund ?? false);
     setSettleOpen(true);
   };
 
+  const isTreasurer = user?.id === finances?.summary?.treasurerId;
+  const centralFundPerPerson = finances?.summary?.centralFundPerPerson || 0;
+  const treasurerId = finances?.summary?.treasurerId;
+
+  // Check user's paid amount for central fund
+  const userCentralSettlements = finances?.settlements?.filter(
+    (s: any) => s.payer_id === user?.id && s.is_central_fund && s.payee_id === treasurerId
+  ) || [];
+  
+  const userCentralPaidAndPending = userCentralSettlements.reduce((sum: number, s: any) => sum + s.amount, 0);
+  const hasFullyPaidCentralFund = centralFundPerPerson > 0 && userCentralPaidAndPending >= centralFundPerPerson;
+  const remainingCentralContribution = Math.max(0, centralFundPerPerson - userCentralPaidAndPending);
+
+  const handlePayContribution = () => {
+    if (!treasurerId || !centralFundPerPerson) return;
+    const treasurerMember = trip?.members.find((m: any) => m.userId === treasurerId);
+    if (treasurerMember) {
+      handleSettleUpTrigger({
+        userId: treasurerMember.userId,
+        name: treasurerMember.name,
+        avatarUrl: treasurerMember.avatarUrl,
+        amount: remainingCentralContribution,
+      }, true);
+    }
+  };
+
   // Dynamic header settings configuration mapping based on activeTab
-  const TABS_SETTING_HEADERS: Record<TabId, { title: string; subtitle: React.ReactNode; actions: React.ReactNode }> = {
+  const TABS_SETTING_HEADERS: Record<
+    TabId,
+    { title: string; subtitle: React.ReactNode; actions: React.ReactNode }
+  > = {
     all: {
       title: t('finances.title'),
       subtitle: trip ? (
-        <Trans 
-          i18nKey="finances.managingCostsFor" 
+        <Trans
+          i18nKey="finances.managingCostsFor"
           values={{ title: trip.title, range: formatDateRange(trip.startsOn, trip.endsOn).range }}
           components={{ b: <b /> }}
         />
@@ -306,7 +346,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
                 'px-4 py-1.5 text-xs font-bold rounded-lg transition-all h-[2.125rem] font-label',
                 isToReceive
                   ? 'bg-card text-primary shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
+                  : 'text-muted-foreground hover:text-foreground',
               )}
             >
               {t('finances.toReceive')}
@@ -317,7 +357,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
                 'px-4 py-1.5 text-xs font-bold rounded-lg transition-all h-[2.125rem] font-label',
                 !isToReceive
                   ? 'bg-card text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
+                  : 'text-muted-foreground hover:text-foreground',
               )}
             >
               {t('finances.toPay')}
@@ -337,13 +377,30 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
               'px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 h-[2.125rem] font-label',
               isOptimized
                 ? 'bg-primary text-primary-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
+                : 'text-muted-foreground hover:text-foreground',
             )}
           >
             <Sparkles className="w-3.5 h-3.5 shrink-0" />
             {isOptimized ? t('finances.optimizedActive') : t('finances.enableOptimization')}
           </button>
         </div>
+      ),
+    },
+    'central-fund': {
+      title: 'Central Fund',
+      subtitle: 'Manage common expenses',
+      actions: (
+        <>
+          {treasurerId && centralFundPerPerson > 0 && !isTreasurer && !hasFullyPaidCentralFund && (
+            <Button
+              onClick={handlePayContribution}
+              className="gap-2 shadow-sm hover:shadow-md transition-all animate-in fade-in duration-300 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl h-10 px-4 text-xs shrink-0"
+            >
+              <CreditCard className="w-4 h-4" />
+              Pay Contribution (฿{remainingCentralContribution.toLocaleString()})
+            </Button>
+          )}
+        </>
       ),
     },
   };
@@ -363,6 +420,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
         handleConfirmSettlementReceived,
         handleSettleUpTrigger,
         setBudgetOpen,
+        refreshFinances,
       }}
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-8 h-full lg:h-[calc(100vh-5.5rem)] lg:overflow-hidden animate-in fade-in duration-300">
@@ -385,7 +443,11 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
         <div className="flex flex-col flex-1 min-h-0 space-y-6">
           {/* 2. Tabs Selector */}
           <div className="border-border flex items-center justify-between gap-3 border-b shrink-0">
-            <div className="flex gap-2 overflow-x-auto scrollbar-none" role="tablist" aria-label="Finances view">
+            <div
+              className="flex gap-2 overflow-x-auto scrollbar-none"
+              role="tablist"
+              aria-label="Finances view"
+            >
               {TABS.map((t) => (
                 <button
                   key={t.id}
@@ -422,6 +484,8 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
                 <TripFinancesAllExpensesSkeleton />
               ) : activeTab === 'settlements' ? (
                 <TripFinancesRepaymentsSkeleton />
+              ) : activeTab === 'central-fund' ? (
+                <CentralFundSkeleton />
               ) : (
                 <TripFinancesFallbackSkeleton />
               )
@@ -443,6 +507,12 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
                   currentUserId={user?.id || ''}
                   onSubmit={handleRecordExpenseSubmit}
                   isSubmitting={isSubmittingExpense}
+                  hasCentralFund={
+                    finances?.summary?.treasurerId != null &&
+                    finances?.summary?.centralFundPerPerson != null &&
+                    finances?.summary?.centralFundPerPerson > 0 &&
+                    finances?.summary?.treasurerId === user?.id
+                  }
                 />
               )}
 
@@ -455,6 +525,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
                   onSubmit={handleSettleUpSubmit}
                   isSubmitting={isSubmittingSettlement}
                   onVerified={(silent) => refreshFinances(silent)}
+                  defaultIsCentralFund={defaultIsCentralFund}
                 />
               )}
 
@@ -484,5 +555,3 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
     </TripFinancesContext.Provider>
   );
 }
-
-

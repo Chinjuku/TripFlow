@@ -9,8 +9,21 @@ import {
   uniqueIndex,
   index,
   boolean,
+  jsonb,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
+
+/**
+ * One open→close window in a place's weekly schedule. `day` is 0=Sunday..6=Saturday
+ * (matches JS Date.getDay()); `open`/`close` are "HH:MM" in the place's local time.
+ * A window crossing midnight has `close.day` ≠ `open.day` — flattened here to the
+ * open day with a `close` that may be "24:00"+ (callers clamp).
+ */
+export interface OpeningPeriod {
+  day: number;
+  open: string;
+  close: string;
+}
 
 /**
  * Application users. This is our own identity store (we no longer rely on
@@ -64,6 +77,8 @@ export const trips = pgTable(
     center_lng: doublePrecision('center_lng'),
     invite_code: text('invite_code').notNull(),
     is_debt_optimized: boolean('is_debt_optimized').default(true).notNull(),
+    treasurer_id: uuid('treasurer_id'), // References users.id, set if central fund is enabled
+    central_fund_per_person: doublePrecision('central_fund_per_person'),
     created_at: timestamp('created_at', { withTimezone: true, mode: 'string' })
       .notNull()
       .default(sql`now()`),
@@ -114,6 +129,11 @@ export const tripPlaces = pgTable(
     external_id: text('external_id').notNull(),
     name: text('name').notNull(),
     address: text('address'),
+    /** English display name + address snapshots, so a card can match the UI
+     *  language regardless of which locale was active when the place was added.
+     *  `name`/`address` hold the Thai (primary) copies. */
+    name_en: text('name_en'),
+    address_en: text('address_en'),
     category: text('category'),
     lat: doublePrecision('lat'),
     lng: doublePrecision('lng'),
@@ -122,6 +142,10 @@ export const tripPlaces = pgTable(
     rating: doublePrecision('rating'),
     /** Human-readable hours snapshot from Google, e.g. "Open until 6:00 PM". */
     opening_hours_text: text('opening_hours_text'),
+    /** Machine-readable weekly opening windows (Google regularOpeningHours,
+     *  normalized) so the scheduler can flag events placed outside hours.
+     *  Null = unknown (older rows / no hours / always-open). */
+    opening_periods: jsonb('opening_periods').$type<OpeningPeriod[]>(),
     /** How long the group plans to stay, set by the adder. */
     stay_minutes: integer('stay_minutes'),
     added_by_user_id: uuid('added_by_user_id').notNull(),
@@ -211,6 +235,7 @@ export const expenses = pgTable(
       .notNull()
       .default('equally'), // Added to support showing split type in UI (Equally vs Exact Amount)
     receipt_url: text('receipt_url'),
+    is_central_fund: boolean('is_central_fund').default(false).notNull(),
     expense_date: timestamp('expense_date', { withTimezone: true, mode: 'string' })
       .notNull()
       .default(sql`now()`),
@@ -257,6 +282,7 @@ export const settlements = pgTable(
     status: text('status', { enum: ['pending', 'completed'] })
       .notNull()
       .default('pending'),
+    is_central_fund: boolean('is_central_fund').default(false).notNull(),
     created_at: timestamp('created_at', { withTimezone: true, mode: 'string' })
       .notNull()
       .default(sql`now()`),

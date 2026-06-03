@@ -14,7 +14,7 @@ import {
   type UserPaymentDetail,
 } from '@trip-flow/db/server';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
-import { NotFoundError, ForbiddenError, DomainError } from '../errors/domain';
+import { NotFoundError, ForbiddenError, DomainError, ConflictError } from '../errors/domain';
 import { getUserById } from './auth';
 import { loadTripMembers, type TripMemberProfile } from './trips';
 
@@ -28,6 +28,10 @@ export interface FinanceSummary {
   balances: Record<string, number>; // Net balance per user id
   budget: TripBudget | null;
   paymentDetails: Record<string, UserPaymentDetail>;
+  treasurerId: string | null;
+  centralFundPerPerson: number | null;
+  centralFundTotal: number;
+  centralFundSpent: number;
 }
 
 export interface DebtRelation {
@@ -198,11 +202,19 @@ export async function getFinancesByTripId(
   // Calculations
   // ==========================================
 
-  // A. Total Group Cost
+  // A. Total Group Cost & Central Fund
   let totalGroupCost = 0;
+  let centralFundSpent = 0;
   for (const exp of rawExpenses) {
     totalGroupCost += exp.amount;
+    if (exp.is_central_fund) {
+      centralFundSpent += exp.amount;
+    }
   }
+
+  const centralFundPerPerson = tripRow?.central_fund_per_person ?? null;
+  const centralFundTotal = centralFundPerPerson ? centralFundPerPerson * members.length : 0;
+
 
   // B. Net Balances Calculation (based on expenses, splits, and completed settlements)
   const netBalances: Record<string, number> = {};
@@ -210,8 +222,11 @@ export async function getFinancesByTripId(
     netBalances[m.userId] = 0;
   }
 
+  const centralFundExpenseIds = new Set(rawExpenses.filter(e => e.is_central_fund).map(e => e.id));
+
   // Plus amount paid in expenses
   for (const exp of rawExpenses) {
+    if (exp.is_central_fund) continue;
     const payerId = exp.paid_by_id;
     if (netBalances[payerId] !== undefined) {
       netBalances[payerId] += exp.amount;
@@ -220,6 +235,7 @@ export async function getFinancesByTripId(
 
   // Minus split amounts owed
   for (const split of rawSplits) {
+    if (centralFundExpenseIds.has(split.expense_id)) continue;
     const userId = split.user_id;
     if (netBalances[userId] !== undefined) {
       netBalances[userId] -= split.amount;
@@ -228,6 +244,7 @@ export async function getFinancesByTripId(
 
   // Apply COMPLETED settlements
   for (const set of rawSettlements) {
+    if (set.is_central_fund) continue;
     if (set.status === 'completed') {
       const payerBal = netBalances[set.payer_id];
       if (payerBal !== undefined) {
@@ -256,6 +273,7 @@ export async function getFinancesByTripId(
 
   // Accumulate splits
   for (const exp of rawExpenses) {
+    if (exp.is_central_fund) continue;
     const payerId = exp.paid_by_id;
     const expSplits = splitsByExpense.get(exp.id) ?? [];
     for (const split of expSplits) {
@@ -271,6 +289,7 @@ export async function getFinancesByTripId(
 
   // Subtract completed settlements
   for (const set of rawSettlements) {
+    if (set.is_central_fund) continue;
     if (set.status === 'completed') {
       // set.payer_id paid set.payee_id, reducing what payer_id owes payee_id
       const debtorDebts = pairwiseDebt[set.payer_id];
@@ -359,6 +378,10 @@ export async function getFinancesByTripId(
       balances: netBalances,
       budget: budget ?? null,
       paymentDetails: paymentDetailsRecord,
+      treasurerId: tripRow?.treasurer_id ?? null,
+      centralFundPerPerson,
+      centralFundTotal,
+      centralFundSpent: Number(centralFundSpent.toFixed(2)),
     },
     expenses: hydratedExpenses,
     settlements: hydratedSettlements,
@@ -373,6 +396,7 @@ export interface CreateExpenseInput {
   category: 'food' | 'transport' | 'activity' | 'lodging' | 'other';
   splitMethod: 'equally' | 'exact_amount';
   expenseDate?: string;
+  isCentralFund?: boolean;
   splits: {
     userId: string;
     amount: number;
@@ -409,6 +433,7 @@ export async function createExpense(
         paid_by_id: input.paidById,
         category: input.category,
         split_method: input.splitMethod,
+        is_central_fund: input.isCentralFund ?? false,
         expense_date: input.expenseDate
           ? new Date(input.expenseDate).toISOString()
           : new Date().toISOString(),
@@ -459,6 +484,7 @@ export interface CreateSettlementInput {
   tripId: string;
   payeeId: string;
   amount: number;
+  isCentralFund?: boolean;
 }
 
 /**
@@ -475,6 +501,27 @@ export async function createSettlement(
     throw new Error('You cannot settle up with yourself');
   }
 
+  if (input.isCentralFund) {
+    const [trip] = await db.select().from(trips).where(eq(trips.id, input.tripId)).limit(1);
+    if (trip && trip.central_fund_per_person) {
+      const userCentralSettlements = await db
+        .select()
+        .from(settlements)
+        .where(
+          and(
+            eq(settlements.trip_id, input.tripId),
+            eq(settlements.payer_id, userId),
+            eq(settlements.is_central_fund, true)
+          )
+        );
+      
+      const currentPaidAndPending = userCentralSettlements.reduce((acc, s) => acc + s.amount, 0);
+      if (currentPaidAndPending + input.amount > trip.central_fund_per_person) {
+        throw new ConflictError(`Cannot pay more than the required central fund amount (฿${trip.central_fund_per_person.toLocaleString()})`);
+      }
+    }
+  }
+
   const [created] = await db
     .insert(settlements)
     .values({
@@ -482,6 +529,7 @@ export async function createSettlement(
       payer_id: userId,
       payee_id: input.payeeId,
       amount: input.amount,
+      is_central_fund: input.isCentralFund ?? false,
       status: 'pending',
     })
     .returning();
@@ -520,7 +568,9 @@ export async function confirmSettlement(
   }
 
   // Ensure caller is the payee (recipient of money), since they should be the one confirming they received it.
-  if (settlement.payee_id !== userId) {
+  // In development mode, we allow the payer to confirm as well to facilitate testing.
+  const isDev = process.env.NODE_ENV === 'development';
+  if (settlement.payee_id !== userId && !(isDev && settlement.payer_id === userId)) {
     throw new ForbiddenError('Only the recipient of the settlement can confirm it');
   }
 
@@ -572,6 +622,43 @@ export async function updateTripOptimization(
 export interface UpdateTripBudgetInput {
   tripId: string;
   amount: number;
+}
+
+export interface UpdateCentralFundInput {
+  tripId: string;
+  treasurerId: string | null;
+  centralFundPerPerson: number | null;
+}
+
+/**
+ * Updates the central fund configuration for the trip.
+ */
+export async function updateCentralFund(
+  userId: string,
+  input: UpdateCentralFundInput,
+): Promise<any> {
+  const [trip] = await db.select().from(trips).where(eq(trips.id, input.tripId)).limit(1);
+  if (!trip) throw new NotFoundError('Trip not found');
+
+  if (trip.owner_id !== userId) {
+    throw new ForbiddenError('Only the trip owner can update the central fund settings');
+  }
+
+  if (input.treasurerId) {
+    await ensureTripMember(input.treasurerId, input.tripId);
+  }
+
+  const [updated] = await db
+    .update(trips)
+    .set({
+      treasurer_id: input.treasurerId,
+      central_fund_per_person: input.centralFundPerPerson,
+    })
+    .where(eq(trips.id, input.tripId))
+    .returning();
+
+  if (!updated) throw new Error('Failed to update central fund settings');
+  return updated;
 }
 
 /**

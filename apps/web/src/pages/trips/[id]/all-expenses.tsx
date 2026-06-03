@@ -7,9 +7,9 @@ import { DatePicker } from '@trip-flow/ui/components/date-picker';
 import {
   TripFinancesLayout,
   useTripFinancesContext,
-} from '@/components/feat/finances/components/TripFinancesLayout';
-import { AllExpenseItem } from '@/components/feat/finances/components/AllExpenseItem';
-import { AllExpensesSkeleton } from '@/components/feat/finances/components/AllExpensesSkeleton';
+} from '@/components/feat/finances/TripFinancesLayout';
+import { AllExpenseItem } from '@/components/feat/finances/all-expenses/AllExpenseItem';
+import { AllExpensesSkeleton } from '@/components/feat/finances/all-expenses/AllExpensesSkeleton';
 import type { HydratedExpense } from '@/components/feat/finances';
 
 export default function AllExpensePage() {
@@ -39,6 +39,7 @@ function AllExpensesContent() {
   const filteredExpenses = useMemo(() => {
     if (!finances?.expenses) return [];
     return finances.expenses.filter((exp: HydratedExpense) => {
+      if (exp.is_central_fund) return false;
       const matchesSearch =
         exp.description.toLowerCase().includes(search.toLowerCase()) ||
         exp.payerName.toLowerCase().includes(search.toLowerCase());

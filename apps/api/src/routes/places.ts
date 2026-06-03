@@ -31,12 +31,26 @@ export const placesRoute = new Elysia()
       externalId: t.String({ minLength: 1, maxLength: 200 }),
       name: t.String({ minLength: 1, maxLength: 200 }),
       address: t.Optional(t.Nullable(t.String({ maxLength: 500 }))),
+      nameEn: t.Optional(t.Nullable(t.String({ maxLength: 200 }))),
+      addressEn: t.Optional(t.Nullable(t.String({ maxLength: 500 }))),
       category: t.Optional(t.Nullable(t.String({ maxLength: 64 }))),
       lat: t.Optional(t.Nullable(t.Number())),
       lng: t.Optional(t.Nullable(t.Number())),
       photoUrl: t.Optional(t.Nullable(t.String({ maxLength: 1000 }))),
       rating: t.Optional(t.Nullable(t.Number({ minimum: 0, maximum: 5 }))),
       openingHoursText: t.Optional(t.Nullable(t.String({ maxLength: 200 }))),
+      openingPeriods: t.Optional(
+        t.Nullable(
+          t.Array(
+            t.Object({
+              day: t.Integer({ minimum: 0, maximum: 6 }),
+              open: t.String({ maxLength: 5 }),
+              close: t.String({ maxLength: 6 }),
+            }),
+            { maxItems: 50 },
+          ),
+        ),
+      ),
       stayMinutes: t.Optional(t.Nullable(t.Integer({ minimum: 5, maximum: 1440 }))),
     }),
   })

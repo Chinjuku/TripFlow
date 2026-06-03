@@ -47,5 +47,14 @@
   "poiAdd": "Add to suggestions",
   "poiAdded": "Already added",
   "poiAdding": "Adding…",
-  "poiLoading": "Loading…"
+  "poiLoading": "Loading…",
+  "detailAddress": "Address",
+  "detailPhone": "Phone",
+  "detailWebsite": "Website",
+  "detailFailed": "Couldn't load place details.",
+  "detailReviews": "{{count}} reviews",
+  "detailHours": "Opening hours",
+  "detailReviewsHeading": "Reviews",
+  "detailOpenMaps": "Open in Google Maps",
+  "viewDetails": "View details"
 }

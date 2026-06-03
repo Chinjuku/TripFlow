@@ -1,14 +1,23 @@
+import type { OpeningPeriod } from '@/utils/places-map';
+
+export type { OpeningPeriod };
+
 export interface TripPlace {
   id: string;
   externalId: string;
   name: string;
   address: string | null;
+  /** English snapshots; null on older rows. Render falls back to name/address. */
+  nameEn: string | null;
+  addressEn: string | null;
   category: string | null;
   lat: number | null;
   lng: number | null;
   photoUrl: string | null;
   rating: number | null;
   openingHoursText: string | null;
+  /** Machine-readable weekly hours; null on older rows / unknown. */
+  openingPeriods: OpeningPeriod[] | null;
   stayMinutes: number | null;
   addedByUserId: string;
   createdAt: string;
@@ -20,12 +29,15 @@ export interface AddPlacePayload {
   externalId: string;
   name: string;
   address?: string | null;
+  nameEn?: string | null;
+  addressEn?: string | null;
   category?: string | null;
   lat?: number | null;
   lng?: number | null;
   photoUrl?: string | null;
   rating?: number | null;
   openingHoursText?: string | null;
+  openingPeriods?: OpeningPeriod[] | null;
   stayMinutes?: number | null;
 }
 
