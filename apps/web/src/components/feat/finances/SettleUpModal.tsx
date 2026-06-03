@@ -14,7 +14,7 @@ import {
 import type { DebtRelation, UserPaymentDetail } from './types';
 import { useTranslation, Trans } from 'react-i18next';
 import { findBank } from '@/utils/thai-banks';
-import { verifySlip } from './api';
+import { verifySlip, confirmSettlement } from './api';
 
 interface SettleUpModalProps {
   open: boolean;
@@ -151,11 +151,24 @@ export function SettleUpModal({
     e.preventDefault();
   };
 
-  const handleConfirm = async () => {
-    // Note: Manual confirm button was removed per requirements,
-    // but we keep this function in case it's needed in the future or invoked programmatically.
-    await onSubmit(payee.userId, payee.amount, isCentralFund);
-    onOpenChange(false);
+  const handleDevConfirm = async () => {
+    setScanError(null);
+    setIsScanning(true);
+    try {
+      const createdSettlement = await onSubmit(payee.userId, payee.amount, isCentralFund);
+      if (!createdSettlement) {
+        setIsScanning(false);
+        return;
+      }
+      await confirmSettlement(createdSettlement.id);
+      onVerified?.();
+      onOpenChange(false);
+    } catch (err) {
+      console.error('Dev confirm error:', err);
+      setScanError(err instanceof Error ? err.message : t('finances.centralFund.confirmDevError', 'Failed to confirm settlement'));
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   return (
@@ -376,99 +389,88 @@ export function SettleUpModal({
         )}
 
         {/* Central Fund Toggle */}
-        <div className="flex items-center justify-between border border-border rounded-xl p-4 bg-primary/[0.03]">
-          <div className="space-y-1">
-            <span className="text-xs font-bold text-foreground block">
-              Pay from Central Fund?
-            </span>
-            <span className="text-[10px] text-muted-foreground block">
-              Mark this payment as using the shared pool.
-            </span>
+        {defaultIsCentralFund && (
+          <div className="flex items-center justify-between border border-border rounded-xl p-4 bg-primary/[0.03]">
+            <div className="space-y-1">
+              <span className="text-xs font-bold text-foreground block">
+                {t('finances.centralFund.payFromCentral', 'Pay from Central Fund?')}
+              </span>
+              <span className="text-[10px] text-muted-foreground block">
+                {t('finances.centralFund.payFromCentralDesc', 'Mark this payment as using the shared pool.')}
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              className="w-4 h-4 accent-primary cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+              checked={isCentralFund}
+              onChange={(e) => setIsCentralFund(e.target.checked)}
+              disabled={defaultIsCentralFund || isScanning}
+            />
           </div>
-          <input
-            type="checkbox"
-            className="w-4 h-4 accent-primary cursor-pointer"
-            checked={isCentralFund}
-            onChange={(e) => setIsCentralFund(e.target.checked)}
-            disabled={isScanning}
-          />
-        </div>
+        )}
 
-        {/* OCR Dropzone (Only show if payment methods exist) */}
-        {activeMethods.length > 0 && (
-          <div className="border-t border-border pt-4">
+        {/* DEV MODE Confirmation Button or OCR Dropzone */}
+        {import.meta.env.DEV ? (
+          <div className="border-t border-border pt-4 space-y-3">
             {scanError && (
-              <div className="mb-3 border-rose-100 bg-rose-50 text-rose-800 p-3 rounded-xl border text-xs flex items-center gap-2 dark:bg-rose-950/20 dark:border-rose-950/30 dark:text-rose-400">
+              <div className="border-rose-100 bg-rose-50 text-rose-800 p-3 rounded-xl border text-xs flex items-center gap-2 dark:bg-rose-950/20 dark:border-rose-950/30 dark:text-rose-400">
                 <AlertCircle className="w-5 h-5 shrink-0" />
                 <span>{scanError}</span>
               </div>
             )}
-            <div
-              onDragOver={handleDragOver}
-              onDrop={handleReceiptUpload}
-              className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-4 text-center transition-all duration-200 ${scanError ? 'border-destructive bg-destructive/5' : 'border-border hover:border-primary/50 bg-muted/50'}`}
+            <Button
+              type="button"
+              disabled={isScanning}
+              onClick={handleDevConfirm}
+              className="w-full text-xs h-10 rounded-xl bg-primary text-primary-foreground font-bold hover:opacity-90 transition-all flex items-center justify-center gap-1.5"
             >
-              <input
-                id="slip-upload"
-                type="file"
-                accept="image/*,application/pdf"
-                onChange={handleReceiptUpload}
-                disabled={isScanning}
-                className={`absolute inset-0 w-full h-full opacity-0 ${isScanning ? 'cursor-not-allowed' : 'cursor-pointer'} z-10`}
-              />
-              <div className="flex flex-col items-center justify-center gap-2">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-105 transition-transform duration-200">
-                  {isScanning ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <CloudUpload className="w-5 h-5" />
-                  )}
-                </div>
-                {isScanning ? (
-                  <div className="space-y-1.5 z-20">
-                    <p className="text-xs font-semibold text-primary">
-                      กำลังตรวจสอบสลิป กรุณารอสักครู่...
-                    </p>
-                  </div>
-                ) : uploadedFile && !scanError ? (
-                  <div className="z-20">
-                    <p className="text-xs font-semibold text-primary flex items-center gap-1 justify-center">
-                      <Check className="w-3.5 h-3.5" /> แนบสลิปแล้ว
-                    </p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{uploadedFile.name}</p>
-                  </div>
-                ) : (
-                  <div className="z-20">
-                    <p className="text-xs font-semibold text-muted-foreground">
-                      อัปโหลดสลิปโอนเงิน
-                    </p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
-                      ระบบจะช่วยตรวจสอบยอดเงินให้โดยอัตโนมัติ
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
+              {isScanning ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <CheckCircle2 className="w-3.5 h-3.5" />
+              )}
+              {t('finances.centralFund.confirmDevMode', 'Confirm Payment (Dev Mode)')}
+            </Button>
           </div>
-        )}
-
-        {/* Confirm Settlement Buttons */}
-        <div className="pt-2 flex flex-col gap-2">
-          {/* Removed manual confirmation button per request */}
-          <Button
-            type="button"
-            variant="outline"
-            disabled={isScanning}
-            onClick={() => onOpenChange(false)}
-            className="w-full text-xs h-10 rounded-xl border border-border hover:bg-muted font-bold transition-colors"
-          >
-            {t('common.cancel', 'Cancel')}
-          </Button>
-        </div>
-      </div>
-    </Modal>
-  );
-}
+        ) : (
+          activeMethods.length > 0 && (
+            <div className="border-t border-border pt-4">
+              {scanError && (
+                <div className="mb-3 border-rose-100 bg-rose-50 text-rose-800 p-3 rounded-xl border text-xs flex items-center gap-2 dark:bg-rose-950/20 dark:border-rose-950/30 dark:text-rose-400">
+                  <AlertCircle className="w-5 h-5 shrink-0" />
+                  <span>{scanError}</span>
+                </div>
+              )}
+              <div
+                onDragOver={handleDragOver}
+                onDrop={handleReceiptUpload}
+                className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-4 text-center transition-all duration-200 ${scanError ? 'border-destructive bg-destructive/5' : 'border-border hover:border-primary/50 bg-muted/50'}`}
+              >
+                <input
+                  id="slip-upload"
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={handleReceiptUpload}
+                  disabled={isScanning}
+                  className={`absolute inset-0 w-full h-full opacity-0 ${isScanning ? 'cursor-not-allowed' : 'cursor-pointer'} z-10`}
+                />
+                <div className="flex flex-col items-center justify-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-105 transition-transform duration-200">
+                    {isScanning ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <CloudUpload className="w-5 h-5" />
+                    )}
+                  </div>
+                  {isScanning ? (
+                    <div className="space-y-1.5 z-20">
+                      <p className="text-xs font-semibold text-primary">
+                        {t('finances.centralFund.verifyingSlip', 'Verifying slip, please wait...')}
+                      </p>
+                    </div>
+                  ) : uploadedFile && !scanError ? (
+                    <div className="z-20">
+                      <p className="text-xs font-semibold text-primary flex items-center gap-1 justify-center">
                         <Check className="w-3.5 h-3.5" /> {t('finances.centralFund.slipAttached', 'Slip attached')}
                       </p>
                       <p className="text-[10px] text-muted-foreground mt-0.5">{uploadedFile.name}</p>
