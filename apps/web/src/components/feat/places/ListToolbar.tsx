@@ -1,23 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  ArrowUpDown,
-  Check,
-  ChevronDown,
-  Image as ImageIcon,
-  ListChecks,
-  ThumbsUp,
-  Trash2,
-} from 'lucide-react';
+import { ArrowUpDown, Check, ChevronDown, ListChecks, Trash2 } from 'lucide-react';
 import { Button } from '@trip-flow/ui/components/button';
 import { cn } from '@trip-flow/ui/lib/cn';
-import type { FilterKey, SortKey, TripPlace } from '@/types/places';
+import type { SortKey } from '@/types/places';
 import { useTranslation } from 'react-i18next';
 
 // We will generate SORTS dynamically inside the component since they use translations.
 
 interface ListToolbarProps {
-  filter: FilterKey;
-  onFilterChange: (next: FilterKey) => void;
   sortKey: SortKey;
   onSortChange: (next: SortKey) => void;
   bulkMode: boolean;
@@ -25,12 +15,9 @@ interface ListToolbarProps {
   bulkSelected: Set<string>;
   onBulkDelete: () => void;
   bulkBusy: boolean;
-  places: TripPlace[];
 }
 
 export function ListToolbar({
-  filter,
-  onFilterChange,
   sortKey,
   onSortChange,
   bulkMode,
@@ -38,28 +25,8 @@ export function ListToolbar({
   bulkSelected,
   onBulkDelete,
   bulkBusy,
-  places,
 }: ListToolbarProps) {
   const { t } = useTranslation();
-
-  const FILTERS: Array<{ id: FilterKey; label: string; icon: typeof ThumbsUp }> = useMemo(
-    () => [
-      { id: 'all', label: t('plan.filterAll', 'All'), icon: ListChecks },
-      { id: 'voted', label: t('plan.filterVotedOnly', 'Voted only'), icon: ThumbsUp },
-      { id: 'mine', label: t('plan.filterMyPicks', 'My picks'), icon: Check },
-      { id: 'photos', label: t('plan.filterHasPhoto', 'Has photo'), icon: ImageIcon },
-    ],
-    [t],
-  );
-
-  const counts = useMemo(() => {
-    const out: Record<FilterKey, number> = { all: places.length, voted: 0, mine: 0, photos: 0 };
-    for (const p of places) {
-      if (p.voteCount > 0) out.voted += 1;
-      if (p.photoUrl) out.photos += 1;
-    }
-    return out;
-  }, [places]);
 
   return (
     <div
@@ -68,42 +35,6 @@ export function ListToolbar({
         bulkMode && 'bg-primary/5 border-primary/30 -mx-2 rounded-xl border p-2',
       )}
     >
-      <div className="scrollbar-none -mx-1 flex items-center gap-1.5 overflow-x-auto px-1 sm:flex-wrap sm:overflow-visible">
-        {FILTERS.map((f) => {
-          const Icon = f.icon;
-          const active = filter === f.id;
-          const count = counts[f.id];
-          return (
-            <button
-              key={f.id}
-              type="button"
-              onClick={() => onFilterChange(f.id)}
-              className={cn(
-                'inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-all',
-                active
-                  ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                  : 'bg-card text-foreground border-border hover:border-primary/40 hover:bg-muted',
-              )}
-            >
-              <Icon className="h-3.5 w-3.5" strokeWidth={2} />
-              {f.label}
-              {f.id !== 'mine' && (
-                <span
-                  className={cn(
-                    'inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full px-1 text-[0.6rem] font-bold tabular-nums',
-                    active
-                      ? 'bg-primary-foreground/20 text-primary-foreground'
-                      : 'bg-muted text-muted-foreground',
-                  )}
-                >
-                  {count}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
       <div className="hidden flex-1 sm:block" />
 
       <SortPicker value={sortKey} onChange={onSortChange} />
