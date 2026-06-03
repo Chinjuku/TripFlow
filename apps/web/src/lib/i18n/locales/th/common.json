@@ -22,6 +22,8 @@
   "owner": "เจ้าของ",
   "you": "คุณ",
   "unknown": "ไม่ทราบ",
+  "filters": "ตัวกรอง",
+  "seeAll": "ดูทั้งหมด",
   "inviteCode": "รหัสเชิญ",
   "createdBy": "สร้างโดย",
   "days": "{{count}} วัน",

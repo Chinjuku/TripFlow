@@ -330,12 +330,16 @@ export function CreateExpenseForm({
       }));
 
     if (activeSplits.length === 0) {
-      alert('At least one traveler must be in the split');
+      alert(t('finances.errorNoTravelerSelected', 'At least one traveler must be in the split'));
       return;
     }
 
     if (data.splitMethod === 'exact_amount' && isExactMismatch) {
-      alert(`Total splits must sum to ฿${data.amount.toLocaleString()}`);
+      alert(
+        t('finances.errorExactMismatch', 'Total splits must sum to ฿{{amount}}', {
+          amount: data.amount.toLocaleString(),
+        })
+      );
       return;
     }
 
@@ -594,7 +598,7 @@ export function CreateExpenseForm({
               <p className="text-[10px] text-primary font-bold flex items-center gap-1 mt-1.5 animate-slide-down">
                 <Sparkles className="w-3 h-3 text-primary shrink-0" />
                 <span>
-                  แสกนพบผู้โอน:{' '}
+                  {t('finances.ocrSenderFound', 'แสกนพบผู้โอน:')}{' '}
                   <b className="font-extrabold text-foreground">{extractedSenderName}</b>
                   {extractedBankName && ` (${extractedBankName})`}
                 </span>
@@ -608,10 +612,10 @@ export function CreateExpenseForm({
           <div className="flex items-center justify-between border border-border rounded-2xl p-5 bg-primary/[0.03]">
             <div className="space-y-1">
               <Label htmlFor="isCentralFund" className="text-xs font-bold text-foreground">
-                Deduct from Central Fund?
+                {t('finances.centralFund.payFromCentral', 'Deduct from Central Fund?')}
               </Label>
               <p className="text-[11px] text-muted-foreground">
-                Use the trip&apos;s pooled money to pay for this expense.
+                {t('finances.centralFund.payFromCentralDesc', "Use the trip's pooled money to pay for this expense.")}
               </p>
             </div>
             <div className="flex items-center space-x-2">
@@ -760,7 +764,7 @@ export function CreateExpenseForm({
                             <Input
                               id={`splits.${index}.itemPaid`}
                               type="text"
-                              placeholder="Menu/item (e.g. Pad Thai)"
+                              placeholder={t('finances.itemPaidPlaceholder', 'Menu/item (e.g. Pad Thai)')}
                               className="h-9 text-xs border-input rounded-xl focus-visible:ring-primary bg-muted/30"
                               {...register(`splits.${index}.itemPaid`)}
                             />

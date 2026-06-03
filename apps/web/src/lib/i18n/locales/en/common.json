@@ -22,6 +22,8 @@
   "owner": "Owner",
   "you": "you",
   "unknown": "Unknown",
+  "filters": "Filters",
+  "seeAll": "See All",
   "inviteCode": "Invite code",
   "createdBy": "Created by",
   "days": "{{count}} day",

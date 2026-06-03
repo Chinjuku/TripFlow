@@ -56,13 +56,13 @@ export function SettleUpModal({
 
   const activeMethods: ('promptpay_id' | 'bank')[] = [];
 
-  // ดึงข้อมูล Bank Account มาแสดง (ถ้ามีข้อมูล)
-  if (paymentDetails?.bank_name && paymentDetails?.bank_account_number) {
+  // ดึงข้อมูล Bank Account มาแสดง (ถ้ามีข้อมูลและเปิดใช้งาน)
+  if (paymentDetails?.is_show_mobile_banking && paymentDetails?.bank_name && paymentDetails?.bank_account_number) {
     activeMethods.push('bank');
   }
 
-  // ดึงข้อมูล PromptPay ID มาแสดง (ถ้ามีข้อมูล)
-  if (paymentDetails?.promptpay_id) {
+  // ดึงข้อมูล PromptPay ID มาแสดง (ถ้ามีข้อมูลและเปิดใช้งาน)
+  if (paymentDetails?.is_show_promptpay && (paymentDetails?.promptpay_id || paymentDetails?.qr_code_url)) {
     activeMethods.push('promptpay_id');
   }
 
