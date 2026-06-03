@@ -100,7 +100,7 @@ export function SearchBar({
         e.preventDefault();
         onSubmit();
       }}
-      className="bg-card border-border flex items-center gap-2 rounded-full border p-1.5 shadow-md"
+      className="bg-card border-border flex items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-2.5 shadow-md"
     >
       <Search className="text-muted-foreground ml-2 h-4 w-4 shrink-0" strokeWidth={2} />
       <Input
