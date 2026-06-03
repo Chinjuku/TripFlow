@@ -1,5 +1,6 @@
 import { Clock } from 'lucide-react';
 import { useDroppable } from '@dnd-kit/core';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@trip-flow/ui/lib/cn';
 import type { ScheduleItem } from '@/types/schedule';
 import {
@@ -34,6 +35,7 @@ export function Timeline({
   pendingResizeIds,
   timelineRef,
 }: TimelineProps) {
+  const { t } = useTranslation();
   const { setNodeRef, isOver } = useDroppable({ id: 'timeline' });
 
   const hourLines = Array.from({ length: HOURS_END - HOURS_START + 1 }, (_, i) => HOURS_START + i);
@@ -80,7 +82,7 @@ export function Timeline({
 
       {items.length === 0 && (
         <div className="text-muted-foreground absolute inset-0 flex items-center justify-center text-sm">
-          Drag a place here to start scheduling.
+          {t('schedule.dragToStart')}
         </div>
       )}
     </div>

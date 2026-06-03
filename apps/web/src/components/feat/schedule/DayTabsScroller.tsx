@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@trip-flow/ui/lib/cn';
 import type { DayInfo } from '@/types/schedule';
 
@@ -9,6 +10,7 @@ interface DayTabsScrollerProps {
 }
 
 export function DayTabsScroller({ days, activeDay, onSelect }: DayTabsScrollerProps) {
+  const { t } = useTranslation();
   const scrollerRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const dotRefs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -57,7 +59,7 @@ export function DayTabsScroller({ days, activeDay, onSelect }: DayTabsScrollerPr
       {days.length > 1 && (
         <div
           role="tablist"
-          aria-label="Day navigator"
+          aria-label={t('schedule.dayNavigator')}
           className="scrollbar-none flex items-center justify-center gap-1.5 overflow-x-auto"
         >
           {days.map((d, idx) => {

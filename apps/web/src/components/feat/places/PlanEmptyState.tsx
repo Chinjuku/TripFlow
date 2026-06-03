@@ -13,7 +13,7 @@ export function PlanEmptyState({ tab, onGoToPlan }: PlanEmptyStateProps) {
 
   if (tab === 'vote') {
     return (
-      <div className="border-border bg-card animate-in fade-in-0 slide-in-from-bottom-2 flex min-h-[20rem] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed p-8 text-center duration-500">
+      <div className="border-border bg-card animate-in fade-in-0 slide-in-from-bottom-2 flex min-h-[20rem] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed p-6 text-center duration-500 sm:p-8">
         <div className="bg-primary/10 text-primary flex h-14 w-14 items-center justify-center rounded-2xl">
           <Sparkles className="h-7 w-7" strokeWidth={1.75} />
         </div>
@@ -31,7 +31,7 @@ export function PlanEmptyState({ tab, onGoToPlan }: PlanEmptyStateProps) {
     );
   }
   return (
-    <div className="border-border bg-card animate-in fade-in-0 slide-in-from-bottom-2 flex min-h-[20rem] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed p-8 text-center duration-500">
+    <div className="border-border bg-card animate-in fade-in-0 slide-in-from-bottom-2 flex min-h-[20rem] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed p-6 text-center duration-500 sm:p-8">
       <div className="bg-primary/10 text-primary flex h-12 w-12 items-center justify-center rounded-full">
         <MapPinned className="h-7 w-7" strokeWidth={1.75} />
       </div>

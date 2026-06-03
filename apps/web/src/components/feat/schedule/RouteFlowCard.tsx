@@ -1,4 +1,5 @@
 import { Clock, Flag, FlagTriangleRight, Map as MapIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@trip-flow/ui/lib/cn';
 import type { ScheduleItem } from '@/types/schedule';
 import {
@@ -11,6 +12,7 @@ import {
 } from '@/utils/schedule';
 
 export function RouteFlowCard({ items }: { items: ScheduleItem[] }) {
+  const { t } = useTranslation();
   if (items.length === 0) {
     return <RouteFlowEmpty />;
   }
@@ -24,15 +26,17 @@ export function RouteFlowCard({ items }: { items: ScheduleItem[] }) {
     <div className="border-border bg-card rounded-2xl border p-3 sm:p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
         <div className="flex items-center gap-2">
-          <h3 className="text-foreground text-xs font-bold uppercase tracking-wide">Route flow</h3>
+          <h3 className="text-foreground text-xs font-bold uppercase tracking-wide">
+            {t('schedule.routeFlow')}
+          </h3>
           <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-[0.65rem] font-semibold">
-            {items.length} {items.length === 1 ? 'stop' : 'stops'}
+            {t('schedule.stopsCount', { count: items.length })}
           </span>
         </div>
         <div className="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.7rem] tabular-nums sm:gap-3">
           <span className="inline-flex items-center gap-1">
             <Clock className="h-3 w-3" strokeWidth={2.25} />
-            {formatDuration(activeMinutes)} active
+            {t('schedule.activeDuration', { duration: formatDuration(activeMinutes) })}
           </span>
           <span className="hidden sm:inline">
             {formatTime(firstStart)} → {formatTime(lastEnd)}
@@ -42,11 +46,11 @@ export function RouteFlowCard({ items }: { items: ScheduleItem[] }) {
               href={fullRouteUrl}
               target="_blank"
               rel="noreferrer"
-              title="Open the full day's route in Google Maps"
+              title={t('schedule.openRouteInMaps')}
               className="border-border hover:bg-muted hover:text-foreground inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[0.65rem] font-semibold transition-colors"
             >
               <MapIcon className="h-3 w-3" strokeWidth={2.25} />
-              View route
+              {t('schedule.viewRoute')}
             </a>
           )}
         </div>
@@ -68,12 +72,13 @@ export function RouteFlowCard({ items }: { items: ScheduleItem[] }) {
 }
 
 function RouteFlowEmpty() {
+  const { t } = useTranslation();
   const letters = ['A', 'B', 'C', 'D', 'E', 'F'] as const;
   const visibleOn = ['', '', '', 'hidden sm:flex', 'hidden sm:flex', 'hidden sm:flex'];
   return (
     <div className="border-border bg-card rounded-2xl border border-dashed p-3 sm:p-5">
       <div className="text-muted-foreground mb-3 text-center text-xs">
-        Your route flow will appear here once you schedule stops for the day.
+        {t('schedule.routeEmpty')}
       </div>
       <div className="flex items-center justify-center gap-2 opacity-50">
         {letters.map((letter, idx) => {
@@ -226,12 +231,13 @@ function RouteFlowConnector({
   to: ScheduleItem;
   gapMinutes: number;
 }) {
+  const { t } = useTranslation();
   return (
     <a
       href={buildMapsDirectionsUrl(from, to)}
       target="_blank"
       rel="noreferrer"
-      title={`Open directions from ${from.place.name} to ${to.place.name}`}
+      title={t('schedule.directionsFromTo', { from: from.place.name, to: to.place.name })}
       className="text-muted-foreground/70 hover:text-primary group/arrow relative flex shrink-0 flex-col items-center self-start px-1 pt-5"
       style={{ minWidth: '3rem' }}
     >

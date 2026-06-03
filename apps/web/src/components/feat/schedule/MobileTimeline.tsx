@@ -92,7 +92,7 @@ export function MobileTimeline({ items, weekday, onSelect }: MobileTimelineProps
 
       {items.length === 0 && (
         <div className="text-muted-foreground absolute inset-0 flex items-center justify-center px-4 text-center text-sm">
-          แตะรายการด้านล่างเพื่อเพิ่มลงตาราง
+          {t('schedule.tapToAdd')}
         </div>
       )}
     </div>

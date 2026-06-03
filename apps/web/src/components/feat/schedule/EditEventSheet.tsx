@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Modal } from '@trip-flow/ui/components/modal';
 import { cn } from '@trip-flow/ui/lib/cn';
 import type { ScheduleItem } from '@/types/schedule';
@@ -31,6 +32,7 @@ export function EditEventSheet({
   onSave,
   onRemove,
 }: EditEventSheetProps) {
+  const { t } = useTranslation();
   const [startMinute, setStartMinute] = useState(event?.startMinute ?? 9 * 60);
   const [duration, setDuration] = useState(event?.durationMinutes ?? 90);
   const [submitting, setSubmitting] = useState(false);
@@ -80,7 +82,7 @@ export function EditEventSheet({
     <Modal
       open={open}
       onOpenChange={(o) => !o && onCancel()}
-      title="แก้ไข event"
+      title={t('schedule.editEvent')}
       description={event?.place.name ?? undefined}
     >
       {event && (
@@ -88,13 +90,13 @@ export function EditEventSheet({
           <div className="bg-muted/40 border-border rounded-lg border p-3">
             <p className="text-foreground text-sm font-semibold">{event.place.name}</p>
             <p className="text-muted-foreground mt-0.5 text-xs tabular-nums">
-              เดิม: {formatTime(event.startMinute)} –{' '}
+              {t('schedule.wasPrefix')}: {formatTime(event.startMinute)} –{' '}
               {formatTime(event.startMinute + event.durationMinutes)}
             </p>
           </div>
 
           <TimeStepper
-            label="เวลาเริ่ม"
+            label={t('schedule.timeStart')}
             value={startMinute}
             onChange={setStartMinute}
             min={MIN_OF_DAY}
@@ -107,7 +109,7 @@ export function EditEventSheet({
 
           {(conflict || outOfRange) && (
             <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border px-3 py-2 text-xs">
-              {conflict ? 'ช่วงเวลานี้ทับกับ event อื่น' : 'ช่วงเวลาเกินขอบเขตของวัน'}
+              {conflict ? t('schedule.conflictOverlapShort') : t('schedule.outOfRange')}
             </div>
           )}
 
@@ -118,7 +120,7 @@ export function EditEventSheet({
                 onClick={onCancel}
                 className="border-border hover:bg-muted h-10 rounded-lg border px-4 text-sm font-semibold"
               >
-                ยกเลิก
+                {t('schedule.cancel')}
               </button>
               <button
                 type="button"
@@ -129,7 +131,7 @@ export function EditEventSheet({
                   !canSave && 'cursor-not-allowed opacity-50',
                 )}
               >
-                {submitting ? 'กำลังบันทึก…' : 'บันทึก'}
+                {submitting ? t('schedule.saving') : t('schedule.save')}
               </button>
             </div>
             <button
@@ -139,7 +141,7 @@ export function EditEventSheet({
               className="border-destructive/40 text-destructive hover:bg-destructive/10 inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border px-4 text-sm font-semibold disabled:opacity-50"
             >
               <Trash2 className="h-4 w-4" strokeWidth={1.75} />
-              ลบ
+              {t('schedule.remove')}
             </button>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal } from '@trip-flow/ui/components/modal';
 import { cn } from '@trip-flow/ui/lib/cn';
 import type { TripPlace } from '@/types/places';
@@ -44,6 +45,7 @@ export function AddPlaceSheet({
   onCancel,
   onConfirm,
 }: AddPlaceSheetProps) {
+  const { t } = useTranslation();
   const initialDuration = place?.stayMinutes || DEFAULT_DURATION;
   const [duration, setDuration] = useState(initialDuration);
   const [startMinute, setStartMinute] = useState(() => suggestStart(daySchedule, initialDuration));
@@ -82,7 +84,7 @@ export function AddPlaceSheet({
     <Modal
       open={open}
       onOpenChange={(o) => !o && onCancel()}
-      title="เพิ่มลงตารางวัน"
+      title={t('schedule.addToDay')}
       description={place?.name ?? undefined}
     >
       {place && (
@@ -93,7 +95,7 @@ export function AddPlaceSheet({
           </div>
 
           <TimeStepper
-            label="เวลาเริ่ม"
+            label={t('schedule.timeStart')}
             value={startMinute}
             onChange={setStartMinute}
             min={MIN_OF_DAY}
@@ -106,9 +108,7 @@ export function AddPlaceSheet({
 
           {(conflict || outOfRange) && (
             <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border px-3 py-2 text-xs">
-              {conflict
-                ? 'ช่วงเวลานี้ทับกับ event อื่น ลองเลื่อนเวลา'
-                : 'ช่วงเวลาเกินขอบเขตของวัน'}
+              {conflict ? t('schedule.conflictOverlap') : t('schedule.outOfRange')}
             </div>
           )}
 
@@ -118,7 +118,7 @@ export function AddPlaceSheet({
               onClick={onCancel}
               className="border-border hover:bg-muted h-10 rounded-lg border px-4 text-sm font-semibold"
             >
-              ยกเลิก
+              {t('schedule.cancel')}
             </button>
             <button
               type="button"
@@ -129,7 +129,7 @@ export function AddPlaceSheet({
                 !canSubmit && 'cursor-not-allowed opacity-50',
               )}
             >
-              {submitting ? 'กำลังเพิ่ม…' : 'เพิ่มลงตาราง'}
+              {submitting ? t('schedule.adding') : t('schedule.addToTimeline')}
             </button>
           </div>
         </div>
@@ -149,6 +149,7 @@ interface TimeStepperProps {
 }
 
 export function TimeStepper({ label, value, onChange, min, max, step, format }: TimeStepperProps) {
+  const { t } = useTranslation();
   const dec = () => onChange(Math.max(min, value - step));
   const inc = () => onChange(Math.min(max, value + step));
   return (
@@ -157,13 +158,13 @@ export function TimeStepper({ label, value, onChange, min, max, step, format }: 
         {label}
       </p>
       <div className="border-border flex items-center justify-between rounded-lg border">
-        <StepperButton onClick={dec} disabled={value <= min} aria-label="ลดเวลา">
+        <StepperButton onClick={dec} disabled={value <= min} aria-label={t('schedule.decreaseTime')}>
           −
         </StepperButton>
         <span className="text-foreground flex-1 text-center text-lg font-bold tabular-nums">
           {format(value)}
         </span>
-        <StepperButton onClick={inc} disabled={value >= max} aria-label="เพิ่มเวลา">
+        <StepperButton onClick={inc} disabled={value >= max} aria-label={t('schedule.increaseTime')}>
           +
         </StepperButton>
       </div>
@@ -180,22 +181,27 @@ interface DurationStepperProps {
 }
 
 export function DurationStepper({ value, onChange, max }: DurationStepperProps) {
+  const { t } = useTranslation();
   const ceiling = max ?? MAX_OF_DAY - MIN_OF_DAY;
   const dec = () => onChange(Math.max(MIN_DURATION_MINUTES, value - STEP));
   const inc = () => onChange(Math.min(ceiling, value + STEP));
   return (
     <div>
       <p className="text-muted-foreground mb-1.5 text-xs font-semibold uppercase tracking-wide">
-        ระยะเวลา
+        {t('schedule.duration')}
       </p>
       <div className="border-border flex items-center justify-between rounded-lg border">
-        <StepperButton onClick={dec} disabled={value <= MIN_DURATION_MINUTES} aria-label="ลดเวลา">
+        <StepperButton
+          onClick={dec}
+          disabled={value <= MIN_DURATION_MINUTES}
+          aria-label={t('schedule.decreaseTime')}
+        >
           −
         </StepperButton>
         <span className="text-foreground flex-1 text-center text-lg font-bold tabular-nums">
           {formatDuration(value)}
         </span>
-        <StepperButton onClick={inc} disabled={value >= ceiling} aria-label="เพิ่มเวลา">
+        <StepperButton onClick={inc} disabled={value >= ceiling} aria-label={t('schedule.increaseTime')}>
           +
         </StepperButton>
       </div>
