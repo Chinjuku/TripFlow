@@ -6,6 +6,7 @@ import { cn } from '@trip-flow/ui/lib/cn';
 import { getInitials } from '@/components/feat/trips';
 import { removePlace, setLike } from '@/api/places';
 import { shortAddress } from '@/utils/places';
+import { localized } from '@/utils/places-map';
 import type { TripPlace } from '@/types/places';
 import { PlaceDetailModal } from './components/PlaceDetailModal';
 
