@@ -16,7 +16,7 @@ export default function SettingsPage() {
   const [activeTab] = useSettingsTab();
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-5xl space-y-6 duration-500 ease-out">
+    <div className="animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-5xl space-y-5 duration-500 ease-out sm:space-y-6">
       <div className="space-y-1">
         <button
           onClick={() => navigate(-1)}
@@ -28,10 +28,12 @@ export default function SettingsPage() {
         </button>
 
         <div>
-          <h1 className="font-headline text-foreground text-3xl font-extrabold tracking-tight">
+          <h1 className="font-headline text-foreground text-2xl font-extrabold tracking-tight sm:text-3xl">
             {t('settings.title')}
           </h1>
-          <p className="text-muted-foreground mt-2">{t('settings.subtitle')}</p>
+          <p className="text-muted-foreground mt-1.5 text-sm sm:mt-2 sm:text-base">
+            {t('settings.subtitle')}
+          </p>
         </div>
       </div>
 
@@ -39,7 +41,7 @@ export default function SettingsPage() {
           Mobile: horizontal pill tabs stacked above content. */}
       <div className="md:grid md:grid-cols-[14rem_minmax(0,1fr)] md:gap-6 md:items-start">
         {/* Mobile tabs */}
-        <div className="mb-6 md:hidden">
+        <div className="mb-5 md:hidden">
           <SettingsTabs orientation="horizontal" />
         </div>
 

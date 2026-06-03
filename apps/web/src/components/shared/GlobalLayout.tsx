@@ -26,7 +26,7 @@ export function GlobalLayout() {
       </header>
 
       {/* Main content */}
-      <main className="flex-1 px-4 py-6 md:py-8 md:px-10">
+      <main className="flex-1 px-4 py-6 sm:px-6 md:px-10 md:py-8">
         <Outlet />
       </main>
     </div>

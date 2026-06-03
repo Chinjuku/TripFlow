@@ -10,9 +10,9 @@ export function ProfileAvatar() {
   const { t } = useTranslation();
 
   return (
-    <div className="bg-muted/50 border-border flex items-center gap-6 rounded-xl border p-4">
+    <div className="bg-muted/50 border-border flex items-center gap-4 rounded-xl border p-4 sm:gap-6">
       {user?.avatarUrl ? (
-        <div className="border-primary/40 relative h-20 w-20 overflow-hidden rounded-full border-2">
+        <div className="border-primary/40 relative h-16 w-16 shrink-0 overflow-hidden rounded-full border-2 sm:h-20 sm:w-20">
           <img
             src={user.avatarUrl}
             alt={user.name}
@@ -21,11 +21,11 @@ export function ProfileAvatar() {
           />
         </div>
       ) : (
-        <div className="bg-primary text-primary-foreground flex h-20 w-20 items-center justify-center rounded-full text-3xl font-bold shadow-inner">
+        <div className="bg-primary text-primary-foreground flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-2xl font-bold shadow-inner sm:h-20 sm:w-20 sm:text-3xl">
           {user?.name?.charAt(0)?.toUpperCase() ?? '?'}
         </div>
       )}
-      <div className="space-y-1">
+      <div className="min-w-0 space-y-1">
         <h4 className="text-foreground text-sm font-semibold">{t('settings.profilePicture')}</h4>
         <p className="text-muted-foreground text-xs">{t('settings.profilePictureDesc')}</p>
       </div>
