@@ -16,6 +16,7 @@ export interface CreateTripInput {
   startsOn: string;
   endsOn: string;
   destinationName?: string | null;
+  destinationNameEn?: string | null;
   centerLat?: number | null;
   centerLng?: number | null;
 }
@@ -28,6 +29,7 @@ export interface TripSummary {
   inviteCode: string;
   isDebtOptimized: boolean;
   destinationName: string | null;
+  destinationNameEn: string | null;
   centerLat: number | null;
   centerLng: number | null;
   role: 'owner' | 'member';
@@ -61,6 +63,7 @@ function toSummary(
     inviteCode: trip.invite_code,
     isDebtOptimized: trip.is_debt_optimized,
     destinationName: trip.destination_name,
+    destinationNameEn: trip.destination_name_en,
     centerLat: trip.center_lat,
     centerLng: trip.center_lng,
     role,
@@ -157,6 +160,7 @@ export async function createTrip(ownerId: string, input: CreateTripInput): Promi
             starts_on: input.startsOn,
             ends_on: input.endsOn,
             destination_name: destinationName,
+            destination_name_en: input.destinationNameEn?.trim() || null,
             center_lat: input.centerLat ?? null,
             center_lng: input.centerLng ?? null,
             invite_code: inviteCode,
@@ -255,6 +259,7 @@ export interface UpdateTripInput {
   startsOn?: string;
   endsOn?: string;
   destinationName?: string | null;
+  destinationNameEn?: string | null;
   centerLat?: number | null;
   centerLng?: number | null;
 }
@@ -287,6 +292,8 @@ export async function updateTrip(
   // destination_name is required (NOT NULL) — only set it when a real value
   // is provided; ignore null/undefined so it's never cleared.
   if (input.destinationName) patch.destination_name = input.destinationName;
+  // Keep the English copy in lockstep with the primary destination edit.
+  if (input.destinationName) patch.destination_name_en = input.destinationNameEn?.trim() || null;
   if (input.centerLat !== undefined) patch.center_lat = input.centerLat;
   if (input.centerLng !== undefined) patch.center_lng = input.centerLng;
 

@@ -20,8 +20,10 @@ function findPortalHost(node: HTMLElement | null): HTMLElement {
 
 /** Result handed back to the caller once a destination is chosen. */
 export interface DestinationValue {
-  /** Human-readable label shown in the field, e.g. "Chiang Mai". */
+  /** Label in the current UI language (Thai/primary copy persisted as name). */
   name: string;
+  /** The other-language copy, so the trip can switch destination language. */
+  nameEn: string;
   lat: number;
   lng: number;
 }
@@ -101,7 +103,9 @@ export function DestinationPicker({ value, onChange, placeholder }: DestinationP
   }, [open]);
 
   function selectProvince(p: ThaiProvince) {
-    onChange({ name: labelOf(p), lat: p.lat, lng: p.lng });
+    // Persist Thai as the primary copy + English alongside, regardless of the
+    // UI language at create time, so the destination can localize later.
+    onChange({ name: p.th, nameEn: p.en, lat: p.lat, lng: p.lng });
     setOpen(false);
     setQuery('');
   }
@@ -127,7 +131,7 @@ export function DestinationPicker({ value, onChange, placeholder }: DestinationP
       >
         <MapPin className="text-muted-foreground h-4 w-4 shrink-0" strokeWidth={1.75} />
         <span className={cn('flex-1 truncate text-left', !value && 'text-muted-foreground')}>
-          {value ? value.name : placeholder}
+          {value ? (isThai ? value.name : value.nameEn || value.name) : placeholder}
         </span>
         {value ? (
           <span
@@ -180,7 +184,7 @@ export function DestinationPicker({ value, onChange, placeholder }: DestinationP
               </li>
             ) : (
               results.map((p) => {
-                const isActive = value?.name === labelOf(p);
+                const isActive = value?.name === p.th;
                 return (
                   <li key={p.en} role="option" aria-selected={isActive}>
                     <button

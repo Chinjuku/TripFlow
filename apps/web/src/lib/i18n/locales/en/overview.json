@@ -13,6 +13,7 @@
   "destination": "Destination",
   "countdownStartsIn": "Starts in {{count}} day",
   "countdownStartsIn_other": "Starts in {{count}} days",
+  "daysToGo": "until departure",
   "countdownToday": "Starts today",
   "countdownActive": "Happening now",
   "countdownEnded": "Trip ended",

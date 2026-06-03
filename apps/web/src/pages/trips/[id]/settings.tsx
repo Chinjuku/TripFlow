@@ -111,14 +111,27 @@ function EditTripSection({
   onSaved,
 }: {
   tripId: string;
-  trip: { title: string; startsOn: string; endsOn: string; destinationName: string | null; centerLat: number | null; centerLng: number | null };
+  trip: {
+    title: string;
+    startsOn: string;
+    endsOn: string;
+    destinationName: string | null;
+    destinationNameEn: string | null;
+    centerLat: number | null;
+    centerLng: number | null;
+  };
   onSaved: () => void;
 }) {
   const { t } = useTranslation();
   const [title, setTitle] = useState(trip.title);
   const [destination, setDestination] = useState<DestinationValue | null>(
     trip.destinationName && trip.centerLat != null && trip.centerLng != null
-      ? { name: trip.destinationName, lat: trip.centerLat, lng: trip.centerLng }
+      ? {
+          name: trip.destinationName,
+          nameEn: trip.destinationNameEn ?? trip.destinationName,
+          lat: trip.centerLat,
+          lng: trip.centerLng,
+        }
       : null,
   );
   const [range, setRange] = useState<DateRange>({
@@ -141,6 +154,7 @@ function EditTripSection({
         startsOn: range.from.toISOString(),
         endsOn: (range.to ?? range.from).toISOString(),
         destinationName: destination?.name ?? null,
+        destinationNameEn: destination?.nameEn ?? null,
         centerLat: hasCoords ? destination!.lat : null,
         centerLng: hasCoords ? destination!.lng : null,
       });

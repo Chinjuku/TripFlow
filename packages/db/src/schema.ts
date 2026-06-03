@@ -73,6 +73,9 @@ export const trips = pgTable(
      * coordinates), but a name is always present.
      */
     destination_name: text('destination_name').notNull(),
+    /** English copy of the destination, so it can match the UI language.
+     *  `destination_name` holds the Thai/primary copy. Null on older trips. */
+    destination_name_en: text('destination_name_en'),
     center_lat: doublePrecision('center_lat'),
     center_lng: doublePrecision('center_lng'),
     invite_code: text('invite_code').notNull(),

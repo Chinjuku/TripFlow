@@ -29,7 +29,7 @@ export function CategoryTabs({ active, onChange, available, places }: CategoryTa
     >
   ).map((id) => ({
     id,
-    label: id === 'all' ? t('common.all') : BUCKETS[id].plural,
+    label: id === 'all' ? t('common.all') : t(BUCKETS[id].pluralKey),
     swatch: id === 'all' ? null : BUCKETS[id].swatch,
     count: counts[id] ?? 0,
   }));

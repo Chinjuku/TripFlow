@@ -10,10 +10,15 @@ import {
   type DragMoveEvent,
   type DragStartEvent,
 } from '@dnd-kit/core';
-import { Skeleton } from '@trip-flow/ui/components/skeleton';
 import { TripPageHeader } from '@/components/shared/TripPageHeader';
 import { useTrip } from '@/components/feat/trips';
-import { useTripPlaces, type TripPlace } from '@/components/feat/places';
+import {
+  useTripPlaces,
+  bucketFor,
+  BUCKETS,
+  type TripPlace,
+  type PlaceBucket,
+} from '@/components/feat/places';
 import { useTranslation } from 'react-i18next';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { formatLocalizedDate } from '@/lib/utils';
@@ -33,6 +38,10 @@ import {
   RouteFlowCard,
   TappablePlace,
   Timeline,
+  TimelineSkeleton,
+  DayTabsSkeleton,
+  RouteFlowSkeleton,
+  PlaceListSkeleton,
   updateSchedule,
   useSchedule,
   pxToMinute,
@@ -119,6 +128,21 @@ export default function TripSchedulePage() {
         return a.createdAt.localeCompare(b.createdAt);
       });
   }, [places, schedule, activeDay, allowDuplicates]);
+
+  // Group the schedulable places by category so the sidebar can show a heading
+  // per bucket. Groups are ordered by their strongest pick's vote count.
+  const topVotedGroups = useMemo(() => {
+    const byBucket = new Map<PlaceBucket, TripPlace[]>();
+    for (const p of topVotedForDay) {
+      const b = bucketFor(p.category);
+      const list = byBucket.get(b) ?? [];
+      list.push(p);
+      byBucket.set(b, list);
+    }
+    return [...byBucket.entries()]
+      .map(([bucket, items]) => ({ bucket, items }))
+      .sort((a, b) => (b.items[0]?.voteCount ?? 0) - (a.items[0]?.voteCount ?? 0));
+  }, [topVotedForDay]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
@@ -360,7 +384,11 @@ export default function TripSchedulePage() {
         withBorder
       />
 
-      <DayTabsScroller days={days} activeDay={activeDay} onSelect={handleSelectDay} />
+      {trip ? (
+        <DayTabsScroller days={days} activeDay={activeDay} onSelect={handleSelectDay} />
+      ) : (
+        <DayTabsSkeleton />
+      )}
 
       {error && (
         <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border p-4 text-sm">
@@ -368,7 +396,7 @@ export default function TripSchedulePage() {
         </div>
       )}
 
-      <RouteFlowCard items={itemsForDay} />
+      {isLoading && schedule === null ? <RouteFlowSkeleton /> : <RouteFlowCard items={itemsForDay} />}
 
       <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="border-border bg-card rounded-2xl border p-3 sm:p-5">
@@ -379,7 +407,7 @@ export default function TripSchedulePage() {
           </div>
 
           {isLoading && schedule === null ? (
-            <Skeleton className="h-[28rem] w-full" />
+            <TimelineSkeleton />
           ) : isMobile ? (
             <MobileTimeline items={itemsForDay} weekday={activeWeekday} onSelect={setEditEvent} />
           ) : (
@@ -419,21 +447,39 @@ export default function TripSchedulePage() {
               : t('schedule.allowDuplicatesOff', 'Each place appears once across the whole trip.')}
           </p>
 
-          {topVotedForDay.length === 0 ? (
+          {!places ? (
+            <PlaceListSkeleton />
+          ) : topVotedForDay.length === 0 ? (
             <p className="text-muted-foreground text-sm">
               {t('schedule.noMoreCandidates', 'No more candidates left to schedule.')}
             </p>
           ) : (
-            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-1">
-              {topVotedForDay.slice(0, 8).map((p) =>
-                isMobile ? (
-                  <TappablePlace key={p.id} onSelect={() => setPickPlace(p)}>
-                    <PlacePill place={p} />
-                  </TappablePlace>
-                ) : (
-                  <DraggablePlace key={p.id} place={p} />
-                ),
-              )}
+            <div className="space-y-4">
+              {topVotedGroups.map(({ bucket, items }) => (
+                <div key={bucket} className="space-y-2.5">
+                  {/* Category heading — swatch dot + label + count. */}
+                  <div className="flex items-center gap-2">
+                    <span className={`h-2 w-2 shrink-0 rounded-full ${BUCKETS[bucket].swatch}`} />
+                    <h4 className="text-muted-foreground text-[0.7rem] font-bold uppercase tracking-wide">
+                      {t(BUCKETS[bucket].labelKey)}
+                    </h4>
+                    <span className="text-muted-foreground/70 text-[0.7rem] tabular-nums">
+                      {items.length}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-1">
+                    {items.map((p) =>
+                      isMobile ? (
+                        <TappablePlace key={p.id} onSelect={() => setPickPlace(p)}>
+                          <PlacePill place={p} />
+                        </TappablePlace>
+                      ) : (
+                        <DraggablePlace key={p.id} place={p} />
+                      ),
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </aside>

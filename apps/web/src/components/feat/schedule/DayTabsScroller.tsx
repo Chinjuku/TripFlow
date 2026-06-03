@@ -13,7 +13,6 @@ export function DayTabsScroller({ days, activeDay, onSelect }: DayTabsScrollerPr
   const { t } = useTranslation();
   const scrollerRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const dotRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   useEffect(() => {
     tabRefs.current[activeDay]?.scrollIntoView({
@@ -21,71 +20,46 @@ export function DayTabsScroller({ days, activeDay, onSelect }: DayTabsScrollerPr
       block: 'nearest',
       inline: 'center',
     });
-    dotRefs.current[activeDay]?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'nearest',
-      inline: 'center',
-    });
   }, [activeDay]);
 
   return (
-    <div className="flex flex-col gap-2">
-      <div
-        ref={scrollerRef}
-        className="scrollbar-none flex items-center gap-2 overflow-x-auto scroll-smooth pb-1"
-      >
-        {days.map((d, idx) => (
+    <div
+      ref={scrollerRef}
+      role="tablist"
+      aria-label={t('schedule.dayNavigator')}
+      className="scrollbar-none flex items-stretch gap-2 overflow-x-auto scroll-smooth pb-1"
+    >
+      {days.map((d, idx) => {
+        const active = d.index === activeDay;
+        return (
           <button
             key={d.index}
             ref={(node) => {
               tabRefs.current[idx] = node;
             }}
             type="button"
+            role="tab"
+            aria-selected={active}
             onClick={() => onSelect(d.index)}
             className={cn(
-              'inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors',
-              d.index === activeDay
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'bg-card text-foreground border-border hover:bg-muted',
+              'group/day relative flex shrink-0 flex-col items-start gap-0.5 rounded-xl border px-3.5 py-2 text-left transition-all',
+              active
+                ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                : 'border-border bg-card text-foreground hover:border-primary/40 hover:bg-muted',
             )}
           >
-            <span>{d.subLabel}</span>
-            <span className="opacity-60">•</span>
-            <span>{d.label}</span>
+            <span
+              className={cn(
+                'text-[0.6rem] font-bold uppercase tracking-wider',
+                active ? 'text-primary-foreground/80' : 'text-muted-foreground',
+              )}
+            >
+              {d.label}
+            </span>
+            <span className="text-sm font-bold leading-none tabular-nums">{d.subLabel}</span>
           </button>
-        ))}
-      </div>
-
-      {days.length > 1 && (
-        <div
-          role="tablist"
-          aria-label={t('schedule.dayNavigator')}
-          className="scrollbar-none flex items-center justify-center gap-1.5 overflow-x-auto"
-        >
-          {days.map((d, idx) => {
-            const active = d.index === activeDay;
-            return (
-              <button
-                key={d.index}
-                ref={(node) => {
-                  dotRefs.current[idx] = node;
-                }}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                aria-label={`${d.label} (${d.subLabel})`}
-                onClick={() => onSelect(d.index)}
-                className={cn(
-                  'shrink-0 rounded-full transition-all',
-                  active
-                    ? 'bg-primary h-1.5 w-4'
-                    : 'bg-muted-foreground/30 hover:bg-muted-foreground/60 h-1.5 w-1.5',
-                )}
-              />
-            );
-          })}
-        </div>
-      )}
+        );
+      })}
     </div>
   );
 }

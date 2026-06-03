@@ -24,6 +24,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { Button } from '@trip-flow/ui/components/button';
 import { Skeleton } from '@trip-flow/ui/components/skeleton';
+import { formatLocalizedDate } from '@/lib/utils';
 
 interface TripPlacesSummaryCardProps {
   trip: TripDetail;
@@ -32,7 +33,7 @@ interface TripPlacesSummaryCardProps {
 
 export function TripPlacesSummaryCard({ trip, className = '' }: TripPlacesSummaryCardProps) {
   const { data: schedule, isLoading, error } = useSchedule(trip.id);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [expandedDays, setExpandedDays] = useState<Record<number, boolean>>({ 0: true });
 
   const days = useMemo(() => buildDays(trip.startsOn, trip.endsOn), [trip.startsOn, trip.endsOn]);
@@ -192,7 +193,7 @@ export function TripPlacesSummaryCard({ trip, className = '' }: TripPlacesSummar
                       </div>
                       <div>
                         <h5 className="text-foreground text-sm font-bold leading-tight">
-                          {day.date.toLocaleDateString(undefined, {
+                          {formatLocalizedDate(day.date, i18n.language, {
                             weekday: 'short',
                             month: 'short',
                             day: 'numeric',
