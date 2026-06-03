@@ -226,125 +226,129 @@ export function PaymentDetailsModal({
         </div>
 
         {/* PromptPay section */}
-        <div className="space-y-3 p-3 bg-blue-50/30 border border-blue-100 rounded-xl dark:bg-slate-900/30 dark:border-blue-950/20">
-          <h4 className="text-xs font-bold text-blue-700 dark:text-blue-400 flex items-center gap-1.5 uppercase">
-            <QrCode className="w-3.5 h-3.5" /> {t('finances.promptPayTransfer')}
-          </h4>
-          <div className="space-y-1">
-            <Label htmlFor="promptpay-id" className="text-[10px] font-bold text-muted-foreground">
-              {t('finances.promptPayIdLabel')}
-            </Label>
-            <Input
-              id="promptpay-id"
-              value={promptPayId}
-              onChange={(e) => setPromptPayId(e.target.value)}
-              placeholder="e.g. 0812345678 or 1100200300400"
-              className="h-9 border-border bg-white text-xs dark:bg-card"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-[10px] font-bold text-muted-foreground">
-              {t('finances.orPromptPayQrLabel')}
-            </Label>
-            {uploadError && (
-              <p className="text-[10px] text-rose-500 font-semibold">{uploadError}</p>
-            )}
-            {qrCodeUrl ? (
-              <div className="relative group overflow-hidden rounded-xl border border-border bg-muted/20 p-2 flex flex-col items-center gap-2 transition-all">
-                <div className="relative h-32 w-32 overflow-hidden rounded-lg bg-white border p-1 flex items-center justify-center shadow-sm">
-                  <img
-                    src={qrCodeUrl}
-                    alt="PromptPay QR Code"
-                    className="h-full w-full object-contain"
-                  />
-                </div>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  className="w-full text-[10px] h-7 py-0"
-                  onClick={() => {
-                    setQrCodeUrl('');
-                    if (fileInputRef.current) fileInputRef.current.value = '';
-                  }}
-                >
-                  <X className="h-3 w-3 mr-1" />
-                  {t('finances.removeQrImage')}
-                </Button>
-              </div>
-            ) : (
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-border hover:border-primary/50 bg-muted/10 hover:bg-muted/20 transition-all rounded-xl p-4 flex flex-col items-center justify-center gap-1 cursor-pointer group text-center"
-              >
-                <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-                  <Upload className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="text-foreground text-[10px] font-semibold">
-                    {t('finances.uploadPromptPayQr')}
-                  </p>
-                  <p className="text-muted-foreground text-[8px] mt-0.5">
-                    {t('finances.uploadPromptPayQrFormat')}
-                  </p>
-                </div>
-              </div>
-            )}
-            <input
-              ref={fileInputRef}
-              id="modal-qr-upload"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleQrUpload}
-            />
-          </div>
-        </div>
-
-        {/* Bank transfer section */}
-        <div className="space-y-3 p-3 bg-purple-50/30 border border-purple-100 rounded-xl dark:bg-slate-900/30 dark:border-purple-950/20">
-          <h4 className="text-xs font-bold text-purple-700 dark:text-purple-400 flex items-center gap-1.5 uppercase">
-            <CreditCard className="w-3.5 h-3.5" /> {t('finances.bankAccountTransfer')}
-          </h4>
-          <div className="grid grid-cols-2 gap-3">
+        {preferredChannel === 'promptpay' && (
+          <div className="space-y-3 p-3 bg-blue-50/30 border border-blue-100 rounded-xl dark:bg-slate-900/30 dark:border-blue-950/20">
+            <h4 className="text-xs font-bold text-blue-700 dark:text-blue-400 flex items-center gap-1.5 uppercase">
+              <QrCode className="w-3.5 h-3.5" /> {t('finances.promptPayTransfer')}
+            </h4>
             <div className="space-y-1">
-              <Label htmlFor="bank-name" className="text-[10px] font-bold text-muted-foreground">
-                {t('finances.bankName')}
-              </Label>
-              <BankSelect
-                id="bank-name"
-                value={bankName}
-                onChange={(val) => setBankName(val)}
-                placeholder="Search or select a bank…"
-                compact
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="bank-acc-num" className="text-[10px] font-bold text-muted-foreground">
-                {t('finances.accountNumber')}
+              <Label htmlFor="promptpay-id" className="text-[10px] font-bold text-muted-foreground">
+                {t('finances.promptPayIdLabel')}
               </Label>
               <Input
-                id="bank-acc-num"
-                value={bankAccountNumber}
-                onChange={(e) => setBankAccountNumber(e.target.value)}
-                placeholder="e.g. 123-4-56789-0"
+                id="promptpay-id"
+                value={promptPayId}
+                onChange={(e) => setPromptPayId(e.target.value)}
+                placeholder="e.g. 0812345678 or 1100200300400"
+                className="h-9 border-border bg-white text-xs dark:bg-card"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-bold text-muted-foreground">
+                {t('finances.orPromptPayQrLabel')}
+              </Label>
+              {uploadError && (
+                <p className="text-[10px] text-rose-500 font-semibold">{uploadError}</p>
+              )}
+              {qrCodeUrl ? (
+                <div className="relative group overflow-hidden rounded-xl border border-border bg-muted/20 p-2 flex flex-col items-center gap-2 transition-all">
+                  <div className="relative h-32 w-32 overflow-hidden rounded-lg bg-white border p-1 flex items-center justify-center shadow-sm">
+                    <img
+                      src={qrCodeUrl}
+                      alt="PromptPay QR Code"
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="w-full text-[10px] h-7 py-0"
+                    onClick={() => {
+                      setQrCodeUrl('');
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                    }}
+                  >
+                    <X className="h-3 w-3 mr-1" />
+                    {t('finances.removeQrImage')}
+                  </Button>
+                </div>
+              ) : (
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-border hover:border-primary/50 bg-muted/10 hover:bg-muted/20 transition-all rounded-xl p-4 flex flex-col items-center justify-center gap-1 cursor-pointer group text-center"
+                >
+                  <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+                    <Upload className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-foreground text-[10px] font-semibold">
+                      {t('finances.uploadPromptPayQr')}
+                    </p>
+                    <p className="text-muted-foreground text-[8px] mt-0.5">
+                      {t('finances.uploadPromptPayQrFormat')}
+                    </p>
+                  </div>
+                </div>
+              )}
+              <input
+                ref={fileInputRef}
+                id="modal-qr-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleQrUpload}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Bank transfer section */}
+        {preferredChannel === 'banking' && (
+          <div className="space-y-3 p-3 bg-purple-50/30 border border-purple-100 rounded-xl dark:bg-slate-900/30 dark:border-purple-950/20">
+            <h4 className="text-xs font-bold text-purple-700 dark:text-purple-400 flex items-center gap-1.5 uppercase">
+              <CreditCard className="w-3.5 h-3.5" /> {t('finances.bankAccountTransfer')}
+            </h4>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="bank-name" className="text-[10px] font-bold text-muted-foreground">
+                  {t('finances.bankName')}
+                </Label>
+                <BankSelect
+                  id="bank-name"
+                  value={bankName}
+                  onChange={(val) => setBankName(val)}
+                  placeholder="Search or select a bank…"
+                  compact
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="bank-acc-num" className="text-[10px] font-bold text-muted-foreground">
+                  {t('finances.accountNumber')}
+                </Label>
+                <Input
+                  id="bank-acc-num"
+                  value={bankAccountNumber}
+                  onChange={(e) => setBankAccountNumber(e.target.value)}
+                  placeholder="e.g. 123-4-56789-0"
+                  className="h-9 border-border bg-white text-xs dark:bg-card"
+                />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="bank-acc-name" className="text-[10px] font-bold text-muted-foreground">
+                {t('finances.accountHolderName')}
+              </Label>
+              <Input
+                id="bank-acc-name"
+                value={bankAccountName}
+                onChange={(e) => setBankAccountName(e.target.value)}
+                placeholder="e.g. Elena Rostova"
                 className="h-9 border-border bg-white text-xs dark:bg-card"
               />
             </div>
           </div>
-          <div className="space-y-1">
-            <Label htmlFor="bank-acc-name" className="text-[10px] font-bold text-muted-foreground">
-              {t('finances.accountHolderName')}
-            </Label>
-            <Input
-              id="bank-acc-name"
-              value={bankAccountName}
-              onChange={(e) => setBankAccountName(e.target.value)}
-              placeholder="e.g. Elena Rostova"
-              className="h-9 border-border bg-white text-xs dark:bg-card"
-            />
-          </div>
-        </div>
+        )}
 
         {uploadError && (
           <div className="bg-destructive/10 border border-destructive/20 text-destructive text-[11px] font-semibold p-2.5 rounded-xl flex items-center gap-1.5 animate-in fade-in slide-in-from-top-1">

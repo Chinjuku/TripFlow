@@ -27,7 +27,7 @@ function TripFinancesAllContent() {
   } = useTripFinancesContext();
 
   return (
-    <div className="flex flex-col flex-1 overflow-hidden gap-6 h-full min-h-0">
+    <div className="flex flex-col flex-1 overflow-hidden gap-6 h-full min-h-0 pt-4">
       {/* 2. Expense Summary Cards */}
       <div className="shrink-0">
         <ExpenseSummary
@@ -45,8 +45,8 @@ function TripFinancesAllContent() {
       {/* 3. Recent Activity Feed */}
       <div className="flex-1 overflow-y-auto pr-2 min-h-0">
         <ExpenseList
-          expenses={finances.expenses.filter((e: any) => !e.is_central_fund)}
-          settlements={finances.settlements.filter((s: any) => !s.is_central_fund)}
+          expenses={finances.expenses}
+          settlements={finances.settlements}
           currentUserId={user?.id || ''}
           onConfirmSettlement={handleConfirmSettlementReceived}
           confirmingId={confirmingSettlementId}

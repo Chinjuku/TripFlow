@@ -46,7 +46,7 @@ function TripFinancesMonitoringContent() {
     .sort((a, b) => b.amount - a.amount);
 
   return (
-    <div className="flex flex-col flex-1 overflow-y-auto pr-2 pb-10 gap-6 h-full min-h-0 animate-in fade-in-0 duration-300">
+    <div className="flex flex-col flex-1 overflow-y-auto pr-2 pb-10 gap-6 h-full min-h-0 animate-in fade-in-0 duration-300 pt-4">
       {/* Overview Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Card 1: Budget Status */}
