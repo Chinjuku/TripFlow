@@ -78,6 +78,7 @@ export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDi
         startsOn: startsOn.toISOString(),
         endsOn: endsOn.toISOString(),
         destinationName: destination?.name ?? null,
+        destinationNameEn: destination?.nameEn ?? null,
         centerLat: hasCoords ? destination.lat : null,
         centerLng: hasCoords ? destination.lng : null,
       });

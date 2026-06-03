@@ -30,7 +30,7 @@ export function PoiPreviewCard({ poi, loading, alreadyPicked, onAdd, onClose }: 
     }
   }
 
-  const categoryLabel = poi.category ? BUCKETS[bucketFor(poi.category)].label : null;
+  const categoryLabel = poi.category ? t(BUCKETS[bucketFor(poi.category)].labelKey) : null;
 
   return (
     <div className="w-[20rem] max-w-[84vw]">

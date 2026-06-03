@@ -15,6 +15,7 @@ export interface TripSummary {
   inviteCode: string;
   isDebtOptimized: boolean;
   destinationName: string | null;
+  destinationNameEn: string | null;
   centerLat: number | null;
   centerLng: number | null;
   role: 'owner' | 'member';
@@ -27,6 +28,7 @@ export interface CreateTripPayload {
   startsOn: string;
   endsOn: string;
   destinationName?: string | null;
+  destinationNameEn?: string | null;
   centerLat?: number | null;
   centerLng?: number | null;
 }
@@ -36,6 +38,7 @@ export interface UpdateTripPayload {
   startsOn?: string;
   endsOn?: string;
   destinationName?: string | null;
+  destinationNameEn?: string | null;
   centerLat?: number | null;
   centerLng?: number | null;
 }

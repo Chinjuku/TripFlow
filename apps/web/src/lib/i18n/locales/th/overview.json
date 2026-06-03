@@ -13,6 +13,7 @@
   "destination": "จุดหมายปลายทาง",
   "countdownStartsIn": "อีก {{count}} วัน",
   "countdownStartsIn_other": "อีก {{count}} วัน",
+  "daysToGo": "ก่อนเดินทาง",
   "countdownToday": "เริ่มวันนี้",
   "countdownActive": "กำลังเดินทาง",
   "countdownEnded": "จบทริปแล้ว",

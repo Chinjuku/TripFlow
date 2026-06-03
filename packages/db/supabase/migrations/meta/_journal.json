@@ -57,6 +57,13 @@
       "when": 1780411583448,
       "tag": "0007_known_vanisher",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1780499210498,
+      "tag": "0008_perpetual_santa_claus",
+      "breakpoints": true
     }
   ]
 }

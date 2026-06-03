@@ -1,0 +1,1 @@
+ALTER TABLE "trips" ADD COLUMN "destination_name_en" text;

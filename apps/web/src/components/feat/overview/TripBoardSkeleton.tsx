@@ -26,25 +26,25 @@ export function TripBoardSkeleton() {
         <div className="space-y-6 lg:col-span-2 lg:flex lg:h-full lg:flex-col lg:overflow-hidden">
           <Skeleton className="h-6 w-1/3 max-w-[12rem] shrink-0" />
           <div className="shrink-0">
-            {/* TripOverviewCard Skeleton */}
-            <div className="border-border bg-card rounded-2xl border p-4 sm:p-6">
-              <dl className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <div>
-                  <Skeleton className="h-3 w-16 uppercase tracking-wide" />
-                  <Skeleton className="mt-2 h-5 w-40" />
-                  <Skeleton className="mt-1 h-4 w-24" />
-                </div>
-                <div>
-                  <Skeleton className="h-3 w-20 uppercase tracking-wide" />
-                  <Skeleton className="mt-2 h-5 w-32" />
-                </div>
-              </dl>
-              <div className="border-border mt-6 flex items-center justify-between gap-3 rounded-xl border p-4">
-                <div className="w-full space-y-1">
-                  <Skeleton className="h-4 w-[60%]" />
-                  <Skeleton className="h-3 w-[85%]" />
-                </div>
-                <Skeleton className="h-4 w-4 shrink-0" />
+            {/* TripOverviewCard Skeleton — hero band + two stat tiles. */}
+            <div className="border-border bg-card overflow-hidden rounded-2xl border">
+              <div className="border-border bg-muted/30 flex items-center justify-between gap-3 border-b px-4 py-4 sm:px-6 sm:py-5">
+                <Skeleton className="h-10 w-32" />
+                <Skeleton className="h-6 w-20 rounded-full" />
+              </div>
+              <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 sm:p-6">
+                {Array.from({ length: 2 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="border-border bg-muted/30 flex items-start gap-3 rounded-xl border p-3"
+                  >
+                    <Skeleton className="h-9 w-9 shrink-0 rounded-lg" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-2.5 w-16" />
+                      <Skeleton className="h-4 w-3/4" />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

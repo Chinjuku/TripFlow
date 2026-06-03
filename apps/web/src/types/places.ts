@@ -45,8 +45,12 @@ export type PlaceBucket = 'food' | 'cafe' | 'stay' | 'attraction' | 'bar' | 'sho
 
 export interface BucketMeta {
   id: PlaceBucket;
+  /** English fallback; prefer `labelKey`/`pluralKey` with t() for display. */
   label: string;
   plural: string;
+  /** i18n keys (under common.bucket) for the singular + plural label. */
+  labelKey: string;
+  pluralKey: string;
   swatch: string;
 }
 

@@ -44,3 +44,9 @@ export { EventBlock } from './EventBlock';
 export { MobileTimeline, TappablePlace } from './MobileTimeline';
 export { RouteFlowCard } from './RouteFlowCard';
 export { Timeline, TravelGap } from './Timeline';
+export {
+  TimelineSkeleton,
+  DayTabsSkeleton,
+  RouteFlowSkeleton,
+  PlaceListSkeleton,
+} from './ScheduleSkeletons';

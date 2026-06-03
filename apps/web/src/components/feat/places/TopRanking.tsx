@@ -19,6 +19,7 @@ interface TopRankingProps {
 }
 
 export function TopRanking({ places, activeCat }: TopRankingProps) {
+  const { t } = useTranslation();
   const grouped = useMemo(() => {
     const byBucket = new Map<PlaceBucket, TripPlace[]>();
     for (const p of places) {
@@ -84,7 +85,7 @@ export function TopRanking({ places, activeCat }: TopRankingProps) {
                 <div className="mb-2 flex items-center justify-between">
                   <h4 className="text-foreground inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide">
                     <span className={cn('h-2 w-2 rounded-full', meta.swatch)} aria-hidden />
-                    {meta.label}
+                    {t(meta.labelKey)}
                   </h4>
                   <span className="text-muted-foreground text-[0.65rem] tabular-nums">
                     Top {top.length}

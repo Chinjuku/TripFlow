@@ -9,6 +9,7 @@ import {
   type TripSummary,
 } from '@/components/feat/trips';
 import { formatLocalizedDateRange } from '@/lib/utils';
+import { localized } from '@/utils/places-map';
 import { TripStatusBadge } from './TripStatusBadge';
 
 interface TripCardProps {
@@ -56,7 +57,9 @@ export function TripCard({ trip }: TripCardProps) {
         {trip.destinationName && (
           <div className="text-muted-foreground flex items-center gap-2 text-sm">
             <MapPin className="h-4 w-4 shrink-0" strokeWidth={1.75} />
-            <span className="truncate">{trip.destinationName}</span>
+            <span className="truncate">
+              {localized(i18n.language, trip.destinationName, trip.destinationNameEn)}
+            </span>
           </div>
         )}
 
