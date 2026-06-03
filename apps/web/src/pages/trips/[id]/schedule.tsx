@@ -16,6 +16,7 @@ import { useTrip } from '@/components/feat/trips';
 import { useTripPlaces, type TripPlace } from '@/components/feat/places';
 import { useTranslation } from 'react-i18next';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { formatLocalizedDate } from '@/lib/utils';
 import {
   addSchedule,
   AddPlaceSheet,
@@ -41,12 +42,12 @@ import {
 
 export default function TripSchedulePage() {
   const { id } = useParams<{ id: string }>();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { data: trip } = useTrip(id);
   const { data: places } = useTripPlaces(id);
   const { data: schedule, mutate, error, isLoading } = useSchedule(id);
 
-  const days = useMemo(() => (trip ? buildDays(trip.startsOn, trip.endsOn) : []), [trip]);
+  const days = useMemo(() => (trip ? buildDays(trip.startsOn, trip.endsOn, t, i18n.language) : []), [trip, t, i18n.language]);
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeDay, setActiveDay] = useState(() => {
     const day = searchParams.get('day');
@@ -342,7 +343,7 @@ export default function TripSchedulePage() {
   const activeWeekday = activeDayMeta ? activeDayMeta.date.getDay() : new Date().getDay();
 
   const dayLabel = activeDayMeta
-    ? `${activeDayMeta.date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} (${activeDayMeta.label})`
+    ? `${formatLocalizedDate(activeDayMeta.date, i18n.language, { day: 'numeric', month: 'short' })} (${activeDayMeta.label})`
     : t('schedule.dayFallback', 'Day');
 
   const content = (
@@ -354,10 +355,7 @@ export default function TripSchedulePage() {
         subtitle={
           isMobile
             ? t('schedule.subtitleMobile', 'Tap places below to add them to your day.')
-            : t(
-                'schedule.subtitle',
-                'Drag voted places onto the timeline to build each day.',
-              )
+            : t('schedule.subtitle', 'Drag voted places onto the timeline to build each day.')
         }
         withBorder
       />
@@ -418,10 +416,7 @@ export default function TripSchedulePage() {
                   'schedule.allowDuplicatesOn',
                   'A place can repeat across days — handy for daily stops.',
                 )
-              : t(
-                  'schedule.allowDuplicatesOff',
-                  'Each place appears once across the whole trip.',
-                )}
+              : t('schedule.allowDuplicatesOff', 'Each place appears once across the whole trip.')}
           </p>
 
           {topVotedForDay.length === 0 ? (

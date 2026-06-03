@@ -40,7 +40,7 @@ export function CentralFundMembers({
       }
 
       const memberSettlements = settlements.filter(
-        (s) => s.payer_id === member.userId && s.is_central_fund && s.payee_id === treasurerId
+        (s) => s.payer_id === member.userId && s.is_central_fund && s.payee_id === treasurerId,
       );
 
       const paidAmount = memberSettlements
@@ -53,7 +53,7 @@ export function CentralFundMembers({
 
       let status: 'paid' | 'pending' | 'unpaid' = 'unpaid';
       const required = centralFundPerPerson || 0;
-      
+
       if (paidAmount >= required) {
         status = 'paid';
       } else if (paidAmount + pendingAmount >= required) {
@@ -83,10 +83,17 @@ export function CentralFundMembers({
       </h3>
       <div className="space-y-3">
         {memberStatuses.map((member) => (
-          <div key={member.userId} className="p-4 flex items-center justify-between bg-card border border-border rounded-2xl shadow-sm transition-all hover:shadow-md">
+          <div
+            key={member.userId}
+            className="p-4 flex items-center justify-between bg-card border border-border rounded-2xl shadow-sm transition-all hover:shadow-md"
+          >
             <div className="flex items-center gap-3">
               {member.avatarUrl ? (
-                <img src={member.avatarUrl} alt={member.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
+                <img
+                  src={member.avatarUrl}
+                  alt={member.name}
+                  className="w-10 h-10 rounded-full object-cover shrink-0"
+                />
               ) : (
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0">
                   {member.name.charAt(0).toUpperCase()}
@@ -103,21 +110,30 @@ export function CentralFundMembers({
                 </div>
                 <div className="text-xs text-muted-foreground mt-0.5 flex flex-col gap-0.5">
                   {member.status === 'treasurer' ? (
-                    <span className="italic">{t('finances.centralFund.holdingMoney', 'Holding central fund')}</span>
+                    <span className="italic">
+                      {t('finances.centralFund.holdingMoney', 'Holding central fund')}
+                    </span>
                   ) : (
                     <span>
-                      ฿{member.paidAmount.toLocaleString()} / ฿{centralFundPerPerson.toLocaleString()}
+                      ฿{member.paidAmount.toLocaleString()} / ฿
+                      {centralFundPerPerson.toLocaleString()}
                     </span>
                   )}
                   {member.usedAmount > 0 && (
                     <span className="text-[10px] text-rose-500/80 font-medium flex items-center gap-1">
-                      <span>Spent: ฿{member.usedAmount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                      <span>
+                        Spent: ฿
+                        {member.usedAmount.toLocaleString(undefined, {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 2,
+                        })}
+                      </span>
                     </span>
                   )}
                 </div>
               </div>
             </div>
-            
+
             <div className="shrink-0 flex items-center pl-2">
               {member.status === 'treasurer' || member.status === 'paid' ? (
                 <div className="flex flex-col items-end gap-0.5">

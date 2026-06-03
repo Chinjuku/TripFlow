@@ -1,13 +1,14 @@
 import { Link } from 'react-router-dom';
 import { Calendar, MapPin } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
   coverImageUrl,
   deriveTripStatus,
-  formatDateRange,
   getInitials,
   type TripMemberProfile,
   type TripSummary,
 } from '@/components/feat/trips';
+import { formatLocalizedDateRange } from '@/lib/utils';
 import { TripStatusBadge } from './TripStatusBadge';
 
 interface TripCardProps {
@@ -17,7 +18,8 @@ interface TripCardProps {
 const MAX_VISIBLE_AVATARS = 4;
 
 export function TripCard({ trip }: TripCardProps) {
-  const { range, duration } = formatDateRange(trip.startsOn, trip.endsOn);
+  const { i18n } = useTranslation();
+  const { range, duration } = formatLocalizedDateRange(trip.startsOn, trip.endsOn, i18n.language);
   const status = deriveTripStatus(trip);
 
   return (

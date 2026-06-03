@@ -5,10 +5,11 @@ import { useTranslation, Trans } from 'react-i18next';
 import { Button } from '@trip-flow/ui/components/button';
 import { Skeleton } from '@trip-flow/ui/components/skeleton';
 import { cn } from '@trip-flow/ui/lib/cn';
-import { useTrip, formatDateRange } from '@/components/feat/trips';
+import { useTrip } from '@/components/feat/trips';
 import { useAuth } from '@/hooks/useAuth';
 import { BackLink } from '@/components/shared/BackLink';
 import { TripPageHeader } from '@/components/shared/TripPageHeader';
+import { formatLocalizedDateRange } from '@/lib/utils';
 
 // Finances Feature Components & Hooks
 import {
@@ -68,7 +69,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const isToReceive = location.pathname.endsWith('/to-receive');
 
   const TABS = useMemo(
@@ -76,7 +77,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
       { id: 'all' as TabId, label: t('common.all'), path: 'finances' },
       { id: 'all-expense' as TabId, label: t('finances.allExpenses'), path: 'all-expenses' },
       { id: 'settlements' as TabId, label: t('finances.settlements'), path: 'to-receive' },
-      { id: 'central-fund' as TabId, label: 'Central Fund', path: 'central-fund' },
+      { id: 'central-fund' as TabId, label: t('finances.centralFund.title', 'Central Fund'), path: 'central-fund' },
       { id: 'monitoring' as TabId, label: t('finances.monitoring'), path: 'monitoring' },
     ],
     [t],
@@ -282,7 +283,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
       subtitle: trip ? (
         <Trans
           i18nKey="finances.managingCostsFor"
-          values={{ title: trip.title, range: formatDateRange(trip.startsOn, trip.endsOn).range }}
+          values={{ title: trip.title, range: formatLocalizedDateRange(trip.startsOn, trip.endsOn, i18n.language).range }}
           components={{ b: <b /> }}
         />
       ) : (
@@ -387,8 +388,8 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
       ),
     },
     'central-fund': {
-      title: 'Central Fund',
-      subtitle: 'Manage common expenses',
+      title: t('finances.centralFund.title', 'Central Fund'),
+      subtitle: t('finances.centralFund.manageCommonExpenses', 'Manage common expenses'),
       actions: (
         <>
           {treasurerId && centralFundPerPerson > 0 && !isTreasurer && !hasFullyPaidCentralFund && (
@@ -397,7 +398,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
               className="gap-2 shadow-sm hover:shadow-md transition-all animate-in fade-in duration-300 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl h-10 px-4 text-xs shrink-0"
             >
               <CreditCard className="w-4 h-4" />
-              Pay Contribution (฿{remainingCentralContribution.toLocaleString()})
+              {t('finances.centralFund.payContribution', 'Pay Contribution (฿{{amount}})', { amount: remainingCentralContribution.toLocaleString() })}
             </Button>
           )}
         </>

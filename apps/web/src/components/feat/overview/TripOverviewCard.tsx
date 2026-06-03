@@ -2,7 +2,8 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, CalendarRange, MapPin, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { TripDetail } from '@/types/trips';
-import { deriveTripStatus, daysUntilStart, formatDateRange } from '@/utils/trips';
+import { formatLocalizedDateRange } from '@/lib/utils';
+import { deriveTripStatus, daysUntilStart } from '@/utils/trips';
 import { TripStatusBadge } from '@/components/feat/trips';
 
 interface TripOverviewCardProps {
@@ -10,8 +11,8 @@ interface TripOverviewCardProps {
 }
 
 export function TripOverviewCard({ trip }: TripOverviewCardProps) {
-  const { range, duration } = formatDateRange(trip.startsOn, trip.endsOn);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { range, duration } = formatLocalizedDateRange(trip.startsOn, trip.endsOn, i18n.language);
   const status = deriveTripStatus(trip);
 
   // Countdown copy keyed off status + days-to-start.
