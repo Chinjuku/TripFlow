@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Button } from '@trip-flow/ui/components/button';
 import { Modal } from '@trip-flow/ui/components/modal';
 import type { ScheduleItem } from '@/types/schedule';
@@ -9,6 +10,7 @@ interface DedupeConfirmModalProps {
 }
 
 export function DedupeConfirmModal({ rows, onCancel, onConfirm }: DedupeConfirmModalProps) {
+  const { t } = useTranslation();
   const open = rows !== null && rows.length > 0;
   const count = rows?.length ?? 0;
 
@@ -18,8 +20,8 @@ export function DedupeConfirmModal({ rows, onCancel, onConfirm }: DedupeConfirmM
       onOpenChange={(next) => {
         if (!next) onCancel();
       }}
-      title={'Switch to “No repeats”?'}
-      description={`This will remove ${count} duplicate ${count === 1 ? 'entry' : 'entries'} from your schedule. The oldest copy of each place is kept.`}
+      title={t('schedule.switchToNoRepeats')}
+      description={t('schedule.dedupeDesc', { count })}
     >
       <div className="space-y-4">
         {rows && rows.length > 0 && (
@@ -28,7 +30,8 @@ export function DedupeConfirmModal({ rows, onCancel, onConfirm }: DedupeConfirmM
               <li key={r.id} className="flex items-center justify-between gap-3 text-sm">
                 <span className="text-foreground truncate font-medium">{r.place.name}</span>
                 <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
-                  Day {r.dayIndex + 1} · {String(Math.floor(r.startMinute / 60)).padStart(2, '0')}:
+                  {t('schedule.day', { number: r.dayIndex + 1 })} ·{' '}
+                  {String(Math.floor(r.startMinute / 60)).padStart(2, '0')}:
                   {String(r.startMinute % 60).padStart(2, '0')}
                 </span>
               </li>
@@ -37,10 +40,10 @@ export function DedupeConfirmModal({ rows, onCancel, onConfirm }: DedupeConfirmM
         )}
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onCancel}>
-            Cancel
+            {t('schedule.cancel')}
           </Button>
           <Button variant="destructive" onClick={onConfirm}>
-            Remove duplicates
+            {t('schedule.removeDuplicates')}
           </Button>
         </div>
       </div>

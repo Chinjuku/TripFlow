@@ -25,12 +25,12 @@ export function TripOverviewCard({ trip }: TripOverviewCardProps) {
   return (
     <div className="border-border bg-card overflow-hidden rounded-2xl border">
       {/* Countdown banner — status badge + at-a-glance timing. */}
-      <div className="bg-muted/30 border-border flex items-center justify-between gap-3 border-b px-6 py-4">
+      <div className="bg-muted/30 border-border flex items-center justify-between gap-3 border-b px-4 py-4 sm:px-6">
         <span className="text-foreground text-sm font-semibold">{countdown}</span>
         <TripStatusBadge status={status} />
       </div>
 
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <dl className="grid grid-cols-1 gap-5 sm:grid-cols-3">
           <Stat icon={CalendarRange} label={t('overview.dates')}>
             <span className="text-foreground text-base font-semibold">{range}</span>

@@ -166,15 +166,15 @@ export function EventBlock({ item, next, weekday, onRemove, onResize, dragLocked
             onRemove();
           }}
           onPointerDown={(e) => e.stopPropagation()}
-          aria-label="Remove from schedule"
-          className="text-primary-foreground/70 hover:text-destructive-foreground hover:bg-destructive inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-colors"
+          aria-label={t('schedule.removeFromSchedule')}
+          className="text-primary-foreground/70 hover:text-destructive-foreground hover:bg-destructive -mr-1 -mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors"
         >
           <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
         </button>
 
         <div
           role="slider"
-          aria-label="Resize event duration"
+          aria-label={t('schedule.resizeDuration')}
           aria-valuemin={MIN_DURATION_MINUTES}
           aria-valuenow={effectiveDuration}
           onPointerDown={handleResizePointerDown}

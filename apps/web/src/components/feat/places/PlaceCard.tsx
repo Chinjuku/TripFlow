@@ -178,15 +178,16 @@ function PlanCard({
             owner can see at a glance that the row is theirs to remove.
             `mt-auto` pins it to the bottom regardless of address length. */}
         {canRemove && (
-          <div className="mt-auto flex justify-end">
+          <div className="-mb-1.5 -mr-1.5 mt-auto flex justify-end">
+            {/* Compact glyph, but a 44px tap target via padding (touch a11y). */}
             <button
               type="button"
               onClick={handleRemove}
               disabled={busy}
               aria-label="Remove place"
-              className="text-muted-foreground hover:bg-destructive hover:text-destructive-foreground inline-flex h-6 w-6 items-center justify-center rounded-md transition-colors disabled:opacity-50"
+              className="text-muted-foreground hover:text-destructive inline-flex h-11 w-11 items-center justify-center rounded-md transition-colors disabled:opacity-50"
             >
-              <Trash2 className="h-3.5 w-3.5" strokeWidth={2} />
+              <Trash2 className="h-4 w-4" strokeWidth={2} />
             </button>
           </div>
         )}

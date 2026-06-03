@@ -8,7 +8,7 @@ interface CollaboratorsPanelProps {
 
 export function CollaboratorsPanel({ members, currentUserId }: CollaboratorsPanelProps) {
   return (
-    <div className="border-border bg-card space-y-4 rounded-2xl border p-6">
+    <div className="border-border bg-card space-y-4 rounded-2xl border p-4 sm:p-6">
       {members.map((member) => (
         <CollaboratorRow
           key={member.userId}

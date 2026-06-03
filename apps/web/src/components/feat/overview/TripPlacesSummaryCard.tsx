@@ -81,7 +81,7 @@ export function TripPlacesSummaryCard({ trip, className = '' }: TripPlacesSummar
 
   if (error) {
     return (
-      <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-2xl border p-6 text-sm">
+      <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-2xl border p-4 text-sm sm:p-6">
         <p className="font-semibold">
           {t('overview.failedLoadSchedule', 'Failed to load schedule overview')}
         </p>
@@ -92,7 +92,7 @@ export function TripPlacesSummaryCard({ trip, className = '' }: TripPlacesSummar
 
   return (
     <div
-      className={`border-border bg-card rounded-2xl border p-6 shadow-xs flex flex-col ${className}`}
+      className={`border-border bg-card rounded-2xl border p-4 sm:p-6 shadow-xs flex flex-col ${className}`}
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-4 mb-4 shrink-0">
         <div>

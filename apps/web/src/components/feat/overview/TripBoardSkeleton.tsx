@@ -2,7 +2,7 @@ import { Skeleton } from '@trip-flow/ui/components/skeleton';
 
 export function TripBoardSkeleton() {
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-8">
+    <div className="mx-auto flex max-w-6xl flex-col gap-6 sm:gap-8">
       {/* TripPageHeader Equivalent */}
       <div className="border-border flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1 w-full sm:w-1/2">
@@ -22,12 +22,12 @@ export function TripBoardSkeleton() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:h-[calc(100vh-14rem)] lg:grid-cols-3 lg:overflow-hidden">
+      <div className="grid grid-cols-1 gap-6 lg:h-[calc(100vh-14rem)] lg:grid-cols-3 lg:gap-8 lg:overflow-hidden">
         <div className="space-y-6 lg:col-span-2 lg:flex lg:h-full lg:flex-col lg:overflow-hidden">
           <Skeleton className="h-6 w-1/3 max-w-[12rem] shrink-0" />
           <div className="shrink-0">
             {/* TripOverviewCard Skeleton */}
-            <div className="border-border bg-card rounded-2xl border p-6">
+            <div className="border-border bg-card rounded-2xl border p-4 sm:p-6">
               <dl className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <div>
                   <Skeleton className="h-3 w-16 uppercase tracking-wide" />
@@ -50,7 +50,7 @@ export function TripBoardSkeleton() {
           </div>
 
           {/* TripPlacesSummaryCard Skeleton */}
-          <div className="border-border bg-card shadow-xs flex flex-col rounded-2xl border p-6 lg:flex-1 lg:overflow-hidden">
+          <div className="border-border bg-card shadow-xs flex flex-col rounded-2xl border p-4 sm:p-6 lg:flex-1 lg:overflow-hidden">
             <div className="border-border mb-4 flex shrink-0 flex-col gap-4 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="w-full space-y-1 sm:w-2/3">
                 <Skeleton className="h-5 w-[50%]" />
@@ -70,7 +70,7 @@ export function TripBoardSkeleton() {
           <Skeleton className="h-6 w-1/2 max-w-[14rem] shrink-0" />
           <div className="-mr-1 pr-1 lg:flex-1 lg:overflow-y-auto scrollbar-none">
             {/* CollaboratorsPanel Skeleton */}
-            <div className="border-border bg-card space-y-4 rounded-2xl border p-6">
+            <div className="border-border bg-card space-y-4 rounded-2xl border p-4 sm:p-6">
               <div className="flex items-center gap-3">
                 <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
                 <div className="flex-1 space-y-1.5">

@@ -33,7 +33,7 @@ export default function TripBoardPage() {
   const owner = trip.members.find((m) => m.role === 'owner');
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-8">
+    <div className="mx-auto flex max-w-6xl flex-col gap-6 sm:gap-8">
       <TripPageHeader
         backTo="/trips"
         backLabel={t('overview.allTrips')}
@@ -47,7 +47,7 @@ export default function TripBoardPage() {
         withBorder
       />
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 lg:h-[calc(100vh-14rem)] lg:overflow-hidden">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8 lg:h-[calc(100vh-14rem)] lg:overflow-hidden">
         <div className="space-y-6 lg:col-span-2 lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
           <h3 className="text-foreground font-headline text-lg font-bold shrink-0">
             {t('overview.tripOverview')}

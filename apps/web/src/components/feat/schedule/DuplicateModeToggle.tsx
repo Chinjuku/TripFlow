@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { cn } from '@trip-flow/ui/lib/cn';
 
 interface DuplicateModeToggleProps {
@@ -6,10 +7,11 @@ interface DuplicateModeToggleProps {
 }
 
 export function DuplicateModeToggle({ value, onChange }: DuplicateModeToggleProps) {
+  const { t } = useTranslation();
   return (
     <div
       role="radiogroup"
-      aria-label="Place duplicate handling"
+      aria-label={t('schedule.duplicateHandling')}
       className="bg-muted/60 flex w-full gap-1 rounded-full p-0.5"
     >
       <button
@@ -24,7 +26,7 @@ export function DuplicateModeToggle({ value, onChange }: DuplicateModeToggleProp
             : 'text-muted-foreground hover:text-foreground',
         )}
       >
-        No repeats
+        {t('schedule.noRepeats')}
       </button>
       <button
         type="button"
@@ -38,7 +40,7 @@ export function DuplicateModeToggle({ value, onChange }: DuplicateModeToggleProp
             : 'text-muted-foreground hover:text-foreground',
         )}
       >
-        Allow repeats
+        {t('schedule.allowRepeats')}
       </button>
     </div>
   );
