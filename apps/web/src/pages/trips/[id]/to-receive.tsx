@@ -10,6 +10,7 @@ import type { DebtRelation, HydratedExpense, HydratedSettlement } from '@/compon
 import type { Debtor, Transaction } from '@/components/feat/finances/to-receive/DebtorCard';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
+import { formatLocalizedDate } from '@/lib/utils';
 
 function buildDebtorsList(
   currentUserId: string,
@@ -18,6 +19,7 @@ function buildDebtorsList(
   settlements: HydratedSettlement[],
   t: TFunction,
   isOptimized: boolean,
+  lng: string,
 ): Debtor[] {
   return whoOwesYou.map((debtor) => {
     // Reconstruct contributing transactions between debtor and currentUserId.
@@ -37,7 +39,7 @@ function buildDebtorsList(
           id: `exp-${exp.id}`,
           description: displayDescription,
           date: exp.expense_date
-            ? new Date(exp.expense_date).toLocaleDateString('en-US', {
+            ? formatLocalizedDate(exp.expense_date, lng, {
                 month: 'short',
                 day: 'numeric',
                 year: 'numeric',
@@ -65,7 +67,7 @@ function buildDebtorsList(
           id: `exp-${exp.id}`,
           description: displayDescription,
           date: exp.expense_date
-            ? new Date(exp.expense_date).toLocaleDateString('en-US', {
+            ? formatLocalizedDate(exp.expense_date, lng, {
                 month: 'short',
                 day: 'numeric',
                 year: 'numeric',
@@ -88,7 +90,7 @@ function buildDebtorsList(
         id: `set-${set.id}`,
         description: t('finances.repaymentReceived'),
         date: set.created_at
-          ? new Date(set.created_at).toLocaleDateString('en-US', {
+          ? formatLocalizedDate(set.created_at, lng, {
               month: 'short',
               day: 'numeric',
               year: 'numeric',
@@ -109,7 +111,7 @@ function buildDebtorsList(
         id: `set-${set.id}`,
         description: t('finances.repaymentSent'),
         date: set.created_at
-          ? new Date(set.created_at).toLocaleDateString('en-US', {
+          ? formatLocalizedDate(set.created_at, lng, {
               month: 'short',
               day: 'numeric',
               year: 'numeric',
@@ -161,7 +163,7 @@ function TripToReceiveContent() {
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   // Reconstruct debtors list from context
   const nonCentralExpenses = finances.expenses.filter((e: any) => !e.is_central_fund);
@@ -174,6 +176,7 @@ function TripToReceiveContent() {
     nonCentralSettlements,
     t,
     isOptimized,
+    i18n.language,
   );
 
   const totalYouAreOwed = debtors.reduce((sum, d) => sum + d.amountOwed, 0);

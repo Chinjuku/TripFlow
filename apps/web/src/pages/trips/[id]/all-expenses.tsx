@@ -22,7 +22,7 @@ export default function AllExpensePage() {
 
 function AllExpensesContent() {
   const { finances, user, isLoading } = useTripFinancesContext();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -66,8 +66,9 @@ function AllExpensesContent() {
 
     filteredExpenses.forEach((exp: HydratedExpense) => {
       const date = new Date(exp.expense_date || exp.created_at);
+      const locale = i18n.language.startsWith('th') ? 'th-TH' : 'en-US';
       const dateStr = date
-        .toLocaleDateString(undefined, {
+        .toLocaleDateString(locale, {
           weekday: 'long',
           month: 'short',
           day: 'numeric',
@@ -80,9 +81,9 @@ function AllExpensesContent() {
 
       let label = dateStr;
       if (date.toDateString() === today.toDateString()) {
-        label = `${t('common.today').toUpperCase()}, ${date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }).toUpperCase()}`;
+        label = `${t('common.today').toUpperCase()}, ${date.toLocaleDateString(locale, { month: 'short', day: 'numeric' }).toUpperCase()}`;
       } else if (date.toDateString() === yesterday.toDateString()) {
-        label = `${t('common.yesterday').toUpperCase()}, ${date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }).toUpperCase()}`;
+        label = `${t('common.yesterday').toUpperCase()}, ${date.toLocaleDateString(locale, { month: 'short', day: 'numeric' }).toUpperCase()}`;
       }
 
       let group = groups[label];

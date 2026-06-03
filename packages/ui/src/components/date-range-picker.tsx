@@ -19,7 +19,8 @@ export interface DateRangePickerProps {
   className?: string;
 }
 
-const WEEKDAY_LABELS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+const WEEKDAY_LABELS_EN = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+const WEEKDAY_LABELS_TH = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
 const MONTH_LABELS = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
@@ -46,7 +47,8 @@ function sameDay(a: Date, b: Date): boolean {
   );
 }
 function formatDate(date: Date): string {
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  const locale = typeof document !== 'undefined' ? (document.documentElement.lang === 'th' ? 'th-TH' : 'en-US') : undefined;
+  return date.toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function buildMonthGrid(monthStart: Date): Date[] {
@@ -81,7 +83,7 @@ export function DateRangePicker({
   onChange,
   minDate,
   maxDate,
-  placeholder = 'Pick dates',
+  placeholder,
   disabled,
   id,
   className,
@@ -92,6 +94,11 @@ export function DateRangePicker({
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
+
+  const locale = typeof document !== 'undefined' ? (document.documentElement.lang === 'th' ? 'th-TH' : 'en-US') : undefined;
+  const weekdayLabels = locale === 'th-TH' ? WEEKDAY_LABELS_TH : WEEKDAY_LABELS_EN;
+  const defaultPlaceholder = locale === 'th-TH' ? 'เลือกวันที่' : 'Pick dates';
+  const resolvedPlaceholder = placeholder ?? defaultPlaceholder;
 
   const minSelectable = minDate === null ? null : startOfDay(minDate ?? new Date());
   const maxSelectable = maxDate ? startOfDay(maxDate) : null;
@@ -196,7 +203,7 @@ export function DateRangePicker({
           <div
             ref={popoverRef}
             role="dialog"
-            aria-label="Choose date range"
+            aria-label={locale === 'th-TH' ? 'เลือกช่วงเวลา' : 'Choose date range'}
             style={{ position: 'fixed', top: position.top, left: position.left, width: POPOVER_WIDTH }}
             className={cn(
               'bg-popover text-popover-foreground border-border z-[60] rounded-xl border p-4 shadow-lg',
@@ -207,18 +214,18 @@ export function DateRangePicker({
               <button
                 type="button"
                 onClick={() => setViewMonth((m) => addMonths(m, -1))}
-                aria-label="Previous month"
+                aria-label={locale === 'th-TH' ? 'เดือนก่อนหน้า' : 'Previous month'}
                 className="text-muted-foreground hover:bg-muted hover:text-foreground absolute left-0 inline-flex h-7 w-7 items-center justify-center rounded-md transition-colors"
               >
                 <ChevronGlyph direction="left" />
               </button>
-              <span className="text-foreground text-sm font-semibold">
-                {MONTH_LABELS[viewMonth.getMonth()]} {viewMonth.getFullYear()}
+              <span className="text-foreground text-sm font-semibold capitalize">
+                {viewMonth.toLocaleDateString(locale, { month: 'long', year: 'numeric' })}
               </span>
               <button
                 type="button"
                 onClick={() => setViewMonth((m) => addMonths(m, 1))}
-                aria-label="Next month"
+                aria-label={locale === 'th-TH' ? 'เดือนถัดไป' : 'Next month'}
                 className="text-muted-foreground hover:bg-muted hover:text-foreground absolute right-0 inline-flex h-7 w-7 items-center justify-center rounded-md transition-colors"
               >
                 <ChevronGlyph direction="right" />
@@ -226,7 +233,7 @@ export function DateRangePicker({
             </div>
 
             <div className="text-muted-foreground grid grid-cols-7 gap-y-1 text-[0.65rem] font-medium uppercase tracking-wide">
-              {WEEKDAY_LABELS.map((w) => (
+              {weekdayLabels.map((w) => (
                 <div key={w} className="flex h-7 items-center justify-center">
                   {w}
                 </div>
@@ -305,7 +312,7 @@ export function DateRangePicker({
         aria-expanded={open}
       >
         <CalendarGlyph className="text-muted-foreground h-4 w-4 shrink-0" />
-        <span className="truncate">{label ?? placeholder}</span>
+        <span className="truncate">{label ?? resolvedPlaceholder}</span>
       </button>
       {popover}
     </div>

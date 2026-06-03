@@ -11,6 +11,7 @@ import {
   Wine,
 } from 'lucide-react';
 import type { DayInfo, ScheduleItem } from '@/types/schedule';
+import { formatLocalizedDate } from '@/lib/utils';
 
 export const HOURS_START = 0;
 export const HOURS_END = 24;
@@ -22,7 +23,7 @@ export const DAY_MS = 24 * 60 * 60 * 1000;
 export const MIN_DURATION_MINUTES = 15;
 export const RESIZE_STEP_MINUTES = 15;
 
-export function buildDays(startsOn: string, endsOn: string): DayInfo[] {
+export function buildDays(startsOn: string, endsOn: string, t?: any, lng?: string): DayInfo[] {
   const start = new Date(startsOn);
   const end = new Date(endsOn);
   const count = Math.max(1, Math.round((end.getTime() - start.getTime()) / DAY_MS) + 1);
@@ -32,8 +33,8 @@ export function buildDays(startsOn: string, endsOn: string): DayInfo[] {
     return {
       index: i,
       date,
-      label: `Day ${i + 1}`,
-      subLabel: date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+      label: t ? t('schedule.day', 'Day {{number}}', { number: i + 1 }) : `Day ${i + 1}`,
+      subLabel: formatLocalizedDate(date, lng || 'en', { month: 'short', day: 'numeric' }),
     };
   });
 }
@@ -92,7 +93,7 @@ export function buildMapsDirectionsUrl(from: ScheduleItem, to: ScheduleItem): st
 export function buildFullDayDirectionsUrl(items: ScheduleItem[]): string | null {
   if (items.length === 0) return null;
   const params = new URLSearchParams({ api: '1', travelmode: 'driving' });
-  
+
   if (items.length === 1) {
     const single = describeLocation(items[0]!);
     params.set('destination', single.query);

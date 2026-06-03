@@ -94,7 +94,7 @@ export function ExpenseSummary({
               <div className="flex justify-between items-center text-xs">
                 <span className="text-primary font-semibold">
                   {budgetAmount > 0
-                    ? `${progressPercent}% of ${formattedBudget} budget`
+                    ? t('finances.budgetProgress', '{{percent}}% of {{budget}} budget', { percent: progressPercent, budget: formattedBudget })
                     : t('finances.noBudgetSetYet')}
                 </span>
                 <button
@@ -110,7 +110,7 @@ export function ExpenseSummary({
 
         {/* Card 2: Who Owes You */}
         <Card className="rounded-2xl border-primary/10 bg-gradient-to-b from-primary/[0.03] to-primary/[0.08] shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md dark:border-primary/20 dark:from-primary/[0.01] dark:to-primary/[0.04] bg-card">
-          <CardContent className="p-6 flex flex-col h-full min-h-[14rem]">
+          <CardContent className="p-6 pt-8 flex flex-col h-full min-h-[14rem]">
             <Link
               className="flex items-center gap-2 bg-primary text-primary-foreground text-[10px] font-bold tracking-wider uppercase hover:bg-primary/90 px-4 py-2 rounded-full transition-all w-fit shadow-md border border-primary/20 active:scale-95 font-label"
               to={`/trips/${id}/to-receive`}
@@ -164,7 +164,7 @@ export function ExpenseSummary({
 
         {/* Card 3: What You Owe */}
         <Card className="rounded-2xl border-destructive/15 bg-gradient-to-b from-destructive/[0.03] to-destructive/[0.08] shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md dark:border-destructive/20 dark:from-destructive/[0.01] dark:to-destructive/[0.04] bg-card">
-          <CardContent className="p-6 flex flex-col h-full min-h-[14rem]">
+          <CardContent className="p-6 pt-8 flex flex-col h-full min-h-[14rem]">
             <Link
               className="flex items-center gap-2 bg-destructive text-destructive-foreground text-[10px] font-bold tracking-wider uppercase hover:bg-destructive/90 px-4 py-2 rounded-full transition-all w-fit shadow-md border border-destructive/20 active:scale-95 font-label"
               to={`/trips/${id}/to-pay`}
