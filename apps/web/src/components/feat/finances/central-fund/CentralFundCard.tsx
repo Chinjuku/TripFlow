@@ -40,6 +40,16 @@ export function CentralFundCard({
       ? summary.budget.amount / members.length
       : undefined;
 
+  const targetPool =
+    summary.centralFundPerPerson && members.length > 0
+      ? summary.centralFundPerPerson * members.length
+      : 0;
+
+  const budgetPercent =
+    targetPool > 0 && summary.budget && summary.budget.amount > 0
+      ? Math.round((targetPool / summary.budget.amount) * 100)
+      : 0;
+
   return (
     <>
       <Card className="rounded-2xl border-primary/20 bg-gradient-to-br from-primary/[0.05] to-transparent shadow-sm overflow-hidden relative group transition-all duration-300 hover:shadow-md dark:from-primary/[0.02]">
@@ -97,6 +107,8 @@ export function CentralFundCard({
                   </div>
                   <div className="text-muted-foreground text-[10px]">
                     ฿{summary.centralFundPerPerson?.toLocaleString()} {t('finances.centralFund.perPerson', 'per person')}
+                    {targetPool > 0 && ` • ${t('finances.centralFund.target', { amount: targetPool.toLocaleString() })}`}
+                    {budgetPercent > 0 && ` ${t('finances.centralFund.percentOfBudget', { percent: budgetPercent })}`}
                   </div>
                 </div>
 

@@ -20,6 +20,7 @@ export interface TripSummary {
   centerLng: number | null;
   role: 'owner' | 'member';
   createdAt: string;
+  centralFundPerPerson?: number | null;
   members: TripMemberProfile[];
 }
 
@@ -31,6 +32,7 @@ export interface CreateTripPayload {
   destinationNameEn?: string | null;
   centerLat?: number | null;
   centerLng?: number | null;
+  centralFundPerPerson?: number | null;
 }
 
 export interface UpdateTripPayload {
@@ -41,6 +43,7 @@ export interface UpdateTripPayload {
   destinationNameEn?: string | null;
   centerLat?: number | null;
   centerLng?: number | null;
+  centralFundPerPerson?: number | null;
 }
 
 export interface TripDetail extends TripSummary {

@@ -34,6 +34,7 @@ export const tripsRoute = new Elysia({ prefix: '/trips' })
       destinationNameEn: t.Optional(t.Nullable(t.String({ maxLength: 200 }))),
       centerLat: t.Optional(t.Nullable(t.Number({ minimum: -90, maximum: 90 }))),
       centerLng: t.Optional(t.Nullable(t.Number({ minimum: -180, maximum: 180 }))),
+      centralFundPerPerson: t.Optional(t.Nullable(t.Number({ minimum: 0 }))),
     }),
   })
   .post('/join', handleJoinTripByCode, {
@@ -56,6 +57,7 @@ export const tripsRoute = new Elysia({ prefix: '/trips' })
       destinationNameEn: t.Optional(t.Nullable(t.String({ maxLength: 200 }))),
       centerLat: t.Optional(t.Nullable(t.Number({ minimum: -90, maximum: 90 }))),
       centerLng: t.Optional(t.Nullable(t.Number({ minimum: -180, maximum: 180 }))),
+      centralFundPerPerson: t.Optional(t.Nullable(t.Number({ minimum: 0 }))),
     }),
   })
   .delete('/:id', handleDeleteTrip, {

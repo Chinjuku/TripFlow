@@ -171,6 +171,23 @@ export function SettleUpModal({
     }
   };
 
+  const handleManualSettle = async () => {
+    setScanError(null);
+    setIsScanning(true);
+    try {
+      const createdSettlement = await onSubmit(payee.userId, payee.amount, isCentralFund);
+      if (createdSettlement) {
+        onVerified?.();
+        onOpenChange(false);
+      }
+    } catch (err) {
+      console.error('Manual settle error:', err);
+      setScanError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการบันทึกรายการ');
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
   return (
     <Modal
       open={open}
@@ -493,7 +510,15 @@ export function SettleUpModal({
 
         {/* Confirm Settlement Buttons */}
         <div className="pt-2 flex flex-col gap-2">
-          {/* Removed manual confirmation button per request */}
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isScanning}
+            onClick={handleManualSettle}
+            className="w-full text-xs h-10 rounded-xl border border-primary/20 hover:bg-primary/5 text-primary font-bold transition-colors"
+          >
+            {t('finances.submitManualConfirm', 'Submit for Manual Verification')}
+          </Button>
           <Button
             type="button"
             variant="outline"
