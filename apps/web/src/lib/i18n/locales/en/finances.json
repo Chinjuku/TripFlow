@@ -167,5 +167,24 @@
   "categoryBreakdown": "Category Breakdown",
   "totalYouOwe": "Total You Owe",
   "equally": "Equally",
-  "exact": "Exact"
+  "exact": "Exact",
+  "centralFund": {
+    "activityLog": "Activity Log",
+    "noActivity": "No central fund activity yet.",
+    "contribution": "Contribution",
+    "defaultExpense": "Central Fund Expense",
+    "payFromCentral": "Pay from Central Fund?",
+    "payFromCentralDesc": "Mark this payment as using the shared pool.",
+    "confirmDevMode": "Confirm Payment (Dev Mode)",
+    "confirmDevError": "Failed to confirm settlement",
+    "verifyingSlip": "Verifying slip, please wait...",
+    "slipAttached": "Slip attached",
+    "uploadSlip": "Upload transfer slip",
+    "autoVerificationDesc": "The system will automatically verify the amount.",
+    "memberContributions": "Member Contributions",
+    "treasurer": "Treasurer",
+    "holdingMoney": "Holding central fund",
+    "paid": "Paid",
+    "unpaid": "Unpaid"
+  }
 }

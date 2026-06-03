@@ -145,6 +145,7 @@ export function TripSidebar({ tripId, open, onOpenChange }: TripSidebarProps) {
                 location.pathname.includes('/all-expenses') ||
                 location.pathname.includes('/to-receive') ||
                 location.pathname.includes('/to-pay') ||
+                location.pathname.includes('/central-fund') ||
                 location.pathname.includes('/monitoring'));
             return (
               <NavLink

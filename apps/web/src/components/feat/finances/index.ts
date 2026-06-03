@@ -10,6 +10,7 @@ export {
   getPaymentDetails,
   verifySlip,
   extractReceipt,
+  updateCentralFund,
 } from './api';
 export { ExpenseSummary } from './ExpenseSummary';
 export { ExpenseList } from './ExpenseList';
@@ -30,4 +31,5 @@ export type {
   HydratedSettlement,
   CreateExpensePayload,
   CreateSettlementPayload,
+  UpdateCentralFundPayload,
 } from './types';

@@ -39,6 +39,7 @@ function AllExpensesContent() {
   const filteredExpenses = useMemo(() => {
     if (!finances?.expenses) return [];
     return finances.expenses.filter((exp: HydratedExpense) => {
+      if (exp.is_central_fund) return false;
       const matchesSearch =
         exp.description.toLowerCase().includes(search.toLowerCase()) ||
         exp.payerName.toLowerCase().includes(search.toLowerCase());

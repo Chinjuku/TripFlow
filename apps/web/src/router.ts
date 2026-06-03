@@ -10,6 +10,7 @@ export type Path =
   | `/trips`
   | `/trips/:id`
   | `/trips/:id/all-expenses`
+  | `/trips/:id/central-fund`
   | `/trips/:id/finances`
   | `/trips/:id/monitoring`
   | `/trips/:id/plan`
@@ -21,6 +22,7 @@ export type Path =
 export type Params = {
   '/trips/:id': { id: string }
   '/trips/:id/all-expenses': { id: string }
+  '/trips/:id/central-fund': { id: string }
   '/trips/:id/finances': { id: string }
   '/trips/:id/monitoring': { id: string }
   '/trips/:id/plan': { id: string }

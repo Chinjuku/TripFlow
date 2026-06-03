@@ -8,6 +8,7 @@ import type {
   HydratedExpense,
   HydratedSettlement,
   UserPaymentDetail,
+  UpdateCentralFundPayload,
 } from './types';
 
 function unwrap<T>(value: { data: T | null; error: any }): T {
@@ -65,6 +66,12 @@ export async function confirmSettlement(id: string): Promise<HydratedSettlement>
 
 export async function updateBudget(payload: UpdateBudgetPayload): Promise<any> {
   const res = await api.finances.budget.post(payload);
+  return unwrap(res);
+}
+
+export async function updateCentralFund(payload: UpdateCentralFundPayload): Promise<any> {
+  const { tripId, ...body } = payload;
+  const res = await api.finances.trip[tripId]!['central-fund'].patch(body);
   return unwrap(res);
 }
 

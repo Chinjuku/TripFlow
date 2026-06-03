@@ -30,8 +30,9 @@ import { TripFinancesAllSkeleton } from './TripFinancesAllSkeleton';
 import { TripFinancesAllExpensesSkeleton } from './all-expenses/TripFinancesAllExpensesSkeleton';
 import { TripFinancesRepaymentsSkeleton } from './TripFinancesRepaymentsSkeleton';
 import { TripFinancesFallbackSkeleton } from './TripFinancesFallbackSkeleton';
+import { CentralFundSkeleton } from '@/components/feat/finances/central-fund/CentralFundSkeleton';
 
-type TabId = 'all' | 'all-expense' | 'settlements' | 'monitoring';
+type TabId = 'all' | 'all-expense' | 'settlements' | 'monitoring' | 'central-fund';
 
 interface TripFinancesContextType {
   trip: any;
@@ -42,8 +43,9 @@ interface TripFinancesContextType {
   setIsOptimized: (v: boolean) => void;
   confirmingSettlementId: string | null;
   handleConfirmSettlementReceived: (settlementId: string) => Promise<void>;
-  handleSettleUpTrigger: (payee: DebtRelation) => void;
+  handleSettleUpTrigger: (payee: DebtRelation, isCentralFund?: boolean) => void;
   setBudgetOpen: (v: boolean) => void;
+  refreshFinances: () => Promise<any>;
 }
 
 const TripFinancesContext = createContext<TripFinancesContextType | null>(null);
@@ -74,6 +76,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
       { id: 'all' as TabId, label: t('common.all'), path: 'finances' },
       { id: 'all-expense' as TabId, label: t('finances.allExpenses'), path: 'all-expenses' },
       { id: 'settlements' as TabId, label: t('finances.settlements'), path: 'to-receive' },
+      { id: 'central-fund' as TabId, label: 'Central Fund', path: 'central-fund' },
       { id: 'monitoring' as TabId, label: t('finances.monitoring'), path: 'monitoring' },
     ],
     [t],
@@ -82,6 +85,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   const [createOpen, setCreateOpen] = useState(false);
   const [settleOpen, setSettleOpen] = useState(false);
   const [activeSettlePayee, setActiveSettlePayee] = useState<DebtRelation | null>(null);
+  const [defaultIsCentralFund, setDefaultIsCentralFund] = useState(false);
   const [budgetOpen, setBudgetOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
 
@@ -162,7 +166,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   };
 
   // Handle Recording a P2P Settlement
-  const handleSettleUpSubmit = async (payeeId: string, amount: number) => {
+  const handleSettleUpSubmit = async (payeeId: string, amount: number, isCentralFund?: boolean) => {
     if (!id) return null;
     setIsSubmittingSettlement(true);
     setErrorMsg(null);
@@ -171,6 +175,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
         tripId: id,
         payeeId,
         amount,
+        isCentralFund,
       });
       await refreshFinances(true);
       // setSettleOpen(false) is now handled by the modal to support slip upload wait
@@ -235,9 +240,36 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
     }
   };
 
-  const handleSettleUpTrigger = (payee: DebtRelation) => {
+  const handleSettleUpTrigger = (payee: DebtRelation, isCentralFund?: boolean) => {
     setActiveSettlePayee(payee);
+    setDefaultIsCentralFund(isCentralFund ?? false);
     setSettleOpen(true);
+  };
+
+  const isTreasurer = user?.id === finances?.summary?.treasurerId;
+  const centralFundPerPerson = finances?.summary?.centralFundPerPerson || 0;
+  const treasurerId = finances?.summary?.treasurerId;
+
+  // Check user's paid amount for central fund
+  const userCentralSettlements = finances?.settlements?.filter(
+    (s: any) => s.payer_id === user?.id && s.is_central_fund && s.payee_id === treasurerId
+  ) || [];
+  
+  const userCentralPaidAndPending = userCentralSettlements.reduce((sum: number, s: any) => sum + s.amount, 0);
+  const hasFullyPaidCentralFund = centralFundPerPerson > 0 && userCentralPaidAndPending >= centralFundPerPerson;
+  const remainingCentralContribution = Math.max(0, centralFundPerPerson - userCentralPaidAndPending);
+
+  const handlePayContribution = () => {
+    if (!treasurerId || !centralFundPerPerson) return;
+    const treasurerMember = trip?.members.find((m: any) => m.userId === treasurerId);
+    if (treasurerMember) {
+      handleSettleUpTrigger({
+        userId: treasurerMember.userId,
+        name: treasurerMember.name,
+        avatarUrl: treasurerMember.avatarUrl,
+        amount: remainingCentralContribution,
+      }, true);
+    }
   };
 
   // Dynamic header settings configuration mapping based on activeTab
@@ -354,6 +386,23 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
         </div>
       ),
     },
+    'central-fund': {
+      title: 'Central Fund',
+      subtitle: 'Manage common expenses',
+      actions: (
+        <>
+          {treasurerId && centralFundPerPerson > 0 && !isTreasurer && !hasFullyPaidCentralFund && (
+            <Button
+              onClick={handlePayContribution}
+              className="gap-2 shadow-sm hover:shadow-md transition-all animate-in fade-in duration-300 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl h-10 px-4 text-xs shrink-0"
+            >
+              <CreditCard className="w-4 h-4" />
+              Pay Contribution (฿{remainingCentralContribution.toLocaleString()})
+            </Button>
+          )}
+        </>
+      ),
+    },
   };
 
   const headerConfig = TABS_SETTING_HEADERS[activeTab] || TABS_SETTING_HEADERS.all;
@@ -371,6 +420,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
         handleConfirmSettlementReceived,
         handleSettleUpTrigger,
         setBudgetOpen,
+        refreshFinances,
       }}
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-8 h-full lg:h-[calc(100vh-5.5rem)] lg:overflow-hidden animate-in fade-in duration-300">
@@ -434,6 +484,8 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
                 <TripFinancesAllExpensesSkeleton />
               ) : activeTab === 'settlements' ? (
                 <TripFinancesRepaymentsSkeleton />
+              ) : activeTab === 'central-fund' ? (
+                <CentralFundSkeleton />
               ) : (
                 <TripFinancesFallbackSkeleton />
               )
@@ -455,6 +507,12 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
                   currentUserId={user?.id || ''}
                   onSubmit={handleRecordExpenseSubmit}
                   isSubmitting={isSubmittingExpense}
+                  hasCentralFund={
+                    finances?.summary?.treasurerId != null &&
+                    finances?.summary?.centralFundPerPerson != null &&
+                    finances?.summary?.centralFundPerPerson > 0 &&
+                    finances?.summary?.treasurerId === user?.id
+                  }
                 />
               )}
 
@@ -467,6 +525,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
                   onSubmit={handleSettleUpSubmit}
                   isSubmitting={isSubmittingSettlement}
                   onVerified={(silent) => refreshFinances(silent)}
+                  defaultIsCentralFund={defaultIsCentralFund}
                 />
               )}
 

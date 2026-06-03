@@ -22,6 +22,7 @@ import {
   handleConfirmSettlement,
   handleUpdateTripBudget,
   handleUpdateTripOptimization,
+  handleUpdateCentralFund,
   handleSaveUserPaymentDetails,
   handleGetUserPaymentDetails,
   handleVerifySlip,
@@ -46,6 +47,15 @@ export const financesRoute = new Elysia({ prefix: '/finances' })
       isOptimized: t.Boolean(),
     }),
   })
+  .patch('/trip/:tripId/central-fund', handleUpdateCentralFund, {
+    params: t.Object({
+      tripId: t.String({ format: 'uuid' }),
+    }),
+    body: t.Object({
+      treasurerId: t.Optional(t.Nullable(t.String({ format: 'uuid' }))),
+      centralFundPerPerson: t.Optional(t.Nullable(t.Numeric({ minimum: 0.0 }))),
+    }),
+  })
   .post('/expense', handleCreateExpense, {
     body: t.Object({
       tripId: t.String({ format: 'uuid' }),
@@ -61,6 +71,7 @@ export const financesRoute = new Elysia({ prefix: '/finances' })
       ]),
       splitMethod: t.Union([t.Literal('equally'), t.Literal('exact_amount')]),
       expenseDate: t.Optional(t.String()),
+      isCentralFund: t.Optional(t.Boolean()),
       splits: t.Array(
         t.Object({
           userId: t.String({ format: 'uuid' }),
@@ -75,6 +86,7 @@ export const financesRoute = new Elysia({ prefix: '/finances' })
       tripId: t.String({ format: 'uuid' }),
       payeeId: t.String({ format: 'uuid' }),
       amount: t.Numeric({ minimum: 0.01 }),
+      isCentralFund: t.Optional(t.Boolean()),
     }),
   })
   .post('/settlement/:id/confirm', handleConfirmSettlement, {
