@@ -11,6 +11,7 @@ import {
   MIN_DURATION_MINUTES,
   minuteToPx,
   openingStatusFor,
+  placeName,
   RESIZE_STEP_MINUTES,
   HOUR_HEIGHT_PX,
   toneFor,
@@ -28,7 +29,7 @@ interface EventBlockProps {
 }
 
 export function EventBlock({ item, next, weekday, onRemove, onResize, dragLocked }: EventBlockProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const top = minuteToPx(item.startMinute);
   const tone = toneFor(item.id);
 
@@ -147,7 +148,7 @@ export function EventBlock({ item, next, weekday, onRemove, onResize, dragLocked
                 aria-label={hoursWarning}
               />
             )}
-            <span className="truncate">{item.place.name}</span>
+            <span className="truncate">{placeName(item.place, i18n.language)}</span>
           </p>
           <p className="text-primary-foreground/80 mt-0.5 truncate text-xs">
             {formatTime(item.startMinute)} - {formatTime(item.startMinute + effectiveDuration)}

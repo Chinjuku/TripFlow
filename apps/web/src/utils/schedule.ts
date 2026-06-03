@@ -10,8 +10,20 @@ import {
   Utensils,
   Wine,
 } from 'lucide-react';
-import type { DayInfo, ScheduleItem } from '@/types/schedule';
+import type { DayInfo, ScheduleItem, SchedulePlace } from '@/types/schedule';
 import { formatLocalizedDate } from '@/lib/utils';
+import { localized } from '@/utils/places-map';
+
+/** A scheduled place's name in the current UI language (falls back to the
+ *  stored copy when the other language is missing — e.g. older rows). */
+export function placeName(place: SchedulePlace, lang: string): string {
+  return localized(lang, place.name, place.nameEn) ?? place.name;
+}
+
+/** A scheduled place's address in the current UI language, or null. */
+export function placeAddress(place: SchedulePlace, lang: string): string | null {
+  return localized(lang, place.address, place.addressEn);
+}
 
 export const HOURS_START = 0;
 export const HOURS_END = 24;

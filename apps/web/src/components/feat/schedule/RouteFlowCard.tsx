@@ -8,6 +8,7 @@ import {
   categoryIconFor,
   formatDuration,
   formatTime,
+  placeName,
   toneFor,
 } from '@/utils/schedule';
 
@@ -124,6 +125,8 @@ interface RouteFlowStepProps {
 }
 
 function RouteFlowStep({ index, total, item, next }: RouteFlowStepProps) {
+  const { i18n } = useTranslation();
+  const name = placeName(item.place, i18n.language);
   const tone = toneFor(item.id);
   const Icon = categoryIconFor(item.place.category);
   const isFirst = index === 0;
@@ -166,7 +169,7 @@ function RouteFlowStep({ index, total, item, next }: RouteFlowStepProps) {
             <div className="flex items-center gap-1">
               <Icon className={cn('h-3 w-3 shrink-0', tone.text)} strokeWidth={2.25} aria-hidden />
               <span className={cn('truncate text-xs font-semibold', tone.text)}>
-                {item.place.name}
+                {name}
               </span>
             </div>
             <p className="text-primary-foreground/80 mt-0.5 text-[0.65rem] tabular-nums">
@@ -195,7 +198,7 @@ function RouteFlowStep({ index, total, item, next }: RouteFlowStepProps) {
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-bold">{item.place.name}</p>
+                <p className="truncate text-xs font-bold">{name}</p>
                 <p className="text-muted-foreground mt-0.5 text-[0.65rem] tabular-nums">
                   {formatTime(item.startMinute)} –{' '}
                   {formatTime(item.startMinute + item.durationMinutes)}
@@ -231,13 +234,16 @@ function RouteFlowConnector({
   to: ScheduleItem;
   gapMinutes: number;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   return (
     <a
       href={buildMapsDirectionsUrl(from, to)}
       target="_blank"
       rel="noreferrer"
-      title={t('schedule.directionsFromTo', { from: from.place.name, to: to.place.name })}
+      title={t('schedule.directionsFromTo', {
+        from: placeName(from.place, i18n.language),
+        to: placeName(to.place, i18n.language),
+      })}
       className="text-muted-foreground/70 hover:text-primary group/arrow relative flex shrink-0 flex-col items-center self-start px-1 pt-5"
       style={{ minWidth: '3rem' }}
     >

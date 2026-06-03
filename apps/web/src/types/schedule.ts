@@ -6,6 +6,8 @@ export interface SchedulePlace {
   externalId: string;
   name: string;
   address: string | null;
+  nameEn: string | null;
+  addressEn: string | null;
   category: string | null;
   lat: number | null;
   lng: number | null;

@@ -12,6 +12,7 @@ import {
   HOURS_START,
   MIN_DURATION_MINUTES,
 } from '@/utils/schedule';
+import { localized } from '@/utils/places-map';
 
 interface AddPlaceSheetProps {
   open: boolean;
@@ -45,7 +46,8 @@ export function AddPlaceSheet({
   onCancel,
   onConfirm,
 }: AddPlaceSheetProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const displayName = place ? (localized(i18n.language, place.name, place.nameEn) ?? place.name) : '';
   const initialDuration = place?.stayMinutes || DEFAULT_DURATION;
   const [duration, setDuration] = useState(initialDuration);
   const [startMinute, setStartMinute] = useState(() => suggestStart(daySchedule, initialDuration));
@@ -85,12 +87,12 @@ export function AddPlaceSheet({
       open={open}
       onOpenChange={(o) => !o && onCancel()}
       title={t('schedule.addToDay')}
-      description={place?.name ?? undefined}
+      description={place ? displayName : undefined}
     >
       {place && (
         <div className="space-y-5">
           <div className="bg-muted/40 border-border rounded-lg border p-3">
-            <p className="text-foreground text-sm font-semibold">{place.name}</p>
+            <p className="text-foreground text-sm font-semibold">{displayName}</p>
             <p className="text-muted-foreground mt-0.5 text-xs">{dayLabel}</p>
           </div>
 

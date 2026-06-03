@@ -32,6 +32,8 @@ export interface ScheduleItem {
     externalId: string;
     name: string;
     address: string | null;
+    nameEn: string | null;
+    addressEn: string | null;
     category: string | null;
     lat: number | null;
     lng: number | null;
@@ -83,6 +85,8 @@ function toScheduleItem(item: TripScheduleItem, place: TripPlace): ScheduleItem 
       externalId: place.external_id,
       name: place.name,
       address: place.address,
+      nameEn: place.name_en,
+      addressEn: place.address_en,
       category: place.category,
       lat: place.lat,
       lng: place.lng,

@@ -10,6 +10,7 @@ import {
   HOUR_HEIGHT_PX,
   minuteToPx,
   openingStatusFor,
+  placeName,
   TIMELINE_HEIGHT_PX,
   toneFor,
 } from '@/utils/schedule';
@@ -22,7 +23,7 @@ interface MobileTimelineProps {
 }
 
 export function MobileTimeline({ items, weekday, onSelect }: MobileTimelineProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const hourLines = Array.from({ length: HOURS_END - HOURS_START + 1 }, (_, i) => HOURS_START + i);
 
   return (
@@ -73,7 +74,7 @@ export function MobileTimeline({ items, weekday, onSelect }: MobileTimelineProps
                     aria-label={hoursWarning}
                   />
                 )}
-                <span className="truncate">{item.place.name}</span>
+                <span className="truncate">{placeName(item.place, i18n.language)}</span>
               </p>
               <p className="text-primary-foreground/80 mt-0.5 truncate text-xs">
                 {formatTime(item.startMinute)} -{' '}

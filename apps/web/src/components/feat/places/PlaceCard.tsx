@@ -172,7 +172,7 @@ function PlanCard({
         </div>
         {displayAddress && (
           <p className="text-muted-foreground line-clamp-2 text-xs leading-snug sm:text-[0.8rem]">
-            {shortAddress(place.address)}
+            {shortAddress(displayAddress)}
           </p>
         )}
         {/* Trash action — always visible (not hover-only) so the place's
@@ -321,7 +321,7 @@ function VoteCard({
           {displayAddress && (
             <p className="text-muted-foreground mt-1 flex items-start gap-1.5 text-sm">
               <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
-              <span className="line-clamp-2 min-w-0">{shortAddress(place.address)}</span>
+              <span className="line-clamp-2 min-w-0">{shortAddress(displayAddress)}</span>
             </p>
           )}
         </div>
