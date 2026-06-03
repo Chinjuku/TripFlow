@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { BarChart3, ChevronDown, ChevronUp, Trophy } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@trip-flow/ui/lib/cn';
 import { BUCKETS, bucketFor } from '@/utils/places';
+import { localized } from '@/utils/places-map';
 import type { PlaceBucket } from '@/types/places';
 import type { RankDelta, TripPlace } from '@/types/places';
 
@@ -111,6 +113,8 @@ function RankingRow({
   rank: number;
   delta: RankDelta | undefined;
 }) {
+  const { i18n } = useTranslation();
+  const displayName = localized(i18n.language, place.name, place.nameEn) ?? place.name;
   return (
     <li
       className={cn(
@@ -120,7 +124,7 @@ function RankingRow({
     >
       <RankBadge rank={rank} />
       <div className="min-w-0 flex-1">
-        <p className="text-foreground truncate text-sm font-semibold leading-tight">{place.name}</p>
+        <p className="text-foreground truncate text-sm font-semibold leading-tight">{displayName}</p>
         <div className="mt-1 flex items-center gap-1.5">
           <span className="bg-muted text-muted-foreground inline-block rounded-full px-2 py-0.5 text-[0.65rem] font-medium">
             {place.voteCount} {place.voteCount === 1 ? 'Vote' : 'Votes'}

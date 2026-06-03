@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Button } from '@trip-flow/ui/components/button';
 import { Modal } from '@trip-flow/ui/components/modal';
+import { placeName } from '@/utils/schedule';
 import type { ScheduleItem } from '@/types/schedule';
 
 interface DedupeConfirmModalProps {
@@ -10,7 +11,7 @@ interface DedupeConfirmModalProps {
 }
 
 export function DedupeConfirmModal({ rows, onCancel, onConfirm }: DedupeConfirmModalProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const open = rows !== null && rows.length > 0;
   const count = rows?.length ?? 0;
 
@@ -28,7 +29,9 @@ export function DedupeConfirmModal({ rows, onCancel, onConfirm }: DedupeConfirmM
           <ul className="border-border bg-muted/30 max-h-56 space-y-1.5 overflow-y-auto rounded-lg border p-3">
             {rows.map((r) => (
               <li key={r.id} className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-foreground truncate font-medium">{r.place.name}</span>
+                <span className="text-foreground truncate font-medium">
+                  {placeName(r.place, i18n.language)}
+                </span>
                 <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
                   {t('schedule.day', { number: r.dayIndex + 1 })} ·{' '}
                   {String(Math.floor(r.startMinute / 60)).padStart(2, '0')}:

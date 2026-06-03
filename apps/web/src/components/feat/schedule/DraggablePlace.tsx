@@ -1,6 +1,8 @@
 import { ArrowUp, MapPin } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@trip-flow/ui/lib/cn';
+import { localized } from '@/utils/places-map';
 import type { TripPlace } from '@/types/places';
 import type { DragPayload } from '@/types/schedule';
 
@@ -27,6 +29,8 @@ export function DraggablePlace({ place }: { place: TripPlace }) {
 }
 
 export function PlacePill({ place, dragging }: { place: TripPlace; dragging?: boolean }) {
+  const { i18n } = useTranslation();
+  const displayName = localized(i18n.language, place.name, place.nameEn) ?? place.name;
   return (
     <>
       {place.photoUrl ? (
@@ -43,7 +47,7 @@ export function PlacePill({ place, dragging }: { place: TripPlace; dragging?: bo
       )}
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-foreground truncate text-sm font-semibold">{place.name}</p>
+          <p className="text-foreground truncate text-sm font-semibold">{displayName}</p>
           <span
             className={cn(
               'inline-flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[0.65rem] font-bold',

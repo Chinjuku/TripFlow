@@ -8,6 +8,7 @@ import {
   formatTime,
   HOURS_END,
   HOURS_START,
+  placeName,
 } from '@/utils/schedule';
 import { DurationStepper, TimeStepper } from './AddPlaceSheet';
 
@@ -32,7 +33,8 @@ export function EditEventSheet({
   onSave,
   onRemove,
 }: EditEventSheetProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const displayName = event ? placeName(event.place, i18n.language) : '';
   const [startMinute, setStartMinute] = useState(event?.startMinute ?? 9 * 60);
   const [duration, setDuration] = useState(event?.durationMinutes ?? 90);
   const [submitting, setSubmitting] = useState(false);
@@ -83,12 +85,12 @@ export function EditEventSheet({
       open={open}
       onOpenChange={(o) => !o && onCancel()}
       title={t('schedule.editEvent')}
-      description={event?.place.name ?? undefined}
+      description={event ? displayName : undefined}
     >
       {event && (
         <div className="space-y-5">
           <div className="bg-muted/40 border-border rounded-lg border p-3">
-            <p className="text-foreground text-sm font-semibold">{event.place.name}</p>
+            <p className="text-foreground text-sm font-semibold">{displayName}</p>
             <p className="text-muted-foreground mt-0.5 text-xs tabular-nums">
               {t('schedule.wasPrefix')}: {formatTime(event.startMinute)} –{' '}
               {formatTime(event.startMinute + event.durationMinutes)}
