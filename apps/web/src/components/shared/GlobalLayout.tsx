@@ -4,7 +4,7 @@ import { SpinningCompass } from '@/components/ui/SpinningCompass';
 
 /**
  * Lightweight shell used for non-trip pages (Trips list, Settings, etc.).
- * No sidebar — those belong inside a specific trip's workspace.
+ * No sidebar - those belong inside a specific trip's workspace.
  */
 export function GlobalLayout() {
   return (

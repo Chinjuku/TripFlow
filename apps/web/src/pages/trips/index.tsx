@@ -5,8 +5,8 @@ import { Button } from '@trip-flow/ui/components/button';
 import { Skeleton } from '@trip-flow/ui/components/skeleton';
 import {
   useTrips,
-  CreateTripDialog,
-  JoinTripDialog,
+  CreateTripModal,
+  JoinTripModal,
   TripCard,
   TripsToolbar,
   TripsEmptyState,
@@ -35,7 +35,7 @@ export default function TripsListPage() {
     [allTrips, filter, sort],
   );
 
-  // Only group into Upcoming/Past when showing everything sorted by soonest —
+  // Only group into Upcoming/Past when showing everything sorted by soonest -
   // an explicit filter or "recent" sort reads better as one flat grid.
   const grouped = useMemo(
     () => (filter === 'all' && sort === 'soonest' ? groupTripsByTime(processed) : null),
@@ -51,7 +51,7 @@ export default function TripsListPage() {
           </h1>
           <p className="text-muted-foreground mt-1 text-sm sm:text-base">{t('trips.subtitle')}</p>
         </div>
-        {/* Hidden when there are no trips — the empty state offers Join itself. */}
+        {/* Hidden when there are no trips - the empty state offers Join itself. */}
         {!loading && allTrips.length > 0 && (
           <Button
             onClick={() => setJoinOpen(true)}
@@ -82,7 +82,7 @@ export default function TripsListPage() {
 
       {loading ? (
         <>
-          {/* Toolbar placeholder — keeps the grid from jumping once loaded. */}
+          {/* Toolbar placeholder - keeps the grid from jumping once loaded. */}
           <div className="flex items-center justify-between">
             <Skeleton className="h-9 w-64 rounded-xl" />
             <Skeleton className="h-5 w-28 rounded-md" />
@@ -142,7 +142,7 @@ export default function TripsListPage() {
         </button>
       </div>
 
-      <CreateTripDialog
+      <CreateTripModal
         open={createOpen}
         onOpenChange={setCreateOpen}
         onCreated={() => {
@@ -150,7 +150,7 @@ export default function TripsListPage() {
           void refresh();
         }}
       />
-      <JoinTripDialog
+      <JoinTripModal
         open={joinOpen}
         onOpenChange={setJoinOpen}
         onJoined={() => {

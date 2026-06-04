@@ -20,7 +20,7 @@ export interface CategoryFilter {
   id: string;
   labelKey: string;
   icon: LucideIcon;
-  /** Google Places "included type" — see Places API (New) docs. */
+  /** Google Places "included type" - see Places API (New) docs. */
   includedType: string;
 }
 

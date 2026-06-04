@@ -363,7 +363,7 @@ export default function TripSchedulePage() {
   if (!id) return null;
 
   const activeDayMeta = days[activeDay];
-  // 0=Sun..6=Sat — drives the opening-hours check for events on this day.
+  // 0=Sun..6=Sat - drives the opening-hours check for events on this day.
   const activeWeekday = activeDayMeta ? activeDayMeta.date.getDay() : new Date().getDay();
 
   const dayLabel = activeDayMeta
@@ -442,7 +442,7 @@ export default function TripSchedulePage() {
             {allowDuplicates
               ? t(
                   'schedule.allowDuplicatesOn',
-                  'A place can repeat across days — handy for daily stops.',
+                  'A place can repeat across days, handy for daily stops.',
                 )
               : t('schedule.allowDuplicatesOff', 'Each place appears once across the whole trip.')}
           </p>
@@ -457,7 +457,7 @@ export default function TripSchedulePage() {
             <div className="space-y-4">
               {topVotedGroups.map(({ bucket, items }) => (
                 <div key={bucket} className="space-y-2.5">
-                  {/* Category heading — swatch dot + label + count. */}
+                  {/* Category heading - swatch dot + label + count. */}
                   <div className="flex items-center gap-2">
                     <span className={`h-2 w-2 shrink-0 rounded-full ${BUCKETS[bucket].swatch}`} />
                     <h4 className="text-muted-foreground text-[0.7rem] font-bold uppercase tracking-wide">

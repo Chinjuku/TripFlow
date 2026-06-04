@@ -72,7 +72,7 @@ function findPortalHost(node: HTMLElement | null): HTMLElement {
 }
 
 /**
- * Range date picker — pick a start then an end on a single calendar.
+ * Range date picker - pick a start then an end on a single calendar.
  * First click sets `from` (and clears `to`); the next click on/after it sets
  * `to`. Clicking before the current `from` restarts the range. Hovering
  * previews the in-progress range. Built standalone so the single-date
@@ -182,7 +182,7 @@ export function DateRangePicker({
     setOpen(false);
   }
 
-  // The end used for range highlighting — the chosen `to`, or the hovered day
+  // The end used for range highlighting - the chosen `to`, or the hovered day
   // while the user is mid-selection.
   const previewTo = value.to ?? (value.from && !value.to ? hovered : null);
 

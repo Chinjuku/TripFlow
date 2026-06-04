@@ -6,7 +6,7 @@ const INVITE_ALPHABET = /^[23456789ABCDEFGHJKMNPQRSTUVWXYZ]$/;
 interface OtpInputProps {
   /** Number of slots in the code. */
   length: number;
-  /** Controlled value — caller stores the joined string. */
+  /** Controlled value - caller stores the joined string. */
   value: string;
   onChange: (next: string) => void;
   /** Fires when every slot is filled. */
@@ -21,7 +21,7 @@ interface OtpInputProps {
  * type to advance, Backspace to retreat, arrows to jump, paste fills.
  *
  * Coerces input to the invite alphabet (no 0/O/1/I/L). Anything outside
- * that set is silently dropped — typing "o" simply does nothing, which
+ * that set is silently dropped - typing "o" simply does nothing, which
  * is friendlier than throwing a validation error after submit.
  */
 export function OtpInput({

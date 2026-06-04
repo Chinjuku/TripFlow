@@ -40,7 +40,7 @@ export default function TripBoardPage() {
         title={trip.title}
         subtitle={
           <>
-            {t('common.inviteCode')}: <span className="font-mono">{trip.inviteCode}</span> —{' '}
+            {t('common.inviteCode')}: <span className="font-mono">{trip.inviteCode}</span> ·{' '}
             {t('common.createdBy')} {owner?.name ?? t('common.unknown')}
           </>
         }

@@ -39,7 +39,7 @@ export function PromptpayForm({
     reader.onloadend = () => {
       const dataUrl = reader.result as string;
       onQrCodeUrlChange(dataUrl);
-      // Best-effort auto-fill — failures leave whatever the user typed.
+      // Best-effort auto-fill - failures leave whatever the user typed.
       void extractPromptpayId(dataUrl)
         .then((id) => {
           if (id) onPromptpayIdChange(id);

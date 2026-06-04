@@ -13,7 +13,7 @@ interface PoiPreviewCardProps {
   onClose: () => void;
 }
 
-/** Content of the map's POI InfoWindow — hero photo/rating, name, hours, add. */
+/** Content of the map's POI InfoWindow - hero photo/rating, name, hours, add. */
 export function PoiPreviewCard({ poi, loading, alreadyPicked, onAdd, onClose }: PoiPreviewCardProps) {
   const { t, i18n } = useTranslation();
   const [adding, setAdding] = useState(false);
@@ -61,7 +61,7 @@ export function PoiPreviewCard({ poi, loading, alreadyPicked, onAdd, onClose }: 
           <X className="h-4 w-4" strokeWidth={2.5} />
         </button>
 
-        {/* Category badge — top-left, clear of the close button. */}
+        {/* Category badge - top-left, clear of the close button. */}
         {categoryLabel && (
           <span className="absolute left-3 top-3 rounded-full bg-black/45 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-white backdrop-blur">
             {categoryLabel}

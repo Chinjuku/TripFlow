@@ -54,7 +54,7 @@ export function TripSidebar({ tripId, open, onOpenChange }: TripSidebarProps) {
     try {
       localStorage.setItem(COLLAPSE_KEY, String(collapsed));
     } catch {
-      /* storage disabled — ignore */
+      /* storage disabled - ignore */
     }
   }, [collapsed]);
 
@@ -172,7 +172,7 @@ export function TripSidebar({ tripId, open, onOpenChange }: TripSidebarProps) {
           })}
         </nav>
 
-        {/* Trip Info & Invite Section — skeleton while the trip loads so the
+        {/* Trip Info & Invite Section - skeleton while the trip loads so the
             footer doesn't pop in. Mirrors the loaded layout. */}
         {tripLoading && !trip && (
           <div className={cn('px-4 py-3', collapsed && 'px-2 py-3 flex justify-center')}>
@@ -203,7 +203,7 @@ export function TripSidebar({ tripId, open, onOpenChange }: TripSidebarProps) {
                 />
               </button>
             ) : (
-              /* No wrapper card — just the cover image, trip name, and invite. */
+              /* No wrapper card - just the cover image, trip name, and invite. */
               <div className="flex flex-col gap-3">
                 {/* Image and Trip Name */}
                 <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl bg-muted shadow-inner group">

@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchCurrentUser, getGoogleSignInUrl, logout } from '@/api/auth';
+import { userStorage } from '@/lib/userStorage';
 import type { AuthContextValue, AuthUser } from '@/types/auth';
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
@@ -9,61 +10,39 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<AuthUser | null>(() => {
-    try {
-      const cached = localStorage.getItem('tf_user');
-      return cached ? JSON.parse(cached) : null;
-    } catch {
-      return null;
-    }
-  });
-  const [isLoading, setIsLoading] = useState(() => {
-    try {
-      return !localStorage.getItem('tf_user');
-    } catch {
-      return true;
-    }
-  });
+  const [user, setUser] = useState<AuthUser | null>(() => userStorage.read());
+  const [isLoading, setIsLoading] = useState(() => userStorage.read() === null);
 
   useEffect(() => {
     const controller = new AbortController();
 
     fetchCurrentUser(controller.signal)
       .then((next) => {
-        if (!controller.signal.aborted) {
-          setUser(next);
-          if (next) {
-            try {
-              localStorage.setItem('tf_user', JSON.stringify(next));
-            } catch {}
-          } else {
-            try {
-              localStorage.removeItem('tf_user');
-            } catch {}
-          }
+        if (controller.signal.aborted) return;
+        setUser(next);
+        if (next) {
+          userStorage.write(next);
+        } else {
+          userStorage.clear();
         }
       })
       .catch((err) => {
         if (err.name === 'AbortError') return;
-        try {
-          localStorage.removeItem('tf_user');
-        } catch {}
+        userStorage.clear();
       })
       .finally(() => {
-        if (!controller.signal.aborted) {
-          setIsLoading(false);
-        }
+        if (!controller.signal.aborted) setIsLoading(false);
       });
 
     return () => controller.abort();
   }, []);
 
   const signInWithGoogle = useCallback(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const redirectTo = searchParams.get('redirectTo');
+    const redirectTo = new URLSearchParams(window.location.search).get('redirectTo');
     const baseUrl = getGoogleSignInUrl();
-    const url = redirectTo ? `${baseUrl}?redirectTo=${encodeURIComponent(redirectTo)}` : baseUrl;
-    window.location.href = url;
+    window.location.href = redirectTo
+      ? `${baseUrl}?redirectTo=${encodeURIComponent(redirectTo)}`
+      : baseUrl;
   }, []);
 
   const signOut = useCallback(async () => {
@@ -71,9 +50,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await logout();
     } finally {
       setUser(null);
-      try {
-        localStorage.removeItem('tf_user');
-      } catch {}
+      userStorage.clear();
       window.location.href = '/auth';
     }
   }, []);

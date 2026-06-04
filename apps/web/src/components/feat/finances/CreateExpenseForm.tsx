@@ -707,7 +707,7 @@ export function CreateExpenseForm({
 
                   {isChecked && (
                     <div className="group relative border border-border bg-card p-4 rounded-2xl shadow-sm transition-all duration-200 hover:shadow-md animate-slide-down">
-                      {/* Close button X (excludes traveler) — hidden for current user and payer */}
+                      {/* Close button X (excludes traveler) - hidden for current user and payer */}
                       {field.userId !== currentUserId && field.userId !== watchPaidById && (
                         <button
                           type="button"
@@ -885,7 +885,7 @@ export function CreateExpenseForm({
           </div>
         </div>
 
-        {/* Buttons — inside the form so submit works */}
+        {/* Buttons - inside the form so submit works */}
         <div className="flex items-center justify-end gap-3 border-t border-border px-6 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-muted/30">
           <Button
             type="button"

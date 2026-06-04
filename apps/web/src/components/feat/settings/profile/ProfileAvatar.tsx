@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 /**
  * Profile avatar block: the user's Google picture (or an initial fallback)
- * beside a short label. Read-only — the picture comes from the Google account.
+ * beside a short label. Read-only - the picture comes from the Google account.
  */
 export function ProfileAvatar() {
   const { user } = useAuth();

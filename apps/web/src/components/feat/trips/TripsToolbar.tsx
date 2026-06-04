@@ -15,7 +15,7 @@ interface TripsToolbarProps {
   onFilterChange: (filter: TripFilter) => void;
   sort: TripSort;
   onSortChange: (sort: TripSort) => void;
-  /** Number of trips after filtering — shown as a count. */
+  /** Number of trips after filtering - shown as a count. */
   count: number;
 }
 

@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
  * colours, so the choice reads as "this is what the app will look like".
  *
  * Colours are hard-coded HSL pulled from the `--*` design tokens in
- * `@trip-flow/ui/styles.css` — we can't rely on the live CSS vars here
+ * `@trip-flow/ui/styles.css` - we can't rely on the live CSS vars here
  * because both previews must show *both* themes at once, not the active one.
  */
 interface Swatch {

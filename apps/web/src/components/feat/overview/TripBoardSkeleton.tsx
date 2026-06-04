@@ -26,7 +26,7 @@ export function TripBoardSkeleton() {
         <div className="space-y-6 lg:col-span-2 lg:flex lg:h-full lg:flex-col lg:overflow-hidden">
           <Skeleton className="h-6 w-1/3 max-w-[12rem] shrink-0" />
           <div className="shrink-0">
-            {/* TripOverviewCard Skeleton — hero band + two stat tiles. */}
+            {/* TripOverviewCard Skeleton - hero band + two stat tiles. */}
             <div className="border-border bg-card overflow-hidden rounded-2xl border">
               <div className="border-border bg-muted/30 flex items-center justify-between gap-3 border-b px-4 py-4 sm:px-6 sm:py-5">
                 <Skeleton className="h-10 w-32" />

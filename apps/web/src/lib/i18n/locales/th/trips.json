@@ -22,7 +22,6 @@
   "departure": "วันออกเดินทาง",
   "return": "วันกลับ",
   "calculatedDuration": "ระยะเวลาทั้งหมด",
-  "daysPlaceholder": "— วัน",
   "joinTrip": "เข้าร่วมทริป",
   "joining": "กำลังเข้าร่วม…",
   "joinTripDesc": "ใส่รหัสเชิญ {{count}} ตัวอักษรจากผู้จัดกลุ่มของคุณ",

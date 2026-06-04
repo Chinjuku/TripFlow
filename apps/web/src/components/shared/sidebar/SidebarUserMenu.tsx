@@ -3,7 +3,7 @@ import { cn } from '@trip-flow/ui/lib/cn';
 import { useAuth } from '@/hooks/useAuth';
 
 /**
- * Sidebar footer user identity. Static display only — no dropdown. Account
+ * Sidebar footer user identity. Static display only - no dropdown. Account
  * actions (settings, sign out) live on the Settings page.
  */
 export function SidebarUserMenu({ collapsed }: { collapsed: boolean }) {

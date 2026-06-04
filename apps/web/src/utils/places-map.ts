@@ -1,6 +1,6 @@
 /**
  * Pure helpers, types, and constants for the plan-page map. Kept out of the
- * component tree per the refactor rules — the map component + its hooks import
+ * component tree per the refactor rules - the map component + its hooks import
  * from here.
  */
 
@@ -103,14 +103,14 @@ export function saveRecentSearches(list: string[]): void {
   try {
     window.localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(list));
   } catch {
-    /* quota / private-mode — fail open. */
+    /* quota / private-mode - fail open. */
   }
 }
 
 /**
  * Pans so the InfoWindow anchored on (lat, lng) ends up vertically centred.
  * Google's InfoWindow grows upward from its anchor, so we push the POI toward
- * the lower-middle of the viewport — the popup then lands near the centre.
+ * the lower-middle of the viewport - the popup then lands near the centre.
  */
 export function centerOnPoi(map: google.maps.Map, lat: number, lng: number): void {
   map.panTo({ lat, lng });

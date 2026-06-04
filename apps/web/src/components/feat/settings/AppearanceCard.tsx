@@ -24,7 +24,7 @@ export function AppearanceCard() {
         <CardDescription>{t('settings.appearanceDesc')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
-        {/* Theme — visual mock-up picker */}
+        {/* Theme - visual mock-up picker */}
         <div className="space-y-3">
           <div>
             <p className="text-foreground text-sm font-medium">{t('settings.theme')}</p>
@@ -33,7 +33,7 @@ export function AppearanceCard() {
           <ThemePicker />
         </div>
 
-        {/* Color Theme — visual color swatch picker */}
+        {/* Color Theme - visual color swatch picker */}
         <div className="border-border space-y-3 border-t pt-5">
           <div>
             <p className="text-foreground text-sm font-medium">{t('settings.colorTheme')}</p>
@@ -42,7 +42,7 @@ export function AppearanceCard() {
           <ColorThemePicker />
         </div>
 
-        {/* Language — visual card picker */}
+        {/* Language - visual card picker */}
         <div className="border-border space-y-3 border-t pt-5">
           <div>
             <p className="text-foreground text-sm font-medium">{t('settings.language')}</p>

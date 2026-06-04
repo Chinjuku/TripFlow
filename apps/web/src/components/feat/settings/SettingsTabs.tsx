@@ -25,8 +25,8 @@ export function useSettingsTab(): [SettingsTab, (tab: SettingsTab) => void] {
 
 interface SettingsTabsProps {
   /**
-   * `horizontal` — pill row (mobile, stacked above content).
-   * `vertical` — stacked nav for the desktop sidebar (left of content).
+   * `horizontal` - pill row (mobile, stacked above content).
+   * `vertical` - stacked nav for the desktop sidebar (left of content).
    */
   orientation?: 'horizontal' | 'vertical';
 }

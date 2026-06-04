@@ -21,7 +21,7 @@ interface UsePoiPreviewResult {
  * enriched previews by placeId so reopening is instant.
  *
  * On a fresh open it paints a seeded popup AND pans immediately, so the popup
- * is on-screen the moment you click — the details fetch only enriches it.
+ * is on-screen the moment you click - the details fetch only enriches it.
  */
 export function usePoiPreview(
   map: google.maps.Map | null,
@@ -115,7 +115,7 @@ export function usePoiPreview(
           // The Thai place handle drives the enrichment fetch below.
           const place = placeTh;
 
-          // Pro/Enterprise fields — slower + pricier, fetched after the popup
+          // Pro/Enterprise fields - slower + pricier, fetched after the popup
           // is already on screen.
           await place.fetchFields({ fields: ['rating', 'regularOpeningHours', 'photos'] });
           if (reqId !== reqRef.current) return;

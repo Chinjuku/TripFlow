@@ -1,10 +1,10 @@
 import { APIProvider } from '@vis.gl/react-google-maps';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, MapPin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Modal } from '@trip-flow/ui/components/modal';
+import { ModalHeader } from '@trip-flow/ui/components/modal-header';
 import { usePlaceDetail } from '@/hooks/usePlaceDetail';
 import { DetailBody } from './place-detail/DetailBody';
-import { DetailHeader } from './place-detail/DetailHeader';
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
 
@@ -65,9 +65,11 @@ function DetailModal({ open, onOpenChange, placeId, placeName }: PlaceDetailModa
       // within a compact dialog instead of growing tall.
       className="sm:max-w-2xl sm:max-h-[80dvh] [&>div]:max-h-[80dvh]"
     >
-      <DetailHeader
-        name={detail?.name ?? placeName}
-        address={detail?.address ?? null}
+      <ModalHeader
+        icon={MapPin}
+        truncate
+        title={detail?.name ?? placeName}
+        subtitle={detail?.address ?? undefined}
         onClose={() => onOpenChange(false)}
       />
       <DetailBody detail={detail} loading={loading} error={error} />

@@ -24,7 +24,7 @@ export function PaymentDetailsCard() {
   const [bankAccountNumber, setBankAccountNumber] = useState('');
   const [bankAccountName, setBankAccountName] = useState('');
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
-  // activeTab drives both the form view AND the preferred channel — one source of truth
+  // activeTab drives both the form view AND the preferred channel - one source of truth
   const [activeTab, setActiveTab] = useState<PaymentChannel>('promptpay');
 
   const [isSaving, setIsSaving] = useState(false);

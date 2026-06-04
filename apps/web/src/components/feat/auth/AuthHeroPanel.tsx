@@ -1,21 +1,10 @@
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { SpinningCompass } from '@/components/ui/SpinningCompass';
+import { HERO_COORDINATES, LOGIN_STEPS } from '@/utils/auth';
 import { TopoPattern } from './TopoPattern';
-import { MapPin, Users, Zap } from 'lucide-react';
-
-const HERO_COORDINATES = {
-  topLeft: '13.7563° N · 100.5018° E',
-  bottomRight: '18.7883° N · 98.9853° E',
-} as const;
 
 export function AuthHeroPanel() {
   const { t } = useTranslation();
-
-  const steps = [
-    { icon: MapPin, titleKey: 'auth.steps.addPlaces', descKey: 'auth.steps.addPlacesDesc' },
-    { icon: Users, titleKey: 'auth.steps.voteTogether', descKey: 'auth.steps.voteTogetherDesc' },
-    { icon: Zap, titleKey: 'auth.steps.dragToPlan', descKey: 'auth.steps.dragToPlanDesc' },
-  ] as const;
 
   return (
     <div className="relative hidden flex-col overflow-hidden lg:flex lg:w-[60%]">
@@ -24,12 +13,18 @@ export function AuthHeroPanel() {
       <span className="text-muted-foreground/40 absolute left-6 top-6 font-mono text-[10px] tracking-widest">
         {HERO_COORDINATES.topLeft}
       </span>
-      <span className="text-muted-foreground/40 absolute bottom-6 right-6 font-mono text-[10px] tracking-widest">
-        {HERO_COORDINATES.bottomRight}
-      </span>
+
+      <div className="absolute inset-x-6 bottom-6 z-10 flex items-center justify-between gap-4">
+        <span className="text-muted-foreground/50 text-xs">
+          {t('auth.copyright', { year: new Date().getFullYear() })}
+        </span>
+        <span className="text-muted-foreground/40 font-mono text-[10px] tracking-widest">
+          {HERO_COORDINATES.bottomRight}
+        </span>
+      </div>
 
       <div className="relative z-10 flex flex-1 flex-col justify-center px-14 py-12 xl:px-20">
-        <div className="max-w-lg">
+        <div className="max-w-xl">
           <div className="mb-6 flex items-center gap-3">
             <div className="border-primary text-primary flex h-10 w-10 items-center justify-center rounded-full border-2">
               <SpinningCompass size={5} />
@@ -40,9 +35,10 @@ export function AuthHeroPanel() {
           </div>
 
           <h1 className="font-headline text-foreground mb-5 text-5xl font-extrabold leading-[1.08] tracking-tight xl:text-6xl">
-            {t('auth.heroTitle1')}
-            <br />
-            {t('auth.heroTitle2')} <span className="text-primary">{t('auth.heroTitle3')}</span>
+            <Trans
+              i18nKey="auth.heroTitle"
+              components={{ 1: <br />, 2: <span className="text-primary" /> }}
+            />
           </h1>
 
           <p className="text-muted-foreground mb-10 max-w-sm text-base leading-relaxed">
@@ -54,7 +50,7 @@ export function AuthHeroPanel() {
               aria-hidden
               className="border-primary/25 absolute left-[16%] right-[16%] top-[2.25rem] border-t border-dashed"
             />
-            {steps.map((step, idx) => (
+            {LOGIN_STEPS.map((step, idx) => (
               <li
                 key={step.titleKey}
                 className="bg-card border-border relative flex flex-col items-center rounded-2xl border p-4 text-center"
@@ -70,10 +66,6 @@ export function AuthHeroPanel() {
               </li>
             ))}
           </ol>
-
-          <p className="text-muted-foreground/50 mt-3 text-xs">
-            {t('auth.copyright', { year: new Date().getFullYear() })}
-          </p>
         </div>
       </div>
     </div>

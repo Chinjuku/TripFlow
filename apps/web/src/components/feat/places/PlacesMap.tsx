@@ -27,9 +27,9 @@ import { PoiPreviewCard } from './components/PoiPreviewCard';
 export type { PoiPreview } from '@/utils/places-map';
 
 interface PlacesMapProps {
-  /** Picked places — rendered as our own branded markers. */
+  /** Picked places - rendered as our own branded markers. */
   places: TripPlace[];
-  /** Set of Google place_ids already added — used to disable Add on the preview. */
+  /** Set of Google place_ids already added - used to disable Add on the preview. */
   pickedExternalIds: Set<string>;
   /** Id of the picked place the user is hovering in the list (scales its marker up). */
   hoveredId: string | null;
@@ -54,7 +54,7 @@ export function PlacesMap(props: PlacesMapProps) {
     return (
       <div className="border-border bg-card text-muted-foreground flex h-full w-full items-center justify-center rounded-2xl border p-6 text-center text-sm">
         <p className="max-w-[18rem]">
-          Map disabled — set <code className="font-mono text-xs">VITE_GOOGLE_MAPS_API_KEY</code> in
+          Map disabled. Set <code className="font-mono text-xs">VITE_GOOGLE_MAPS_API_KEY</code> in
           your <code className="font-mono text-xs">.env</code> to enable place discovery.
         </p>
       </div>
@@ -238,7 +238,7 @@ function MapBody({
         <CategoryFilterRow active={activeFilter} onClick={handleFilterClick} />
       </div>
 
-      {/* "Search this area" — appears after a pan/zoom once a search exists. */}
+      {/* "Search this area" - appears after a pan/zoom once a search exists. */}
       {search.showSearchHere && (
         <button
           type="button"
@@ -274,7 +274,7 @@ function MapBody({
         </AdvancedMarker>
       ))}
 
-      {/* Picked-place markers — per-bucket podium tones. */}
+      {/* Picked-place markers - per-bucket podium tones. */}
       {withCoords.map((p) => {
         const hovered = hoveredId === p.id;
         const place = podium[p.id];

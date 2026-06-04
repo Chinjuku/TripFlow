@@ -15,7 +15,7 @@ import { formatLocalizedDate } from '@/lib/utils';
 import { localized } from '@/utils/places-map';
 
 /** A scheduled place's name in the current UI language (falls back to the
- *  stored copy when the other language is missing — e.g. older rows). */
+ *  stored copy when the other language is missing - e.g. older rows). */
 export function placeName(place: SchedulePlace, lang: string): string {
   return localized(lang, place.name, place.nameEn) ?? place.name;
 }
@@ -165,10 +165,10 @@ export function toneFor(_scheduleId: string): Tone {
 
 /**
  * Whether a scheduled event fits the place's opening hours on its day:
- * - `open`    — the whole event falls inside an open window
- * - `partial` — the event starts open but runs past close (or starts before open)
- * - `closed`  — the place isn't open at all during the event
- * - `unknown` — no hours data (older rows / always-open) → don't warn
+ * - `open`    - the whole event falls inside an open window
+ * - `partial` - the event starts open but runs past close (or starts before open)
+ * - `closed`  - the place isn't open at all during the event
+ * - `unknown` - no hours data (older rows / always-open) → don't warn
  */
 export type OpeningStatus = 'open' | 'partial' | 'closed' | 'unknown';
 
@@ -180,10 +180,10 @@ function hhmmToMinutes(hhmm: string): number {
 
 /**
  * Checks an event against the place's weekly hours. `weekday` is 0=Sun..6=Sat
- * (use the event's real calendar date — `buildDays()[dayIndex].date.getDay()`).
+ * (use the event's real calendar date - `buildDays()[dayIndex].date.getDay()`).
  * Windows are matched on their open day; past-midnight windows extend beyond
  * 1440 so an early event still matches the prior day's late window is handled
- * by the caller passing both days — here we only test same-open-day windows.
+ * by the caller passing both days - here we only test same-open-day windows.
  */
 export function openingStatusFor(
   item: Pick<ScheduleItem, 'startMinute' | 'durationMinutes' | 'place'>,

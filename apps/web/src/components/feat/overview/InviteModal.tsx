@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { UserPlus, Copy, Check, X } from 'lucide-react';
+import { UserPlus, Copy, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@trip-flow/ui/components/button';
 import { Modal } from '@trip-flow/ui/components/modal';
+import { ModalHeader } from '@trip-flow/ui/components/modal-header';
 import { cn } from '@trip-flow/ui/lib/cn';
 
 interface InviteModalProps {
@@ -41,31 +42,13 @@ export function InviteModal({ open, onOpenChange, trip }: InviteModalProps) {
       hideHeader
       dismissable={false}
     >
-      {/* Header — mirrors CreateTripDialog: left-aligned icon tile + title/
-          subtitle on the modal surface, with its own close button. */}
-      <div className="relative px-5 pb-4 pt-5 sm:px-6">
-        <button
-          type="button"
-          onClick={() => onOpenChange(false)}
-          aria-label="Close"
-          className="text-muted-foreground hover:bg-muted hover:text-foreground absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors sm:right-5"
-        >
-          <X className="h-4 w-4" strokeWidth={2} />
-        </button>
-        <div className="flex items-center gap-3.5">
-          <div className="bg-tertiary text-tertiary-foreground flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl shadow-sm">
-            <UserPlus className="h-5 w-5" strokeWidth={2} />
-          </div>
-          <div className="space-y-0.5">
-            <h2 className="font-headline text-foreground text-lg font-bold sm:text-xl">
-              {t('overview.inviteFriends')}
-            </h2>
-            <p className="text-muted-foreground text-xs sm:text-sm">
-              {t('overview.inviteDesc', { title: trip.title })}
-            </p>
-          </div>
-        </div>
-      </div>
+      <ModalHeader
+        icon={UserPlus}
+        tone="tertiary"
+        title={t('overview.inviteFriends')}
+        subtitle={t('overview.inviteDesc', { title: trip.title })}
+        onClose={() => onOpenChange(false)}
+      />
 
       <div className="space-y-5 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-1 sm:px-6 sm:pb-6">
         {/* Invite code */}

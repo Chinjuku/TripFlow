@@ -45,7 +45,7 @@ export default function SettingsPage() {
           <SettingsTabs orientation="horizontal" />
         </div>
 
-        {/* Desktop floating sidebar — sticky so it follows on scroll. */}
+        {/* Desktop floating sidebar - sticky so it follows on scroll. */}
         <aside className="hidden md:block md:sticky md:top-6">
           <SettingsTabs orientation="vertical" />
         </aside>

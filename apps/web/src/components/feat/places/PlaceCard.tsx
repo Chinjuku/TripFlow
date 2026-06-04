@@ -14,11 +14,11 @@ interface PlaceCardProps {
   place: TripPlace;
   tripId: string;
   /**
-   * `plan` — list/manage view: no like button, shows vote count as a chip.
-   * `vote` — voting view: image-left layout with prominent Vote button.
+   * `plan` - list/manage view: no like button, shows vote count as a chip.
+   * `vote` - voting view: image-left layout with prominent Vote button.
    */
   mode: 'plan' | 'vote';
-  /** Display info for whoever added this place — used for the "Selected by" row. */
+  /** Display info for whoever added this place - used for the "Selected by" row. */
   addedByName?: string;
   addedByAvatarUrl?: string | null;
   /** Whether the current user owns this pick (controls Delete affordance). */
@@ -133,11 +133,11 @@ function PlanCard({
     // Soft UI Evolution: card carries its own subtle elevation + a hover
     // affordance so the row reads as a tappable item, not a static label.
     // Border stays transparent at rest and brightens to `border-primary/30`
-    // on hover — keeps the surface calm but signals interactivity. Radius
+    // on hover - keeps the surface calm but signals interactivity. Radius
     // matches the photo's (rounded-xl = 16px) so corners line up cleanly.
     <article
       className={cn(
-        // Static card surface — no hover state on the row itself. The
+        // Static card surface - no hover state on the row itself. The
         // green outline that appeared on hover felt out of place; the
         // interactive affordance lives on the inner vote chip + trash
         // button, where hover actually means something.
@@ -175,7 +175,7 @@ function PlanCard({
             {shortAddress(displayAddress)}
           </p>
         )}
-        {/* Trash action — always visible (not hover-only) so the place's
+        {/* Trash action - always visible (not hover-only) so the place's
             owner can see at a glance that the row is theirs to remove.
             `mt-auto` pins it to the bottom regardless of address length. */}
         {canRemove && (
@@ -210,7 +210,7 @@ function VoteChip({
 }) {
   // Pill styled like a stat tag rather than a hard button so it reads as
   // "current state + tap to toggle". Filled primary when liked, neutral
-  // ring when not — matches the calm hierarchy the rest of the card uses.
+  // ring when not - matches the calm hierarchy the rest of the card uses.
   return (
     <button
       type="button"
@@ -273,7 +273,7 @@ function VoteCard({
     <article className="border-border bg-card flex flex-col overflow-hidden rounded-2xl border sm:min-h-44 sm:flex-row">
       {/* Left: photo with votes badge + rating badge. Photo fills the column
           height with object-cover so its aspect ratio never drives the card
-          size — the card grows with its content instead. */}
+          size - the card grows with its content instead. */}
       <div className="relative h-48 shrink-0 sm:h-auto sm:w-56">
         {place.photoUrl ? (
           <img
@@ -288,7 +288,7 @@ function VoteCard({
           </div>
         )}
 
-        {/* Votes badge — top-right of the photo */}
+        {/* Votes badge - top-right of the photo */}
         <span className="bg-card/90 text-foreground absolute right-3 top-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold shadow-sm backdrop-blur">
           <Heart
             className={cn('text-primary h-3.5 w-3.5', place.liked && 'fill-current')}
@@ -297,7 +297,7 @@ function VoteCard({
           {place.voteCount} {place.voteCount === 1 ? 'Vote' : 'Votes'}
         </span>
 
-        {/* Rating — bottom-left of the photo */}
+        {/* Rating - bottom-left of the photo */}
         {place.rating !== null && (
           <span className="bg-card/90 text-foreground absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm backdrop-blur">
             <Star className="h-3 w-3 fill-amber-400 text-amber-400" strokeWidth={2} />

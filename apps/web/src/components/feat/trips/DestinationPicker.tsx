@@ -35,7 +35,7 @@ interface DestinationPickerProps {
 }
 
 /**
- * Province picker — a searchable dropdown over Thailand's 77 provinces
+ * Province picker - a searchable dropdown over Thailand's 77 provinces
  * (`src/utils/thai-provinces.ts`). Each province carries a capital lat/lng,
  * so the chosen value still anchors the plan map without any Google call.
  *
@@ -88,7 +88,7 @@ export function DestinationPicker({ value, onChange, placeholder }: DestinationP
     };
   }, [open]);
 
-  // Close on outside click — checks trigger AND the portalled menu.
+  // Close on outside click - checks trigger AND the portalled menu.
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
@@ -119,7 +119,7 @@ export function DestinationPicker({ value, onChange, placeholder }: DestinationP
 
   return (
     <div ref={containerRef} className="relative">
-      {/* Trigger — looks like a select, opens the searchable menu. */}
+      {/* Trigger - looks like a select, opens the searchable menu. */}
       <button
         ref={triggerRef}
         type="button"

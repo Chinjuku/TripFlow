@@ -1,18 +1,16 @@
-import { Lock, ShieldCheck } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { Button } from '@trip-flow/ui/components/button';
 import { SpinningCompass } from '@/components/ui/SpinningCompass';
 import { useGoogleSignIn } from '@/hooks/useGoogleSignIn';
+import { getGreetingKey } from '@/utils/auth';
 import { GoogleIcon } from './GoogleIcon';
+import { TermsModal } from './TermsModal';
 
 export function AuthSignInPanel() {
   const { signingIn, signIn } = useGoogleSignIn();
   const { t } = useTranslation();
-
-  const trustPoints = [
-    { icon: Lock, label: t('auth.trustSignIn') },
-    { icon: ShieldCheck, label: t('auth.trustPrivacy') },
-  ] as const;
+  const [termsOpen, setTermsOpen] = useState(false);
 
   return (
     <div className="lg:border-border relative flex flex-1 flex-col items-center justify-center px-6 lg:w-[40%] lg:flex-none lg:border-l lg:px-12 xl:px-16">
@@ -27,7 +25,7 @@ export function AuthSignInPanel() {
             </span>
           </div>
 
-          <div className="mb-8 text-center lg:text-left">
+          <div className="mb-8 text-center">
             <h2 className="font-headline text-foreground mb-1.5 text-2xl font-bold tracking-tight">
               {t(getGreetingKey())}
             </h2>
@@ -54,36 +52,24 @@ export function AuthSignInPanel() {
             )}
           </Button>
 
-          <ul className="mt-6 space-y-2">
-            {trustPoints.map(({ icon: Icon, label }) => (
-              <li key={label} className="text-muted-foreground flex items-center gap-2 text-xs">
-                <span className="bg-primary/10 text-primary inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
-                  <Icon className="h-3 w-3" strokeWidth={2.25} />
-                </span>
-                {label}
-              </li>
-            ))}
-          </ul>
-
           <p className="text-muted-foreground/70 mt-6 text-center text-[11px] leading-relaxed">
-            {t('auth.termsNotice')}
+            <Trans
+              i18nKey="auth.termsNotice"
+              components={{
+                1: (
+                  <button
+                    type="button"
+                    onClick={() => setTermsOpen(true)}
+                    className="text-primary hover:text-primary/80 cursor-pointer font-medium underline underline-offset-2 transition-colors"
+                  />
+                ),
+              }}
+            />
           </p>
         </div>
       </div>
+
+      <TermsModal open={termsOpen} onOpenChange={setTermsOpen} />
     </div>
   );
-}
-
-type GreetingKey =
-  | 'auth.greeting.morning'
-  | 'auth.greeting.afternoon'
-  | 'auth.greeting.evening'
-  | 'auth.greeting.lateNight';
-
-function getGreetingKey(): GreetingKey {
-  const h = new Date().getHours();
-  if (h >= 5 && h < 12) return 'auth.greeting.morning';
-  if (h >= 12 && h < 17) return 'auth.greeting.afternoon';
-  if (h >= 17 && h < 22) return 'auth.greeting.evening';
-  return 'auth.greeting.lateNight';
 }
