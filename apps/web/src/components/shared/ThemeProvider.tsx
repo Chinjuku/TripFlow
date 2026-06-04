@@ -14,7 +14,7 @@ function readStoredTheme(): Theme {
     const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
     if (stored === 'light' || stored === 'dark') return stored;
   } catch {
-    /* storage disabled — fall through */
+    /* storage disabled - fall through */
   }
   return DEFAULT_THEME;
 }
@@ -31,7 +31,7 @@ function readStoredColorTheme(): ColorTheme {
     )
       return stored;
   } catch {
-    /* storage disabled — fall through */
+    /* storage disabled - fall through */
   }
   return DEFAULT_COLOR_THEME;
 }
@@ -66,7 +66,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     try {
       window.localStorage.setItem(THEME_STORAGE_KEY, next);
     } catch {
-      /* incognito or storage disabled — ignore */
+      /* incognito or storage disabled - ignore */
     }
   }, []);
 
@@ -75,7 +75,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     try {
       window.localStorage.setItem(COLOR_THEME_STORAGE_KEY, next);
     } catch {
-      /* incognito or storage disabled — ignore */
+      /* incognito or storage disabled - ignore */
     }
   }, []);
 

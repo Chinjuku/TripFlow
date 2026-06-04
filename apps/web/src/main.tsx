@@ -10,7 +10,7 @@ registerSW({ immediate: true });
 
 // The anti-flash inline script (index.html) paints html's background to avoid
 // a white flash before this CSS bundle loads. Now that the stylesheet is in,
-// `--background` drives the colour — clear the inline override so it doesn't
+// `--background` drives the colour - clear the inline override so it doesn't
 // shadow runtime theme switches.
 document.documentElement.style.backgroundColor = '';
 

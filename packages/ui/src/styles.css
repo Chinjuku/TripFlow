@@ -1,5 +1,5 @@
 /**
- * Verdant Horizon — design tokens
+ * Verdant Horizon - design tokens
  *
  * Values are HSL components (no `hsl(...)` wrapper) so Tailwind can apply
  * the alpha modifier syntax: `bg-primary/15`, `border-border/40`, etc.
@@ -95,7 +95,7 @@
     --warning: 38 92% 60%;
     --warning-foreground: 222 47% 11%;
     --destructive: 0 63% 55%;
-    /* Typography is identical to :root — no per-theme font swap. */
+    /* Typography is identical to :root - no per-theme font swap. */
   }
 
   /* --- Theory Theme (Bright Yellow) --- */
@@ -165,6 +165,79 @@
     --accent: 258 50% 20%;
     --accent-foreground: 210 40% 98%;
     --ring: 258 90% 66%;
+  }
+}
+
+/**
+ * Modal open/close transitions for the native <dialog> (.tf-modal).
+ *
+ * Uses @starting-style + transition-behavior: allow-discrete so the browser
+ * animates BOTH directions - including the exit, which a plain transition
+ * can't do because <dialog> flips `display` discretely on close. No JS timing
+ * involved; the component just toggles open/closed.
+ *
+ * Progressive enhancement: browsers without @starting-style support
+ * (Safari < 17.5, Firefox < 129) simply open/close instantly - no breakage.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .tf-modal {
+    /* `display` + `overlay` must be in the transition list (allow-discrete)
+       so the element stays painted in the top layer while animating out. */
+    transition:
+      opacity 0.2s ease,
+      transform 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+      display 0.24s allow-discrete,
+      overlay 0.24s allow-discrete;
+    opacity: 1;
+    /* Mobile: bottom sheet rests at translateY(0). */
+    transform: translateY(0);
+  }
+
+  /* Closed end-state (exit target). */
+  .tf-modal:not([open]) {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+
+  /* Enter starting frame - same off-screen pose, animated toward open. */
+  @starting-style {
+    .tf-modal[open] {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+  }
+
+  .tf-modal::backdrop {
+    transition:
+      opacity 0.2s ease,
+      display 0.2s allow-discrete,
+      overlay 0.2s allow-discrete;
+    opacity: 1;
+  }
+
+  .tf-modal:not([open])::backdrop {
+    opacity: 0;
+  }
+
+  @starting-style {
+    .tf-modal[open]::backdrop {
+      opacity: 0;
+    }
+  }
+
+  /* Desktop (>= 640px): centred card scales in/out instead of sliding. */
+  @media (min-width: 640px) {
+    .tf-modal:not([open]) {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+
+    @starting-style {
+      .tf-modal[open] {
+        opacity: 0;
+        transform: scale(0.96);
+      }
+    }
   }
 }
 

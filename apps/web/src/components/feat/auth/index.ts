@@ -3,3 +3,4 @@ export { ProtectedRoute } from './ProtectedRoute';
 export { PublicRoute } from './PublicRoute';
 export { AuthHeroPanel } from './AuthHeroPanel';
 export { AuthSignInPanel } from './AuthSignInPanel';
+export { TermsModal } from './TermsModal';

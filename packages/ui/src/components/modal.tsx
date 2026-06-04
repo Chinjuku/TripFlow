@@ -7,14 +7,14 @@ export interface ModalProps {
   /**
    * Accessible label for the dialog. Required for screen readers.
    * When `hideHeader` is true, the title is rendered visually-hidden but
-   * still announced — use this when the dialog body has its own header.
+   * still announced - use this when the dialog body has its own header.
    */
   title: string;
   description?: string;
   /** Hide the rendered header chrome (close button, title, description). */
   hideHeader?: boolean;
   /**
-   * When false, backdrop clicks and ESC don't close the dialog — only an
+   * When false, backdrop clicks and ESC don't close the dialog - only an
    * explicit close control (e.g. an X button) can. Defaults to true.
    * Use for forms where an accidental outside-click would lose input, or when
    * the dialog hosts portalled popovers whose clicks can look like backdrop hits.
@@ -22,7 +22,7 @@ export interface ModalProps {
   dismissable?: boolean;
   children: ReactNode;
   /**
-   * Optional pinned footer rendered below the scrollable body — stays visible
+   * Optional pinned footer rendered below the scrollable body - stays visible
    * without scrolling (e.g. a primary action). Sits inside the dialog's safe
    * area on mobile.
    */
@@ -36,7 +36,7 @@ export interface ModalProps {
  *
  * Responsive: bottom sheet on mobile (anchored to the viewport bottom
  * with a drag handle), centered card on `sm:` and up. The two layouts
- * share the same underlying <dialog> — we just shift the margin/radius
+ * share the same underlying <dialog> - we just shift the margin/radius
  * to switch between them.
  */
 export function Modal({
@@ -71,7 +71,11 @@ export function Modal({
       onClick={(e) => {
         if (dismissable && e.target === ref.current) onOpenChange(false);
       }}
+      // `tf-modal` owns the open/close transition (CSS @starting-style +
+      // transition-behavior:allow-discrete - see styles.css). The native
+      // <dialog> animates both in and out without any JS timing.
       className={cn(
+        'tf-modal',
         'bg-card text-card-foreground p-0 shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm border-none outline-none',
         // Mobile bottom sheet: the native <dialog> UA stylesheet sets
         // `position:fixed; top:0; bottom:0; max-height:calc(100%-6px-2em); margin:auto`.
@@ -82,12 +86,11 @@ export function Modal({
         'overflow-hidden',
         // Desktop centered card: restore centering + max width.
         'sm:my-auto sm:mx-auto sm:w-[calc(100vw-1.5rem)] sm:max-w-md sm:rounded-2xl sm:border sm:border-border sm:max-h-[calc(100dvh-3rem)]',
-        'open:animate-in open:fade-in-0 open:slide-in-from-bottom-4 sm:open:slide-in-from-bottom-0 sm:open:zoom-in-95',
         className,
       )}
     >
       <div className="flex max-h-[85dvh] flex-col sm:max-h-[calc(100dvh-3rem)]">
-        {/* Drag handle — visual affordance for mobile bottom sheet, hidden on desktop. */}
+        {/* Drag handle - visual affordance for mobile bottom sheet, hidden on desktop. */}
         <div className="flex justify-center pt-2 sm:hidden" aria-hidden>
           <span className="bg-muted-foreground/30 h-1 w-10 rounded-full" />
         </div>
@@ -120,7 +123,7 @@ export function Modal({
         <div
           className={cn(
             'min-h-0 flex-1 overflow-y-auto',
-            // Slim, rounded, low-contrast scrollbar that brightens on hover —
+            // Slim, rounded, low-contrast scrollbar that brightens on hover -
             // avoids the chunky default track fighting the modal's soft surface.
             '[scrollbar-width:thin] [scrollbar-color:theme(colors.border)_transparent]',
             '[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent',
@@ -136,7 +139,7 @@ export function Modal({
           {children}
         </div>
         {footer && (
-          // Pinned action area — outside the scroll body so it stays visible.
+          // Pinned action area - outside the scroll body so it stays visible.
           <div className="border-border bg-card shrink-0 border-t px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:px-6 sm:pb-4">
             {footer}
           </div>

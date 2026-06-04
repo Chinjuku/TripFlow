@@ -57,7 +57,7 @@ export default function TripSettingsPage() {
         subtitle={t('trips.settings.subtitle')}
       />
 
-      {/* Tabs — underline style, matching the plan page. */}
+      {/* Tabs - underline style, matching the plan page. */}
       <div className="border-border flex items-center gap-2 border-b" role="tablist">
         {TABS.map((tabItem) => (
           <button
@@ -146,7 +146,7 @@ function EditTripSection({
   const [status, setStatus] = useState<'idle' | 'ok' | 'error'>('idle');
 
   async function handleSave() {
-    // Destination is required — same rule as create.
+    // Destination is required - same rule as create.
     if (!title.trim() || !range.from || !destination?.name.trim()) return;
     setSaving(true);
     setStatus('idle');

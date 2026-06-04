@@ -10,7 +10,7 @@ import './types'; // activate t() key autocompletion + type-checking
 /**
  * Resources are keyed by namespace so feature files stay independent in
  * source. They're surfaced under the default `translation` namespace so
- * existing `t('settings.theme')` call-sites keep working — the
+ * existing `t('settings.theme')` call-sites keep working - the
  * `translation` object below is the union of every per-feature file.
  */
 const translation = { en, th } as const;

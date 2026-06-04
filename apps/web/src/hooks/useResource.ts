@@ -13,7 +13,7 @@ export interface ResourceState<T> {
 }
 
 export interface UseResourceOptions {
-  /** Skip the initial fetch — useful when inputs aren't ready yet. */
+  /** Skip the initial fetch - useful when inputs aren't ready yet. */
   enabled?: boolean;
 }
 
@@ -25,7 +25,7 @@ export interface UseResourceOptions {
  * stale responses are ignored rather than aborted, which keeps the fetcher
  * signature simple (no AbortSignal plumbing required).
  *
- * `deps` controls when the fetcher re-runs — pass the inputs the fetcher
+ * `deps` controls when the fetcher re-runs - pass the inputs the fetcher
  * closes over, exactly like useEffect.
  */
 export function useResource<T>(

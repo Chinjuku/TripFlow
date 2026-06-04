@@ -26,7 +26,7 @@ export function TripCard({ trip }: TripCardProps) {
   return (
     <article className="bg-card border-border group flex h-full flex-col overflow-hidden rounded-2xl border shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
       {/* Own overflow-hidden + matching radius so the image zoom is clipped
-          here — the card's own clip can warp during the hover transform
+          here - the card's own clip can warp during the hover transform
           (nested transforms make the rounded corners flicker square). */}
       <Link
         to={`/trips/${trip.id}`}

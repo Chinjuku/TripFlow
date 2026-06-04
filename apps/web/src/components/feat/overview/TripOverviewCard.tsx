@@ -36,7 +36,7 @@ export function TripOverviewCard({ trip }: TripOverviewCardProps) {
 
   return (
     <div className="border-border bg-card overflow-hidden rounded-2xl border">
-      {/* Hero — big number with the status badge (flat band, no gradient). */}
+      {/* Hero - big number with the status badge (flat band, no gradient). */}
       <div className="border-border bg-muted/30 flex items-center justify-between gap-3 border-b px-4 py-4 sm:px-6 sm:py-5">
         <div className="flex flex-col gap-0.5">
           <span className="text-foreground font-headline text-3xl font-extrabold leading-none tabular-nums sm:text-4xl">
@@ -47,7 +47,7 @@ export function TripOverviewCard({ trip }: TripOverviewCardProps) {
         <TripStatusBadge status={status} />
       </div>
 
-      {/* Stat tiles — dates + destination (members live in the collaborators
+      {/* Stat tiles - dates + destination (members live in the collaborators
           panel, so they're not repeated here). */}
       <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 sm:p-6">
         <StatTile icon={CalendarRange} label={t('overview.dates')}>

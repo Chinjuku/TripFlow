@@ -18,7 +18,7 @@ export interface DatePickerProps {
 const WEEKDAY_LABELS_EN = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 const WEEKDAY_LABELS_TH = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
 
-const POPOVER_WIDTH = 272; // px — matches w-[17rem]
+const POPOVER_WIDTH = 272; // px - matches w-[17rem]
 const POPOVER_GAP = 8;
 const POPOVER_HEIGHT_ESTIMATE = 340;
 
@@ -148,7 +148,7 @@ export function DatePicker({
     };
   }, [open]);
 
-  // Dismiss on outside click / Escape — checks both trigger and popover.
+  // Dismiss on outside click / Escape - checks both trigger and popover.
   useEffect(() => {
     if (!open) return;
     function onPointerDown(e: PointerEvent) {

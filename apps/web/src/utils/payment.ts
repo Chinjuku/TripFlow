@@ -9,9 +9,9 @@ interface SubTag {
 /**
  * Decodes a PromptPay QR image and extracts the PromptPay ID (phone / national
  * id) from the EMVCo payload. Returns null when the image isn't decodable or
- * isn't a PromptPay payload — callers should keep whatever the user typed.
+ * isn't a PromptPay payload - callers should keep whatever the user typed.
  *
- * Pure + DOM-only (canvas/Image), no React — lives here per the refactor rule
+ * Pure + DOM-only (canvas/Image), no React - lives here per the refactor rule
  * that keeps logic out of `components/feat/`.
  */
 export async function extractPromptpayId(dataUrl: string): Promise<string | null> {
@@ -36,12 +36,12 @@ export async function extractPromptpayId(dataUrl: string): Promise<string | null
     );
     if (!subTag01?.value) return null;
 
-    // PromptPay QR encodes phone as 0066XXXXXXXXX — normalize to 0XXXXXXXXX.
+    // PromptPay QR encodes phone as 0066XXXXXXXXX - normalize to 0XXXXXXXXX.
     return subTag01.value.startsWith('0066')
       ? '0' + subTag01.value.substring(4)
       : subTag01.value;
   } catch {
-    // Valid QR image but not a PromptPay EMVCo payload — nothing to extract.
+    // Valid QR image but not a PromptPay EMVCo payload - nothing to extract.
     return null;
   }
 }

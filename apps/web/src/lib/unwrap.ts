@@ -4,7 +4,7 @@
  *
  * edenTreaty wraps HTTP errors as `{ status, value }` where `value` is the
  * JSON body (`{ error, message }`). The earlier inline unwraps read
- * `error.message` (the wrong level) and rendered `[object Object]` — this
+ * `error.message` (the wrong level) and rendered `[object Object]` - this
  * pulls the message out of whatever shape is present.
  */
 function errorMessage(error: unknown): string {

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 export type PaymentChannel = 'promptpay' | 'banking';
 
-/** Channel cards rendered in the picker — label keys resolved via i18n.
+/** Channel cards rendered in the picker - label keys resolved via i18n.
  *  `as const` keeps `labelKey` as literal types that the typed `t()` accepts. */
 const CHANNELS = [
   { value: 'promptpay', icon: QrCode, labelKey: 'settings.promptpay' },

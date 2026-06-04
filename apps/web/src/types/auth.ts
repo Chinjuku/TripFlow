@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
+import type { TranslationKey } from '@/lib/i18n/types';
 
 export interface AuthUser {
   id: string;
@@ -17,6 +18,13 @@ export interface AuthContextValue {
 
 export interface LoginStep {
   icon: LucideIcon;
-  title: string;
-  desc: string;
+  titleKey: TranslationKey;
+  descKey: TranslationKey;
+}
+
+export type GreetingKey = Extract<TranslationKey, `auth.greeting.${string}`>;
+
+export interface TermsSection {
+  titleKey: TranslationKey;
+  bodyKey: TranslationKey;
 }

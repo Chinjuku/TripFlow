@@ -22,7 +22,6 @@
   "departure": "Departure",
   "return": "Return",
   "calculatedDuration": "Calculated Duration",
-  "daysPlaceholder": "— days",
   "joinTrip": "Join a Trip",
   "joining": "Joining…",
   "joinTripDesc": "Enter the {{count}}-character invite code provided by your group organizer.",

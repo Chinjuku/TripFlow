@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@trip-flow/ui/lib/cn';
 
 /**
- * Notification preferences. Persisted to localStorage for now — there is no
+ * Notification preferences. Persisted to localStorage for now - there is no
  * notification delivery backend yet, so these toggles record intent only.
  * When a backend lands, swap `useNotificationPrefs` for an API-backed hook;
  * the card UI stays the same.
@@ -50,7 +50,7 @@ export function NotificationsCard() {
       try {
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       } catch {
-        /* quota / private-mode — fail open */
+        /* quota / private-mode - fail open */
       }
       return next;
     });
@@ -88,7 +88,7 @@ interface ToggleProps {
   label: string;
 }
 
-/** Minimal switch — used only here, so kept local rather than shared. */
+/** Minimal switch - used only here, so kept local rather than shared. */
 function Toggle({ checked, onChange, label }: ToggleProps) {
   return (
     <button

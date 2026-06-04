@@ -36,7 +36,7 @@ export function PhotoGallery({ photos, rating, ratingCount }: PhotoGalleryProps)
         )}
       </div>
       {photos.length > 1 && (
-        // Thumbnails fill the modal width — one equal-width column per photo.
+        // Thumbnails fill the modal width - one equal-width column per photo.
         <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${photos.length}, 1fr)` }}>
           {photos.map((url, i) => (
             <button

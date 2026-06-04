@@ -10,7 +10,7 @@
 @import '@fontsource-variable/manrope';
 @import '@fontsource-variable/jetbrains-mono';
 
-/* Noto Sans Thai — Thai subset, regular + bold weights cover headlines/labels. */
+/* Noto Sans Thai - Thai subset, regular + bold weights cover headlines/labels. */
 @import '@fontsource/noto-sans-thai/400.css';
 @import '@fontsource/noto-sans-thai/500.css';
 @import '@fontsource/noto-sans-thai/700.css';
@@ -22,7 +22,7 @@
  * nested elements with their own `lang` attribute still resolve.
  *
  * The Latin fallbacks (Manrope/Inter) stay identical to the base
- * tokens — only Noto Sans Thai is prepended to render Thai glyphs.
+ * tokens - only Noto Sans Thai is prepended to render Thai glyphs.
  */
 :lang(th) {
   --font-headline: 'Noto Sans Thai', 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;

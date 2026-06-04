@@ -260,7 +260,7 @@ function RouteFlowConnector({
         <path d="M36 2 L42 6 L36 10" strokeLinejoin="round" />
       </svg>
       <span className="mt-0.5 text-[0.6rem] tabular-nums">
-        {gapMinutes > 0 ? `+${formatDuration(gapMinutes)}` : '—'}
+        {gapMinutes > 0 ? `+${formatDuration(gapMinutes)}` : '-'}
       </span>
     </a>
   );

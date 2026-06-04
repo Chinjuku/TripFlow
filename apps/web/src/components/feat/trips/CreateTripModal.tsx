@@ -1,15 +1,16 @@
 import { useState, type FormEvent } from 'react';
-import { CalendarRange, Car, Clock, MapPin, PlusCircle, X } from 'lucide-react';
+import { CalendarRange, Car, Clock, MapPin, PlusCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@trip-flow/ui/components/button';
 import { Input } from '@trip-flow/ui/components/input';
 import { Label } from '@trip-flow/ui/components/label';
 import { DateRangePicker, type DateRange } from '@trip-flow/ui/components/date-range-picker';
 import { Modal } from '@trip-flow/ui/components/modal';
+import { ModalHeader } from '@trip-flow/ui/components/modal-header';
 import { createTrip } from '@/components/feat/trips';
 import { DestinationPicker, type DestinationValue } from './DestinationPicker';
 
-interface CreateTripDialogProps {
+interface CreateTripModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreated: () => void;
@@ -27,7 +28,7 @@ function formatRange(from: Date, to: Date): string {
   return `${fromStr} – ${to.toLocaleDateString(undefined, opts)}`;
 }
 
-export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDialogProps) {
+export function CreateTripModal({ open, onOpenChange, onCreated }: CreateTripModalProps) {
   const [title, setTitle] = useState('');
   const [destination, setDestination] = useState<DestinationValue | null>(null);
   const [range, setRange] = useState<DateRange>(EMPTY_RANGE);
@@ -35,7 +36,7 @@ export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDi
   const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation();
 
-  // Trip length is derived from the chosen range — no separate "type" toggle.
+  // Trip length is derived from the chosen range - no separate "type" toggle.
   // A range collapsing to a single day (from === to, or only `from` picked) is
   // simply a one-day trip.
   const duration =
@@ -106,32 +107,12 @@ export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDi
       hideHeader
       dismissable={false}
     >
-      {/* Custom header — icon tile + title/subtitle, with its own close
-          button since hideHeader drops the default chrome. Same surface as the
-          rest of the modal (bg-card) so it doesn't read as a separate band. */}
-      <div className="relative px-5 pb-4 pt-5 sm:px-6">
-        <button
-          type="button"
-          onClick={handleClose}
-          aria-label="Close"
-          className="text-muted-foreground hover:bg-muted hover:text-foreground absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors sm:right-5"
-        >
-          <X className="h-4 w-4" strokeWidth={2} />
-        </button>
-        <div className="flex items-center gap-3.5">
-          <div className="bg-primary text-primary-foreground flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl shadow-sm">
-            <Car className="h-5 w-5" strokeWidth={2} />
-          </div>
-          <div className="space-y-0.5">
-            <h2 className="font-headline text-foreground text-lg font-bold sm:text-xl">
-              {t('trips.createGroupTrip')}
-            </h2>
-            <p className="text-muted-foreground text-xs sm:text-sm">
-              {t('trips.createGroupTripSubtitle')}
-            </p>
-          </div>
-        </div>
-      </div>
+      <ModalHeader
+        icon={Car}
+        title={t('trips.createGroupTrip')}
+        subtitle={t('trips.createGroupTripSubtitle')}
+        onClose={handleClose}
+      />
 
       <form onSubmit={handleSubmit} className="space-y-5 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-1 sm:px-6 sm:pb-6">
         <div className="space-y-1.5">
@@ -174,7 +155,7 @@ export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDi
           />
         </div>
 
-        {/* Date range — pick start + end on one calendar. Same day = one-day
+        {/* Date range - pick start + end on one calendar. Same day = one-day
             trip; the type is derived, not chosen. */}
         <div className="space-y-1.5">
           <Label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide">
@@ -189,7 +170,7 @@ export function CreateTripDialog({ open, onOpenChange, onCreated }: CreateTripDi
           />
         </div>
 
-        {/* Duration summary — hero number with the picked range underneath,
+        {/* Duration summary - hero number with the picked range underneath,
             accented once a start date exists. */}
         <div
           className={`flex items-center gap-4 rounded-2xl border p-4 transition-colors ${

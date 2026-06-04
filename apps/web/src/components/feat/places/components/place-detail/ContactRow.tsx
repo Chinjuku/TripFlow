@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 
-/** Labeled contact field — icon tile + uppercase label + value (phone, website…). */
+/** Labeled contact field - icon tile + uppercase label + value (phone, website…). */
 export function ContactRow({
   icon: Icon,
   label,
