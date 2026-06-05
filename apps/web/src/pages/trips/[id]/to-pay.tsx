@@ -48,7 +48,7 @@ function buildCreditorsList(
               })
             : t('finances.unknownDate'),
           amount: split.amount,
-          category: exp.category as any,
+          category: exp.category,
         };
       })
       .filter(Boolean) as Transaction[];
@@ -76,7 +76,7 @@ function buildCreditorsList(
               })
             : t('finances.unknownDate'),
           amount: -split.amount,
-          category: exp.category as any,
+          category: exp.category,
         };
       })
       .filter(Boolean) as Transaction[];
@@ -161,8 +161,8 @@ function TripToPayContent() {
   const { t, i18n } = useTranslation();
 
   // Reconstruct creditors list from context
-  const nonCentralExpenses = finances.expenses.filter((e: any) => !e.is_central_fund);
-  const nonCentralSettlements = finances.settlements.filter((s: any) => !s.is_central_fund);
+  const nonCentralExpenses = finances.expenses.filter((e) => !e.is_central_fund);
+  const nonCentralSettlements = finances.settlements.filter((s) => !s.is_central_fund);
   
   const creditors = buildCreditorsList(
     user?.id || '',

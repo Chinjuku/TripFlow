@@ -11,7 +11,7 @@ import {
   Loader2,
   AlertCircle,
 } from 'lucide-react';
-import type { DebtRelation, UserPaymentDetail } from '@/types/finances';
+import type { DebtRelation, UserPaymentDetail, HydratedSettlement } from '@/types/finances';
 import { useTranslation, Trans } from 'react-i18next';
 import { findBank } from '@/utils/thai-banks';
 import { verifySlip, confirmSettlement } from '@/api/finances';
@@ -21,7 +21,11 @@ interface SettleUpModalProps {
   onOpenChange: (open: boolean) => void;
   payee: DebtRelation | null;
   paymentDetails: UserPaymentDetail | undefined;
-  onSubmit: (payeeId: string, amount: number, isCentralFund?: boolean) => Promise<any>;
+  onSubmit: (
+    payeeId: string,
+    amount: number,
+    isCentralFund?: boolean,
+  ) => Promise<HydratedSettlement | null>;
   isSubmitting: boolean;
   onVerified?: (silent?: boolean) => void;
   defaultIsCentralFund?: boolean;

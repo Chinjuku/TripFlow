@@ -28,6 +28,7 @@ export type {
   CreateExpensePayload,
   CreateSettlementPayload,
   UpdateCentralFundPayload,
+  SavePaymentDetailsPayload,
 } from '@/types/finances';
 
 // * Shell

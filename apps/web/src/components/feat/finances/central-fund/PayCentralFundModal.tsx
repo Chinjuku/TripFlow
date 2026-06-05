@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { extractReceipt } from '@/api/finances';
+import type { CreateExpensePayload } from '@/types/finances';
 
 interface PayCentralFundModalProps {
   open: boolean;
@@ -26,7 +27,7 @@ interface PayCentralFundModalProps {
   members: { userId: string }[];
   treasurerId: string;
   remainingCentralFund: number;
-  onSubmit: (values: any) => Promise<void>;
+  onSubmit: (values: Omit<CreateExpensePayload, 'tripId'>) => Promise<void>;
   isSubmitting: boolean;
 }
 

@@ -7,7 +7,8 @@ import {
   PayCentralFundModal,
   RequestReimbursementModal,
   createExpense,
-  createSettlement
+  createSettlement,
+  type CreateExpensePayload,
 } from '@/components/feat/finances';
 import { TrendingDown, TrendingUp, HandCoins, Receipt, Wallet, CheckCircle2, Circle, Clock, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -45,8 +46,8 @@ function TripCentralFundContent() {
   // Filter and format activities
   const activities = useMemo(() => {
     const centralExpenses = expenses
-      .filter((e: any) => e.is_central_fund)
-      .map((e: any) => ({
+      .filter((e) => e.is_central_fund)
+      .map((e) => ({
         id: e.id,
         type: 'expense' as const,
         title: e.description || t('finances.centralFund.defaultExpense', 'Central Fund Expense'),
@@ -60,8 +61,8 @@ function TripCentralFundContent() {
       }));
 
     const centralSettlements = settlements
-      .filter((s: any) => s.is_central_fund)
-      .map((s: any) => {
+      .filter((s) => s.is_central_fund)
+      .map((s) => {
         const isReimbursement = s.payer_id === summary.treasurerId;
         
         let isNegative = false;
@@ -98,7 +99,7 @@ function TripCentralFundContent() {
           if (act.type === 'expense') {
             return (
               act.paidById === user?.id ||
-              act.splits?.some((split: any) => split.user_id === user?.id)
+              act.splits?.some((split) => split.user_id === user?.id)
             );
           } else {
             return act.payerId === user?.id || act.payeeId === user?.id;
@@ -110,7 +111,7 @@ function TripCentralFundContent() {
 
   const pendingCentralSettlements = useMemo(() => {
     return settlements.filter(
-      (s: any) => s.is_central_fund && s.status === 'pending' && (s.payee_id === user?.id || s.payer_id === user?.id)
+      (s) => s.is_central_fund && s.status === 'pending' && (s.payee_id === user?.id || s.payer_id === user?.id)
     );
   }, [settlements, user?.id]);
 
@@ -118,33 +119,33 @@ function TripCentralFundContent() {
     if (!user?.id || isTreasurer) return null;
 
     const mySettlements = settlements.filter(
-      (s: any) => s.payer_id === user?.id && s.is_central_fund && s.payee_id === summary.treasurerId
+      (s) => s.payer_id === user?.id && s.is_central_fund && s.payee_id === summary.treasurerId
     );
 
     const paidAmount = mySettlements
-      .filter((s: any) => s.status === 'completed')
-      .reduce((sum: number, s: any) => sum + s.amount, 0);
+      .filter((s) => s.status === 'completed')
+      .reduce((sum, s) => sum + s.amount, 0);
 
     const pendingAmount = mySettlements
-      .filter((s: any) => s.status === 'pending')
-      .reduce((sum: number, s: any) => sum + s.amount, 0);
+      .filter((s) => s.status === 'pending')
+      .reduce((sum, s) => sum + s.amount, 0);
 
     const required = summary.centralFundPerPerson || 0;
-    
+
     const centralFundSettlementsSpent = settlements
       .filter(
-        (s: any) =>
+        (s) =>
           s.is_central_fund &&
           s.status === 'completed' &&
           s.payer_id === summary.treasurerId
       )
-      .reduce((sum: number, s: any) => sum + s.amount, 0);
+      .reduce((sum, s) => sum + s.amount, 0);
 
     const spentAmount =
       expenses
-        .filter((e: any) => e.is_central_fund)
-        .reduce((sum: number, e: any) => {
-          const split = e.splits.find((s: any) => s.user_id === user?.id);
+        .filter((e) => e.is_central_fund)
+        .reduce((sum, e) => {
+          const split = e.splits.find((s) => s.user_id === user?.id);
           return sum + (split ? split.amount : 0);
         }, 0) + (trip.members.length > 0 ? centralFundSettlementsSpent / trip.members.length : 0);
 
@@ -170,11 +171,11 @@ function TripCentralFundContent() {
 
   const hasContributions = useMemo(() => {
     return settlements.some(
-      (s: any) => s.is_central_fund && s.payee_id === summary.treasurerId
+      (s) => s.is_central_fund && s.payee_id === summary.treasurerId
     );
   }, [settlements, summary.treasurerId]);
 
-  const handlePayCentralFundSubmit = async (values: any) => {
+  const handlePayCentralFundSubmit = async (values: Omit<CreateExpensePayload, 'tripId'>) => {
     setIsSubmitting(true);
     try {
       await createExpense({ ...values, tripId: trip.id });
@@ -188,6 +189,7 @@ function TripCentralFundContent() {
   };
 
   const handleRequestReimbursementSubmit = async (amount: number) => {
+    if (!user || !summary.treasurerId) return;
     setIsSubmitting(true);
     try {
       await createSettlement({
@@ -267,7 +269,7 @@ function TripCentralFundContent() {
             {t('finances.centralFund.pendingApprovals', 'Pending Approvals')}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {pendingCentralSettlements.map((set: any) => {
+            {pendingCentralSettlements.map((set) => {
               const isReimbursement = set.payer_id === user?.id;
               const name = isReimbursement ? set.payeeName : set.payerName;
               const avatarUrl = isReimbursement ? set.payeeAvatarUrl : set.payerAvatarUrl;
@@ -535,7 +537,7 @@ function TripCentralFundContent() {
         )}
       </div>
       
-      {isPayModalOpen && (
+      {isPayModalOpen && summary.treasurerId && (
         <PayCentralFundModal
           open={isPayModalOpen}
           onOpenChange={setIsPayModalOpen}
