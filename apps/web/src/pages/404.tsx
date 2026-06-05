@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { buttonVariants } from '@trip-flow/ui/components/button';
+import { buttonVariants } from '@/components/ui/button';
 import { Compass, ArrowLeft } from 'lucide-react';
 
 export default function NotFoundPage() {

@@ -3,16 +3,14 @@
  *
  * Layout strategy:
  *   /auth                   → no chrome, page renders full-screen
- *   /trips/[id]/*           → TripLayout via pages/trips/[id]/_layout.tsx
+ *   /trips/[id]/*           → WorkspaceLayout via pages/trips/[id]/_layout.tsx
  *   everything else         → GlobalLayout (topbar only, no sidebar)
  */
 
 import { Outlet, matchPath, useLocation } from 'react-router-dom';
-import { AuthProvider } from '@/components/feat/auth/AuthProvider';
-import { ProtectedRoute } from '@/components/feat/auth/ProtectedRoute';
-import { PublicRoute } from '@/components/feat/auth/PublicRoute';
-import { ThemeProvider } from '@/components/shared/ThemeProvider';
-import { GlobalLayout } from '@/components/shared/GlobalLayout';
+import { AuthProvider, ProtectedRoute, PublicRoute } from '@/components/feat/auth';
+import { ThemeProvider } from '@/components/shared/theme/ThemeProvider';
+import { GlobalLayout } from '@/components/shared/layout/GlobalLayout';
 
 const PUBLIC_PATHS = ['/auth'] as const;
 const TRIP_DETAIL_PATTERN = '/trips/:id/*';

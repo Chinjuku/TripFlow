@@ -2,7 +2,7 @@
 @import './fonts.css';
 
 /* Design tokens (Verdant Horizon). */
-@import '@trip-flow/ui/styles.css';
+@import './ui-tokens.css';
 
 /* Third-party widget overrides - must come before @tailwind per PostCSS
    ordering rules. The overrides use `!important`, so cascade order

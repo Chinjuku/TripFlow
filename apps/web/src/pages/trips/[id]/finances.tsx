@@ -1,7 +1,7 @@
 import {
   TripFinancesLayout,
   useTripFinancesContext,
-} from '@/components/feat/finances/TripFinancesLayout';
+} from '@/components/feat/finances';
 import { ExpenseSummary, ExpenseList } from '@/components/feat/finances';
 
 export default function TripFinancesPage() {

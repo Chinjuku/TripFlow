@@ -1,5 +1,5 @@
 import { Compass } from 'lucide-react';
-import { cn } from '@trip-flow/ui/lib/cn';
+import { cn } from '@/lib/cn';
 
 const SPIN_DURATION_S = 8;
 const START_MS = Date.now();

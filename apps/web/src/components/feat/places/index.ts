@@ -19,12 +19,15 @@ export type {
 // * Utils
 export { bucketFor, BUCKETS } from '@/utils/places';
 
-// * Components
-export { PlaceCard } from './PlaceCard';
-export { PlacesMap } from './PlacesMap';
-export type { PoiPreview } from './PlacesMap';
-export { PlaceList } from './PlaceList';
-export { ListToolbar } from './ListToolbar';
-export { CategoryTabs } from './CategoryTabs';
-export { TopRanking } from './TopRanking';
-export { PlanEmptyState } from './PlanEmptyState';
+// * Plan components
+export { PlaceCard } from './plan/PlaceCard';
+export { PlaceList } from './plan/PlaceList';
+export { ListToolbar } from './plan/ListToolbar';
+export { CategoryTabs } from './plan/CategoryTabs';
+export { TopRanking } from './plan/TopRanking';
+export { PlanEmptyState } from './plan/PlanEmptyState';
+export { PlanTabs } from './plan/PlanTabs';
+
+// * Map components
+export { PlacesMap } from './map/PlacesMap';
+export type { PoiPreview } from './map/PlacesMap';

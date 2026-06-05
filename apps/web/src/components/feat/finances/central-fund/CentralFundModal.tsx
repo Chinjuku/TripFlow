@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@trip-flow/ui/components/button';
-import { Input } from '@trip-flow/ui/components/input';
-import { Label } from '@trip-flow/ui/components/label';
-import { Modal } from '@trip-flow/ui/components/modal';
-import { updateCentralFund } from '../api';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Modal } from '@/components/ui/modal';
+import { updateCentralFund } from '@/api/finances';
 
 interface CentralFundModalProps {
   isOpen: boolean;

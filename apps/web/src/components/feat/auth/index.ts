@@ -1,6 +1,11 @@
-export { AuthProvider, AuthContext } from './AuthProvider';
-export { ProtectedRoute } from './ProtectedRoute';
-export { PublicRoute } from './PublicRoute';
-export { AuthHeroPanel } from './AuthHeroPanel';
-export { AuthSignInPanel } from './AuthSignInPanel';
-export { TermsModal } from './TermsModal';
+// * Provider
+export { AuthProvider, AuthContext } from './provider/AuthProvider';
+
+// * Route guards
+export { ProtectedRoute } from './guards/ProtectedRoute';
+export { PublicRoute } from './guards/PublicRoute';
+
+// * Login page
+export { AuthHeroPanel } from './page/AuthHeroPanel';
+export { AuthSignInPanel } from './page/AuthSignInPanel';
+export { TermsModal } from './page/TermsModal';

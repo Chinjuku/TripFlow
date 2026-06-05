@@ -1,12 +1,12 @@
 import { Outlet, useParams } from 'react-router-dom';
-import { TripLayout } from '@/components/shared/TripLayout';
+import { WorkspaceLayout } from '@/components/shared/layout/WorkspaceLayout';
 
-export default function TripLayoutRoute() {
+export default function WorkspaceLayoutRoute() {
   const { id } = useParams<{ id: string }>();
   if (!id) return null;
   return (
-    <TripLayout tripId={id}>
+    <WorkspaceLayout tripId={id}>
       <Outlet />
-    </TripLayout>
+    </WorkspaceLayout>
   );
 }

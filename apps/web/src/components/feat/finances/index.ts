@@ -1,4 +1,7 @@
-export { useTripFinances } from './hooks';
+// * Hook
+export { useTripFinances } from '@/hooks/useFinances';
+
+// * API
 export {
   getFinances,
   createExpense,
@@ -11,17 +14,9 @@ export {
   verifySlip,
   extractReceipt,
   updateCentralFund,
-} from './api';
-export { ExpenseSummary } from './ExpenseSummary';
-export { ExpenseList } from './ExpenseList';
-export { CreateExpenseModal } from './CreateExpenseModal';
-export { SettleUpModal } from './SettleUpModal';
-export { BudgetModal } from './BudgetModal';
-export { PaymentDetailsModal } from './PaymentDetailsModal';
-export { TripFinancesLayout, useTripFinancesContext } from './TripFinancesLayout';
-export { SettlementHelpNote } from './SettlementHelpNote';
-export { CreditorCard } from './to-pay/CreditorCard';
-export { DebtorCard } from './to-receive/DebtorCard';
+} from '@/api/finances';
+
+// * Types
 export type {
   FinancesData,
   FinanceSummary,
@@ -32,4 +27,30 @@ export type {
   CreateExpensePayload,
   CreateSettlementPayload,
   UpdateCentralFundPayload,
-} from './types';
+} from '@/types/finances';
+
+// * Shell
+export { TripFinancesLayout, useTripFinancesContext } from './shell/TripFinancesLayout';
+
+// * Expenses
+export { ExpenseSummary } from './expenses/ExpenseSummary';
+export { ExpenseList } from './expenses/ExpenseList';
+export { CreateExpenseModal } from './expenses/CreateExpenseModal';
+export { AllExpenseItem } from './expenses/AllExpenseItem';
+export { AllExpensesSkeleton } from './expenses/AllExpensesSkeleton';
+
+// * Settlement
+export { SettleUpModal } from './settlement/SettleUpModal';
+export { SettlementHelpNote } from './settlement/SettlementHelpNote';
+export { CreditorCard, type Creditor } from './settlement/CreditorCard';
+export { DebtorCard, type Debtor } from './settlement/DebtorCard';
+
+// * Budget
+export { BudgetModal } from './budget/BudgetModal';
+
+// * Payment
+export { PaymentDetailsModal } from './payment/PaymentDetailsModal';
+
+// * Central fund
+export { CentralFundCard } from './central-fund/CentralFundCard';
+export { CentralFundMembers } from './central-fund/CentralFundMembers';

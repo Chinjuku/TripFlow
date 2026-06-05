@@ -3,11 +3,12 @@ import { Check } from 'lucide-react';
 import {
   TripFinancesLayout,
   useTripFinancesContext,
-} from '@/components/feat/finances/TripFinancesLayout';
-import { SettlementHelpNote } from '@/components/feat/finances';
-import { DebtorCard } from '@/components/feat/finances/to-receive/DebtorCard';
+  SettlementHelpNote,
+  DebtorCard,
+  type Debtor,
+} from '@/components/feat/finances';
 import type { DebtRelation, HydratedExpense, HydratedSettlement } from '@/components/feat/finances';
-import type { Debtor, Transaction } from '@/components/feat/finances/to-receive/DebtorCard';
+import type { Transaction } from '@/components/feat/finances/settlement/DebtorCard';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { formatLocalizedDate } from '@/lib/utils';

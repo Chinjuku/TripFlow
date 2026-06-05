@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
 import { TripFinancesLayout, useTripFinancesContext } from '@/components/feat/finances';
-import { CentralFundCard } from '@/components/feat/finances/central-fund/CentralFundCard';
-import { CentralFundMembers } from '@/components/feat/finances/central-fund/CentralFundMembers';
+import { CentralFundCard } from '@/components/feat/finances';
+import { CentralFundMembers } from '@/components/feat/finances';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@trip-flow/ui/components/button';
+import { Button } from '@/components/ui/button';
 
 export default function TripCentralFundPage() {
   return (

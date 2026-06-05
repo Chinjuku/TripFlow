@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Circle, Clock } from 'lucide-react';
-import type { HydratedExpense, HydratedSettlement } from '../types';
+import type { HydratedExpense, HydratedSettlement } from '@/types/finances';
 
 interface CentralFundMembersProps {
   members: { userId: string; name: string; avatarUrl?: string | null }[];

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Landmark, Settings2, PlusCircle } from 'lucide-react';
-import { Card, CardContent } from '@trip-flow/ui/components/card';
-import { Button } from '@trip-flow/ui/components/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { CentralFundModal } from './CentralFundModal';
-import type { FinanceSummary } from '../types';
+import type { FinanceSummary } from '@/types/finances';
 
 interface CentralFundCardProps {
   tripId: string;

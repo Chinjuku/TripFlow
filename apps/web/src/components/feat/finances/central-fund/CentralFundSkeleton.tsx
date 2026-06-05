@@ -1,5 +1,5 @@
 import React from 'react';
-import { Skeleton } from '@trip-flow/ui/components/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function CentralFundSkeleton() {
   return (

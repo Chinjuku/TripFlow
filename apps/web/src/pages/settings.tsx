@@ -8,7 +8,7 @@ import {
   NotificationsCard,
   SettingsTabs,
   useSettingsTab,
-} from '@/components/feat/settings';
+} from '@/components/feat/accountSettings';
 
 export default function SettingsPage() {
   const navigate = useNavigate();

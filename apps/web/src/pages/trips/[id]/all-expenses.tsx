@@ -1,15 +1,15 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Filter, User } from 'lucide-react';
-import { Input } from '@trip-flow/ui/components/input';
+import { Input } from '@/components/ui/input';
 import { useTranslation } from 'react-i18next';
-import { DatePicker } from '@trip-flow/ui/components/date-picker';
+import { DatePicker } from '@/components/ui/date-picker';
 
 import {
   TripFinancesLayout,
   useTripFinancesContext,
-} from '@/components/feat/finances/TripFinancesLayout';
-import { AllExpenseItem } from '@/components/feat/finances/all-expenses/AllExpenseItem';
-import { AllExpensesSkeleton } from '@/components/feat/finances/all-expenses/AllExpensesSkeleton';
+} from '@/components/feat/finances';
+import { AllExpenseItem } from '@/components/feat/finances';
+import { AllExpensesSkeleton } from '@/components/feat/finances';
 import type { HydratedExpense } from '@/components/feat/finances';
 
 export default function AllExpensePage() {
