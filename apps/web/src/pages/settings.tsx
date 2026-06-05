@@ -50,10 +50,7 @@ export default function SettingsPage() {
           <SettingsTabs orientation="vertical" />
         </aside>
 
-        <div
-          key={activeTab}
-          className="animate-in fade-in slide-in-from-bottom-2 duration-300"
-        >
+        <div key={activeTab} className="animate-in fade-in slide-in-from-bottom-2 duration-300">
           {activeTab === 'profile' && <ProfileCard />}
           {activeTab === 'appearance' && <AppearanceCard />}
           {activeTab === 'payment' && <PaymentDetailsCard />}

@@ -40,7 +40,7 @@ export function CentralFundModal({
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
   const isConfigured = Boolean(currentTreasurerId && currentPerPerson && currentPerPerson > 0);
 
   // When opened, reset to current if not set
@@ -55,7 +55,12 @@ export function CentralFundModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!treasurerId || !perPerson) {
-      setError(t('finances.centralFund.errorRequiredFields', 'Please select a treasurer and enter amount per person.'));
+      setError(
+        t(
+          'finances.centralFund.errorRequiredFields',
+          'Please select a treasurer and enter amount per person.',
+        ),
+      );
       return;
     }
 
@@ -70,8 +75,8 @@ export function CentralFundModal({
         t(
           'finances.centralFund.errorCannotReduceAmount',
           'Cannot decrease the amount per person because members have already made contributions. The new amount must be at least ฿{{amount}}.',
-          { amount: currentPerPerson.toLocaleString() }
-        )
+          { amount: currentPerPerson.toLocaleString() },
+        ),
       );
       return;
     }
@@ -80,8 +85,8 @@ export function CentralFundModal({
       setError(
         t(
           'finances.centralFund.errorCannotChangeTreasurer',
-          'Cannot change the treasurer because contributions have already been made.'
-        )
+          'Cannot change the treasurer because contributions have already been made.',
+        ),
       );
       return;
     }
@@ -119,7 +124,10 @@ export function CentralFundModal({
       open={isOpen}
       onOpenChange={onOpenChange}
       title={t('finances.centralFund.configureTitle', 'Configure Central Fund')}
-      description={t('finances.centralFund.configureDesc', 'Set up a central fund to manage shared group expenses. The trip owner can assign a treasurer.')}
+      description={t(
+        'finances.centralFund.configureDesc',
+        'Set up a central fund to manage shared group expenses. The trip owner can assign a treasurer.',
+      )}
       className="sm:max-w-md font-sans"
     >
       <div className="space-y-4 pt-2">
@@ -146,7 +154,10 @@ export function CentralFundModal({
               </select>
               {hasContributions && (
                 <p className="text-[10px] text-muted-foreground mt-0.5">
-                  {t('finances.centralFund.cannotChangeTreasurer', 'The treasurer cannot be changed because contributions have already been made.')}
+                  {t(
+                    'finances.centralFund.cannotChangeTreasurer',
+                    'The treasurer cannot be changed because contributions have already been made.',
+                  )}
                 </p>
               )}
             </div>
@@ -156,15 +167,18 @@ export function CentralFundModal({
                 {t('finances.centralFund.treasurerLabel', 'Treasurer')}
               </span>
               <span className="text-sm font-semibold text-foreground">
-                {members.find((m) => m.userId === treasurerId)?.name || t('finances.centralFund.assignedTreasurer', 'Assigned Treasurer')}
+                {members.find((m) => m.userId === treasurerId)?.name ||
+                  t('finances.centralFund.assignedTreasurer', 'Assigned Treasurer')}
               </span>
             </div>
           )}
 
           {/* Amount per Person */}
-          {((isOwner && !isConfigured) || isTreasurer) ? (
+          {(isOwner && !isConfigured) || isTreasurer ? (
             <div className="space-y-2">
-              <Label>{t('finances.centralFund.amountPerPersonLabel', 'Amount per Person (฿)')}</Label>
+              <Label>
+                {t('finances.centralFund.amountPerPersonLabel', 'Amount per Person (฿)')}
+              </Label>
               <div className="flex items-center gap-2">
                 <Input
                   type="number"
@@ -176,12 +190,17 @@ export function CentralFundModal({
                 />
                 {suggestedPerPerson !== undefined && suggestedPerPerson > 0 && (
                   <Button type="button" variant="outline" size="sm" onClick={applySuggested}>
-                    {t('finances.centralFund.suggestAmount', 'Suggest ฿{{amount}}', { amount: suggestedPerPerson.toFixed(0) })}
+                    {t('finances.centralFund.suggestAmount', 'Suggest ฿{{amount}}', {
+                      amount: suggestedPerPerson.toFixed(0),
+                    })}
                   </Button>
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                {t('finances.centralFund.amountDesc', 'This amount will be used to calculate the total central fund size.')}
+                {t(
+                  'finances.centralFund.amountDesc',
+                  'This amount will be used to calculate the total central fund size.',
+                )}
               </p>
             </div>
           ) : (
@@ -194,7 +213,10 @@ export function CentralFundModal({
                   ฿{currentPerPerson?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </span>
                 <p className="text-[10px] text-muted-foreground mt-1">
-                  {t('finances.centralFund.treasurerOnlyEdit', 'Only the assigned treasurer can edit the amount after set up.')}
+                  {t(
+                    'finances.centralFund.treasurerOnlyEdit',
+                    'Only the assigned treasurer can edit the amount after set up.',
+                  )}
                 </p>
               </div>
             )
@@ -205,7 +227,9 @@ export function CentralFundModal({
               {t('common.cancel', 'Cancel')}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? t('common.saving', 'Saving...') : t('finances.centralFund.saveConfiguration', 'Save Configuration')}
+              {loading
+                ? t('common.saving', 'Saving...')
+                : t('finances.centralFund.saveConfiguration', 'Save Configuration')}
             </Button>
           </div>
         </form>

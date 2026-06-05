@@ -51,10 +51,7 @@ export async function handleRemoveMember({
   return { ok: true };
 }
 
-export async function handleDeleteTrip({
-  user,
-  params,
-}: AuthContext & { params: { id: string } }) {
+export async function handleDeleteTrip({ user, params }: AuthContext & { params: { id: string } }) {
   await tripsService.deleteTrip(user.sub, params.id);
   return { ok: true };
 }

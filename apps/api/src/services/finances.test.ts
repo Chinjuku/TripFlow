@@ -45,7 +45,7 @@ mock.module('@trip-flow/db/server', () => ({
         };
         // Support direct await
         Object.assign(chain, {
-          then: (onfulfilled?: any) => Promise.resolve(result).then(onfulfilled)
+          then: (onfulfilled?: any) => Promise.resolve(result).then(onfulfilled),
         });
         return chain;
       },
@@ -78,8 +78,26 @@ describe('Finance calculations', () => {
     // Bob paid 600, split A: 200, B: 200, C: 200
     // Alice (User A) paid 900, split A: 300, B: 300, C: 300
     mockExpenses = [
-      { id: 'exp-1', paid_by_id: 'user-b', amount: 600, description: 'Lunch', expense_date: '2026-05-25T00:00:00Z', created_at: '2026-05-25T00:00:00Z', category: 'food', split_method: 'equally' },
-      { id: 'exp-2', paid_by_id: 'user-a', amount: 900, description: 'Car Rental', expense_date: '2026-05-25T01:00:00Z', created_at: '2026-05-25T01:00:00Z', category: 'transport', split_method: 'equally' },
+      {
+        id: 'exp-1',
+        paid_by_id: 'user-b',
+        amount: 600,
+        description: 'Lunch',
+        expense_date: '2026-05-25T00:00:00Z',
+        created_at: '2026-05-25T00:00:00Z',
+        category: 'food',
+        split_method: 'equally',
+      },
+      {
+        id: 'exp-2',
+        paid_by_id: 'user-a',
+        amount: 900,
+        description: 'Car Rental',
+        expense_date: '2026-05-25T01:00:00Z',
+        created_at: '2026-05-25T01:00:00Z',
+        category: 'transport',
+        split_method: 'equally',
+      },
     ];
 
     mockSplits = [
@@ -97,15 +115,15 @@ describe('Finance calculations', () => {
 
     // Alice fetches finances without optimization (optimized=false)
     const data = await getFinancesByTripId('user-a', 'some-trip-id', false);
-    
+
     // Alice is owed 300 by Bob and 300 by Charlie
-    const bobDebtor = data.summary.whoOwesYou.find(d => d.userId === 'user-b');
-    const charlieDebtor = data.summary.whoOwesYou.find(d => d.userId === 'user-c');
+    const bobDebtor = data.summary.whoOwesYou.find((d) => d.userId === 'user-b');
+    const charlieDebtor = data.summary.whoOwesYou.find((d) => d.userId === 'user-c');
     expect(bobDebtor?.amount).toBe(300);
     expect(charlieDebtor?.amount).toBe(300);
 
     // Alice owes Bob 200
-    const bobCreditor = data.summary.whatYouOwe.find(c => c.userId === 'user-b');
+    const bobCreditor = data.summary.whatYouOwe.find((c) => c.userId === 'user-b');
     expect(bobCreditor?.amount).toBe(200);
   });
 
@@ -115,8 +133,26 @@ describe('Finance calculations', () => {
     mockTripRow = { id: 'some-trip-id', is_debt_optimized: true };
 
     mockExpenses = [
-      { id: 'exp-1', paid_by_id: 'user-b', amount: 600, description: 'Lunch', expense_date: '2026-05-25T00:00:00Z', created_at: '2026-05-25T00:00:00Z', category: 'food', split_method: 'equally' },
-      { id: 'exp-2', paid_by_id: 'user-a', amount: 900, description: 'Car Rental', expense_date: '2026-05-25T01:00:00Z', created_at: '2026-05-25T01:00:00Z', category: 'transport', split_method: 'equally' },
+      {
+        id: 'exp-1',
+        paid_by_id: 'user-b',
+        amount: 600,
+        description: 'Lunch',
+        expense_date: '2026-05-25T00:00:00Z',
+        created_at: '2026-05-25T00:00:00Z',
+        category: 'food',
+        split_method: 'equally',
+      },
+      {
+        id: 'exp-2',
+        paid_by_id: 'user-a',
+        amount: 900,
+        description: 'Car Rental',
+        expense_date: '2026-05-25T01:00:00Z',
+        created_at: '2026-05-25T01:00:00Z',
+        category: 'transport',
+        split_method: 'equally',
+      },
     ];
 
     mockSplits = [
@@ -132,9 +168,9 @@ describe('Finance calculations', () => {
 
     // Alice fetches finances with optimization (optimized=true)
     const data = await getFinancesByTripId('user-a', 'some-trip-id', true);
-    
+
     // Netted pairwise: Bob owes Alice 100, Alice owes Bob 0.
-    const bobDebtor = data.summary.whoOwesYou.find(d => d.userId === 'user-b');
+    const bobDebtor = data.summary.whoOwesYou.find((d) => d.userId === 'user-b');
     expect(bobDebtor?.amount).toBe(100);
     expect(data.summary.whatYouOwe.length).toBe(0);
   });
@@ -145,8 +181,26 @@ describe('Finance calculations', () => {
     mockTripRow = { id: 'some-trip-id', is_debt_optimized: true };
 
     mockExpenses = [
-      { id: 'exp-1', paid_by_id: 'user-b', amount: 600, description: 'Lunch', expense_date: '2026-05-25T00:00:00Z', created_at: '2026-05-25T00:00:00Z', category: 'food', split_method: 'equally' },
-      { id: 'exp-2', paid_by_id: 'user-a', amount: 900, description: 'Car Rental', expense_date: '2026-05-25T01:00:00Z', created_at: '2026-05-25T01:00:00Z', category: 'transport', split_method: 'equally' },
+      {
+        id: 'exp-1',
+        paid_by_id: 'user-b',
+        amount: 600,
+        description: 'Lunch',
+        expense_date: '2026-05-25T00:00:00Z',
+        created_at: '2026-05-25T00:00:00Z',
+        category: 'food',
+        split_method: 'equally',
+      },
+      {
+        id: 'exp-2',
+        paid_by_id: 'user-a',
+        amount: 900,
+        description: 'Car Rental',
+        expense_date: '2026-05-25T01:00:00Z',
+        created_at: '2026-05-25T01:00:00Z',
+        category: 'transport',
+        split_method: 'equally',
+      },
     ];
 
     mockSplits = [
@@ -162,10 +216,10 @@ describe('Finance calculations', () => {
 
     // Alice fetches finances with DB optimized=true, but overrides it to false (e.g. settlements tab)
     const data = await getFinancesByTripId('user-a', 'some-trip-id', false);
-    
+
     // Should NOT be netted pairwise (keeps debts separate)
-    const bobDebtor = data.summary.whoOwesYou.find(d => d.userId === 'user-b');
-    const bobCreditor = data.summary.whatYouOwe.find(c => c.userId === 'user-b');
+    const bobDebtor = data.summary.whoOwesYou.find((d) => d.userId === 'user-b');
+    const bobCreditor = data.summary.whatYouOwe.find((c) => c.userId === 'user-b');
     expect(bobDebtor?.amount).toBe(300);
     expect(bobCreditor?.amount).toBe(200);
   });

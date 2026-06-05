@@ -53,10 +53,13 @@ export function PayCentralFundModal({
 
   const schema = z.object({
     description: z.string().min(1, 'Description is required').max(120),
-    amount: z.number().min(0.01).max(
-      remainingCentralFund,
-      `Cannot exceed remaining central fund (฿${remainingCentralFund.toLocaleString()})`
-    ),
+    amount: z
+      .number()
+      .min(0.01)
+      .max(
+        remainingCentralFund,
+        `Cannot exceed remaining central fund (฿${remainingCentralFund.toLocaleString()})`,
+      ),
     category: z.enum(['food', 'transport', 'activity', 'lodging', 'other']),
     expenseDate: z.string().min(1),
   });
@@ -162,7 +165,10 @@ export function PayCentralFundModal({
       open={open}
       onOpenChange={onOpenChange}
       title={t('finances.centralFund.payTitle', 'Pay from Central Fund')}
-      description={t('finances.centralFund.payDesc', 'Record an expense paid using the central fund.')}
+      description={t(
+        'finances.centralFund.payDesc',
+        'Record an expense paid using the central fund.',
+      )}
       className="sm:max-w-md"
     >
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6 pt-4">
@@ -199,7 +205,8 @@ export function PayCentralFundModal({
             ) : uploadedFile ? (
               <div className="z-20">
                 <p className="text-sm font-semibold text-primary flex items-center gap-1.5 justify-center">
-                  <Check className="w-4 h-4" /> {t('finances.receiptLoaded', 'Receipt loaded successfully')}
+                  <Check className="w-4 h-4" />{' '}
+                  {t('finances.receiptLoaded', 'Receipt loaded successfully')}
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {uploadedFile.name} ({uploadedFile.size})
@@ -290,7 +297,9 @@ export function PayCentralFundModal({
           )}
           <p className="text-xs text-muted-foreground mt-1">
             {t('finances.centralFund.remainingLabel', 'Remaining:')}{' '}
-            <span className="font-bold">฿{remainingCentralFund.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+            <span className="font-bold">
+              ฿{remainingCentralFund.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            </span>
           </p>
         </div>
 
@@ -305,7 +314,9 @@ export function PayCentralFundModal({
               {...register('category')}
             >
               <option value="food">{t('finances.categoryFoodLabel', 'Food & Dining')}</option>
-              <option value="transport">{t('finances.categoryTransportLabel', 'Transportation')}</option>
+              <option value="transport">
+                {t('finances.categoryTransportLabel', 'Transportation')}
+              </option>
               <option value="activity">{t('finances.categoryActivityLabel', 'Activities')}</option>
               <option value="lodging">{t('finances.categoryLodgingLabel', 'Lodging')}</option>
               <option value="other">{t('finances.categoryOtherLabel', 'Other')}</option>

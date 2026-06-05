@@ -49,7 +49,10 @@ export function TopVotedPanel({
 
       <p className="text-muted-foreground mb-4 mt-3 text-xs">
         {allowDuplicates
-          ? t('schedule.allowDuplicatesOn', 'A place can repeat across days, handy for daily stops.')
+          ? t(
+              'schedule.allowDuplicatesOn',
+              'A place can repeat across days, handy for daily stops.',
+            )
           : t('schedule.allowDuplicatesOff', 'Each place appears once across the whole trip.')}
       </p>
 

@@ -71,11 +71,7 @@ export function DebtorCard({
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full overflow-hidden border border-border shrink-0">
             {debtor.avatar ? (
-              <img
-                src={debtor.avatar}
-                alt={debtor.name}
-                className="w-full h-full object-cover"
-              />
+              <img src={debtor.avatar} alt={debtor.name} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary font-bold text-sm dark:bg-primary/20">
                 {debtor.name.charAt(0)}
@@ -83,11 +79,13 @@ export function DebtorCard({
             )}
           </div>
           <div>
-            <h3 className="font-headline font-bold text-foreground text-base">
-              {debtor.name}
-            </h3>
+            <h3 className="font-headline font-bold text-foreground text-base">{debtor.name}</h3>
             <p className="text-primary text-xs font-semibold mt-0.5 font-label">
-              {t('finances.owesYou')} ฿{debtor.amountOwed.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {t('finances.owesYou')} ฿
+              {debtor.amountOwed.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </p>
           </div>
         </div>
@@ -156,7 +154,9 @@ export function DebtorCard({
         {isExpanded && (
           <div className="px-5 pb-5 pt-1 space-y-2 bg-card animate-in slide-in-from-top-2 duration-200">
             {debtor.transactions.length === 0 ? (
-              <p className="text-muted-foreground text-xs py-2 italic font-label">{t('finances.noTransactionRecords')}</p>
+              <p className="text-muted-foreground text-xs py-2 italic font-label">
+                {t('finances.noTransactionRecords')}
+              </p>
             ) : (
               debtor.transactions.map((tx) => (
                 <div
@@ -180,8 +180,14 @@ export function DebtorCard({
                       </p>
                     </div>
                   </div>
-                  <span className={`font-headline font-bold text-xs whitespace-nowrap ${tx.amount > 0 ? 'text-primary' : 'text-destructive'}`}>
-                    {tx.amount > 0 ? '+' : '-'}฿{Math.abs(tx.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  <span
+                    className={`font-headline font-bold text-xs whitespace-nowrap ${tx.amount > 0 ? 'text-primary' : 'text-destructive'}`}
+                  >
+                    {tx.amount > 0 ? '+' : '-'}฿
+                    {Math.abs(tx.amount).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                   </span>
                 </div>
               ))

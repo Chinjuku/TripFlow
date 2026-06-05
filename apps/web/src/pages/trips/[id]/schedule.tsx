@@ -1,11 +1,5 @@
 import { useParams } from 'react-router-dom';
-import {
-  DndContext,
-  DragOverlay,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
+import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/shared/navigation/PageHeader';
 import { formatLocalizedDate } from '@/lib/utils';

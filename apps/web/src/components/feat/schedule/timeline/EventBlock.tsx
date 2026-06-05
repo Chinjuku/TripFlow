@@ -28,7 +28,14 @@ interface EventBlockProps {
   dragLocked: boolean;
 }
 
-export function EventBlock({ item, next, weekday, onRemove, onResize, dragLocked }: EventBlockProps) {
+export function EventBlock({
+  item,
+  next,
+  weekday,
+  onRemove,
+  onResize,
+  dragLocked,
+}: EventBlockProps) {
   const { t, i18n } = useTranslation();
   const top = minuteToPx(item.startMinute);
   const tone = toneFor(item.id);

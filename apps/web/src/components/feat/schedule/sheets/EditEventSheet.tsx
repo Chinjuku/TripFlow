@@ -4,12 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Modal } from '@/components/ui/modal';
 import { cn } from '@/lib/cn';
 import type { ScheduleItem } from '@/types/schedule';
-import {
-  formatTime,
-  HOURS_END,
-  HOURS_START,
-  placeName,
-} from '@/utils/schedule';
+import { formatTime, HOURS_END, HOURS_START, placeName } from '@/utils/schedule';
 import { DurationStepper, TimeStepper } from './AddPlaceSheet';
 
 interface EditEventSheetProps {

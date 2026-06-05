@@ -19,7 +19,11 @@ export function PhotoGallery({ photos, rating, ratingCount }: PhotoGalleryProps)
       {/* isolate + own overflow-hidden so the rounded corners aren't clipped
           by the scrolling modal body (WebKit warps nested radii on scroll). */}
       <div className="bg-muted isolate relative h-56 w-full overflow-hidden rounded-xl">
-        <img src={photos[active]} alt="" className="h-full w-full object-cover transition-opacity" />
+        <img
+          src={photos[active]}
+          alt=""
+          className="h-full w-full object-cover transition-opacity"
+        />
         {rating !== null && (
           <>
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/60 to-transparent" />
@@ -37,7 +41,10 @@ export function PhotoGallery({ photos, rating, ratingCount }: PhotoGalleryProps)
       </div>
       {photos.length > 1 && (
         // Thumbnails fill the modal width - one equal-width column per photo.
-        <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${photos.length}, 1fr)` }}>
+        <div
+          className="grid gap-2"
+          style={{ gridTemplateColumns: `repeat(${photos.length}, 1fr)` }}
+        >
           {photos.map((url, i) => (
             <button
               key={i}
@@ -49,7 +56,12 @@ export function PhotoGallery({ photos, rating, ratingCount }: PhotoGalleryProps)
                 i === active ? 'ring-primary ring-2 ring-offset-1' : 'opacity-60 hover:opacity-100',
               )}
             >
-              <img src={url} alt="" loading="lazy" className="bg-muted h-full w-full object-cover" />
+              <img
+                src={url}
+                alt=""
+                loading="lazy"
+                className="bg-muted h-full w-full object-cover"
+              />
             </button>
           ))}
         </div>

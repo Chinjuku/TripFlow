@@ -323,7 +323,10 @@ export function PaymentDetailsModal({
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="bank-acc-num" className="text-[10px] font-bold text-muted-foreground">
+                <Label
+                  htmlFor="bank-acc-num"
+                  className="text-[10px] font-bold text-muted-foreground"
+                >
                   {t('finances.accountNumber')}
                 </Label>
                 <Input
@@ -336,7 +339,10 @@ export function PaymentDetailsModal({
               </div>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="bank-acc-name" className="text-[10px] font-bold text-muted-foreground">
+              <Label
+                htmlFor="bank-acc-name"
+                className="text-[10px] font-bold text-muted-foreground"
+              >
                 {t('finances.accountHolderName')}
               </Label>
               <Input

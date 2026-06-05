@@ -69,9 +69,7 @@ export function ModalHeader({
             {title}
           </h2>
           {subtitle && (
-            <p
-              className={cn('text-muted-foreground text-xs sm:text-sm', truncate && 'truncate')}
-            >
+            <p className={cn('text-muted-foreground text-xs sm:text-sm', truncate && 'truncate')}>
               {subtitle}
             </p>
           )}

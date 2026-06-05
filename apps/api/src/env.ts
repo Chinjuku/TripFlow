@@ -27,7 +27,7 @@ export const env = {
   jwtSecret: required('JWT_SECRET'),
   webUrl: required('WEB_URL'),
   databaseUrl: required('DATABASE_URL'),
-  geminiApiKey: optional('GEMINI_API_KEY', ''),
+  typhoonOcrApiKey: optional('TYPHOON_OCR_API_KEY', ''),
 } as const;
 
 export type Env = typeof env;

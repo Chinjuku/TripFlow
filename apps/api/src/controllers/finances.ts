@@ -15,12 +15,13 @@ export async function handleGetFinancesByTripId({
   params,
   query,
 }: AuthContext & { params: { tripId: string }; query: { optimized?: string } }) {
-  const isDebtOptimizedOverride = query.optimized === 'true'
-    ? true
-    : query.optimized === 'false'
-    ? false
-    : undefined;
-  return await financesService.getFinancesByTripId(user.sub, params.tripId, isDebtOptimizedOverride);
+  const isDebtOptimizedOverride =
+    query.optimized === 'true' ? true : query.optimized === 'false' ? false : undefined;
+  return await financesService.getFinancesByTripId(
+    user.sub,
+    params.tripId,
+    isDebtOptimizedOverride,
+  );
 }
 
 export async function handleCreateExpense({ user, body }: AuthContext & { body: any }) {
@@ -85,24 +86,14 @@ export async function handleVerifySlip({
   const file = body.slip_image;
   const arrayBuffer = await file.arrayBuffer();
   const base64 = Buffer.from(arrayBuffer).toString('base64');
-  
-  return await financesService.verifySlipService(
-    user.sub,
-    params.id,
-    base64,
-    file.type
-  );
+
+  return await financesService.verifySlipService(user.sub, params.id, base64, file.type);
 }
 
-export async function handleExtractReceipt({
-  body,
-}: { body: { slip_image: File } }) {
+export async function handleExtractReceipt({ body }: { body: { slip_image: File } }) {
   const file = body.slip_image;
   const arrayBuffer = await file.arrayBuffer();
   const base64 = Buffer.from(arrayBuffer).toString('base64');
-  
-  return await financesService.extractReceiptService(
-    base64,
-    file.type
-  );
+
+  return await financesService.extractReceiptService(base64, file.type);
 }

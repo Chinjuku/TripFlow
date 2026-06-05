@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { 
-  TripFinancesLayout, 
+import {
+  TripFinancesLayout,
   useTripFinancesContext,
   CentralFundCard,
   CentralFundMembers,
@@ -10,7 +10,17 @@ import {
   createSettlement,
   type CreateExpensePayload,
 } from '@/components/feat/finances';
-import { TrendingDown, TrendingUp, HandCoins, Receipt, Wallet, CheckCircle2, Circle, Clock, Trash2 } from 'lucide-react';
+import {
+  TrendingDown,
+  TrendingUp,
+  HandCoins,
+  Receipt,
+  Wallet,
+  CheckCircle2,
+  Circle,
+  Clock,
+  Trash2,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/useToast';
@@ -66,7 +76,7 @@ function TripCentralFundContent() {
       .filter((s) => s.is_central_fund)
       .map((s) => {
         const isReimbursement = s.payer_id === summary.treasurerId;
-        
+
         let isNegative = false;
         if (isTreasurer) {
           // Treasurer: reimbursement is outflow (-), contribution is inflow (+)
@@ -100,8 +110,7 @@ function TripCentralFundContent() {
       : all.filter((act) => {
           if (act.type === 'expense') {
             return (
-              act.paidById === user?.id ||
-              act.splits?.some((split) => split.user_id === user?.id)
+              act.paidById === user?.id || act.splits?.some((split) => split.user_id === user?.id)
             );
           } else {
             return act.payerId === user?.id || act.payeeId === user?.id;
@@ -113,7 +122,10 @@ function TripCentralFundContent() {
 
   const pendingCentralSettlements = useMemo(() => {
     return settlements.filter(
-      (s) => s.is_central_fund && s.status === 'pending' && (s.payee_id === user?.id || s.payer_id === user?.id)
+      (s) =>
+        s.is_central_fund &&
+        s.status === 'pending' &&
+        (s.payee_id === user?.id || s.payer_id === user?.id),
     );
   }, [settlements, user?.id]);
 
@@ -121,7 +133,7 @@ function TripCentralFundContent() {
     if (!user?.id || isTreasurer) return null;
 
     const mySettlements = settlements.filter(
-      (s) => s.payer_id === user?.id && s.is_central_fund && s.payee_id === summary.treasurerId
+      (s) => s.payer_id === user?.id && s.is_central_fund && s.payee_id === summary.treasurerId,
     );
 
     const paidAmount = mySettlements
@@ -136,10 +148,7 @@ function TripCentralFundContent() {
 
     const centralFundSettlementsSpent = settlements
       .filter(
-        (s) =>
-          s.is_central_fund &&
-          s.status === 'completed' &&
-          s.payer_id === summary.treasurerId
+        (s) => s.is_central_fund && s.status === 'completed' && s.payer_id === summary.treasurerId,
       )
       .reduce((sum, s) => sum + s.amount, 0);
 
@@ -167,14 +176,19 @@ function TripCentralFundContent() {
       status,
       spentAmount,
     };
-  }, [settlements, expenses, user?.id, isTreasurer, summary.treasurerId, summary.centralFundPerPerson]);
+  }, [
+    settlements,
+    expenses,
+    user?.id,
+    isTreasurer,
+    summary.treasurerId,
+    summary.centralFundPerPerson,
+  ]);
 
   const remainingCentralFund = summary.centralFundTotal - summary.centralFundSpent;
 
   const hasContributions = useMemo(() => {
-    return settlements.some(
-      (s) => s.is_central_fund && s.payee_id === summary.treasurerId
-    );
+    return settlements.some((s) => s.is_central_fund && s.payee_id === summary.treasurerId);
   }, [settlements, summary.treasurerId]);
 
   const handlePayCentralFundSubmit = async (values: Omit<CreateExpensePayload, 'tripId'>) => {
@@ -211,9 +225,7 @@ function TripCentralFundContent() {
   };
 
   const hasCentralFund = Boolean(
-    summary.treasurerId && 
-    summary.centralFundPerPerson && 
-    summary.centralFundPerPerson > 0
+    summary.treasurerId && summary.centralFundPerPerson && summary.centralFundPerPerson > 0,
   );
 
   return (
@@ -225,7 +237,10 @@ function TripCentralFundContent() {
               {t('finances.centralFund.actionsTitle', 'Central Fund Actions')}
             </h3>
             <p className="text-xs text-muted-foreground">
-              {t('finances.centralFund.actionsDesc', 'Manage expenses or request reimbursements from the central fund pool.')}
+              {t(
+                'finances.centralFund.actionsDesc',
+                'Manage expenses or request reimbursements from the central fund pool.',
+              )}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -278,11 +293,12 @@ function TripCentralFundContent() {
               const label = isReimbursement
                 ? t('finances.centralFund.reimbursement', 'Reimbursement')
                 : t('finances.centralFund.contribution', 'Contribution');
-              const btnLabel = confirmingSettlementId === set.id
-                ? t('finances.confirming', 'Confirming...')
-                : isReimbursement
-                ? t('finances.centralFund.confirmPayment', 'Confirm Payment')
-                : t('finances.centralFund.confirmReceipt', 'Confirm Receipt');
+              const btnLabel =
+                confirmingSettlementId === set.id
+                  ? t('finances.confirming', 'Confirming...')
+                  : isReimbursement
+                    ? t('finances.centralFund.confirmPayment', 'Confirm Payment')
+                    : t('finances.centralFund.confirmReceipt', 'Confirm Receipt');
 
               return (
                 <div
@@ -302,24 +318,27 @@ function TripCentralFundContent() {
                       </div>
                     )}
                     <div>
-                      <div className="font-semibold text-sm text-foreground">
-                        {name}
-                      </div>
+                      <div className="font-semibold text-sm text-foreground">{name}</div>
                       <div className="text-xs text-muted-foreground mt-0.5">
-                        {label} • {new Intl.DateTimeFormat(i18n.language.startsWith('th') ? 'th-TH' : 'en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          hour12: false,
-                        }).format(new Date(set.created_at))}
+                        {label} •{' '}
+                        {new Intl.DateTimeFormat(
+                          i18n.language.startsWith('th') ? 'th-TH' : 'en-US',
+                          {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false,
+                          },
+                        ).format(new Date(set.created_at))}
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <span className="font-extrabold text-sm text-foreground font-headline block">
-                        ฿{set.amount.toLocaleString(undefined, {
+                        ฿
+                        {set.amount.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}
@@ -330,7 +349,14 @@ function TripCentralFundContent() {
                         variant="outline"
                         disabled={confirmingSettlementId === set.id}
                         onClick={async () => {
-                          if (confirm(t('finances.centralFund.confirmReject', 'Are you sure you want to reject this request?'))) {
+                          if (
+                            confirm(
+                              t(
+                                'finances.centralFund.confirmReject',
+                                'Are you sure you want to reject this request?',
+                              ),
+                            )
+                          ) {
                             await handleDeleteSettlement?.(set.id);
                           }
                         }}
@@ -354,21 +380,32 @@ function TripCentralFundContent() {
         </div>
       )}
 
-      <div className={isTreasurer ? "flex flex-col lg:grid lg:grid-cols-2 gap-6 flex-1 min-h-0 lg:overflow-hidden pb-6 lg:pb-0" : "flex flex-col gap-6 flex-1 min-h-0 overflow-y-auto pb-6"}>
+      <div
+        className={
+          isTreasurer
+            ? 'flex flex-col lg:grid lg:grid-cols-2 gap-6 flex-1 min-h-0 lg:overflow-hidden pb-6 lg:pb-0'
+            : 'flex flex-col gap-6 flex-1 min-h-0 overflow-y-auto pb-6'
+        }
+      >
         {/* Left Column / Top Section: Member Contributions or Personal Status */}
         {isTreasurer ? (
           <div className="shrink-0 lg:flex lg:flex-col lg:min-h-0 lg:overflow-y-auto lg:pr-2 lg:pb-4">
-            {summary.treasurerId && summary.centralFundPerPerson != null && summary.centralFundTotal > 0 && (
-              <CentralFundMembers
-                members={trip.members}
-                treasurerId={summary.treasurerId}
-                centralFundPerPerson={summary.centralFundPerPerson}
-                settlements={settlements}
-              />
-            )}
+            {summary.treasurerId &&
+              summary.centralFundPerPerson != null &&
+              summary.centralFundTotal > 0 && (
+                <CentralFundMembers
+                  members={trip.members}
+                  treasurerId={summary.treasurerId}
+                  centralFundPerPerson={summary.centralFundPerPerson}
+                  settlements={settlements}
+                />
+              )}
           </div>
         ) : (
-          summary.treasurerId && summary.centralFundPerPerson != null && summary.centralFundTotal > 0 && myContribution && (
+          summary.treasurerId &&
+          summary.centralFundPerPerson != null &&
+          summary.centralFundTotal > 0 &&
+          myContribution && (
             <div className="shrink-0">
               <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
                 <div className="flex items-center justify-between gap-4">
@@ -381,9 +418,18 @@ function TripCentralFundContent() {
                         {t('finances.centralFund.yourContribution', 'Your Contribution')}
                       </h3>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {myContribution.status === 'paid' && t('finances.centralFund.fullyPaid', 'You have fully paid your share.')}
-                        {myContribution.status === 'pending' && t('finances.centralFund.pendingConfirmation', 'Waiting for treasurer to confirm receipt.')}
-                        {myContribution.status === 'unpaid' && t('finances.centralFund.pleasePay', 'Please pay your contribution to the treasurer.')}
+                        {myContribution.status === 'paid' &&
+                          t('finances.centralFund.fullyPaid', 'You have fully paid your share.')}
+                        {myContribution.status === 'pending' &&
+                          t(
+                            'finances.centralFund.pendingConfirmation',
+                            'Waiting for treasurer to confirm receipt.',
+                          )}
+                        {myContribution.status === 'unpaid' &&
+                          t(
+                            'finances.centralFund.pleasePay',
+                            'Please pay your contribution to the treasurer.',
+                          )}
                       </p>
                     </div>
                   </div>
@@ -430,7 +476,10 @@ function TripCentralFundContent() {
                         {t('finances.centralFund.yourSpending', 'Spent from Fund')}
                       </div>
                       <div className="text-lg font-extrabold text-rose-500 font-headline mt-0.5">
-                        ฿{myContribution.spentAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        ฿
+                        {myContribution.spentAmount.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                        })}
                       </div>
                     </div>
                   )}
@@ -442,7 +491,13 @@ function TripCentralFundContent() {
 
         {/* Right Column / Flow Item: Activity Log */}
         {hasCentralFund && (
-          <div className={isTreasurer ? "shrink-0 lg:flex-1 lg:flex lg:flex-col lg:min-h-0 lg:overflow-y-auto lg:pr-2 lg:pb-4 space-y-4" : "space-y-4 pb-4"}>
+          <div
+            className={
+              isTreasurer
+                ? 'shrink-0 lg:flex-1 lg:flex lg:flex-col lg:min-h-0 lg:overflow-y-auto lg:pr-2 lg:pb-4 space-y-4'
+                : 'space-y-4 pb-4'
+            }
+          >
             <h3 className="shrink-0 text-sm font-bold text-foreground font-headline uppercase tracking-wider">
               {t('finances.centralFund.activityLog', 'Activity Log')}
             </h3>
@@ -485,17 +540,22 @@ function TripCentralFundContent() {
                                 {act.user.charAt(0)}
                               </div>
                             )}
-                            <span className="truncate max-w-[80px] sm:max-w-[120px]">{act.user}</span>
+                            <span className="truncate max-w-[80px] sm:max-w-[120px]">
+                              {act.user}
+                            </span>
                           </div>
                           <span className="text-[10px] opacity-50">•</span>
                           <span className="shrink-0">
-                            {new Intl.DateTimeFormat(i18n.language.startsWith('th') ? 'th-TH' : 'en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                              hour12: false,
-                            }).format(act.date)}
+                            {new Intl.DateTimeFormat(
+                              i18n.language.startsWith('th') ? 'th-TH' : 'en-US',
+                              {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false,
+                              },
+                            ).format(act.date)}
                           </span>
                           {act.type === 'settlement' && act.status === 'pending' && (
                             <span className="ml-1 text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-bold tracking-wider shrink-0">
@@ -520,7 +580,14 @@ function TripCentralFundContent() {
                           disabled={confirmingSettlementId === act.id}
                           onClick={async (e) => {
                             e.stopPropagation();
-                            if (confirm(t('finances.centralFund.confirmDeleteSettlement', 'Are you sure you want to delete/undo this transaction?'))) {
+                            if (
+                              confirm(
+                                t(
+                                  'finances.centralFund.confirmDeleteSettlement',
+                                  'Are you sure you want to delete/undo this transaction?',
+                                ),
+                              )
+                            ) {
                               await handleDeleteSettlement?.(act.id);
                             }
                           }}
@@ -538,7 +605,7 @@ function TripCentralFundContent() {
           </div>
         )}
       </div>
-      
+
       {isPayModalOpen && summary.treasurerId && (
         <PayCentralFundModal
           open={isPayModalOpen}

@@ -22,10 +22,7 @@ export function TripsHeader({ showJoin, onJoin }: TripsHeaderProps) {
         <p className="text-muted-foreground mt-1 text-sm sm:text-base">{t('trips.subtitle')}</p>
       </div>
       {showJoin && (
-        <Button
-          onClick={onJoin}
-          className="hidden gap-2 self-start sm:inline-flex sm:self-auto"
-        >
+        <Button onClick={onJoin} className="hidden gap-2 self-start sm:inline-flex sm:self-auto">
           <KeyRound className="h-4 w-4" strokeWidth={2} />
           {t('trips.joinUsingCode')}
         </Button>

@@ -301,13 +301,10 @@ export async function updateTrip(
   if (input.destinationName) patch.destination_name_en = input.destinationNameEn?.trim() || null;
   if (input.centerLat !== undefined) patch.center_lat = input.centerLat;
   if (input.centerLng !== undefined) patch.center_lng = input.centerLng;
-  if (input.centralFundPerPerson !== undefined) patch.central_fund_per_person = input.centralFundPerPerson;
+  if (input.centralFundPerPerson !== undefined)
+    patch.central_fund_per_person = input.centralFundPerPerson;
 
-  const [updated] = await db
-    .update(trips)
-    .set(patch)
-    .where(eq(trips.id, tripId))
-    .returning();
+  const [updated] = await db.update(trips).set(patch).where(eq(trips.id, tripId)).returning();
   if (!updated) throw new NotFoundError('Trip not found');
 
   const [membership] = await db

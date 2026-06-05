@@ -28,10 +28,7 @@ export function TripCard({ trip }: TripCardProps) {
       {/* Own overflow-hidden + matching radius so the image zoom is clipped
           here - the card's own clip can warp during the hover transform
           (nested transforms make the rounded corners flicker square). */}
-      <Link
-        to={`/trips/${trip.id}`}
-        className="relative block overflow-hidden rounded-t-2xl"
-      >
+      <Link to={`/trips/${trip.id}`} className="relative block overflow-hidden rounded-t-2xl">
         <img
           src={coverImageUrl(trip.id)}
           alt=""
@@ -41,10 +38,7 @@ export function TripCard({ trip }: TripCardProps) {
         />
         {/* Gradient scrim keeps the status badge legible over any cover photo. */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-        <StatusBadge
-          status={status}
-          className="absolute left-3 top-3 shadow-sm backdrop-blur"
-        />
+        <StatusBadge status={status} className="absolute left-3 top-3 shadow-sm backdrop-blur" />
       </Link>
 
       <div className="flex flex-1 flex-col gap-2.5 p-5 sm:p-4">

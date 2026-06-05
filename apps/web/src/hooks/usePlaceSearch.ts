@@ -7,10 +7,7 @@ import {
 } from '@/utils/places-map';
 
 /** What the last search was, so "Search this area" can repeat it. */
-type LastSearch =
-  | { kind: 'text'; query: string }
-  | { kind: 'nearby'; includedType: string }
-  | null;
+type LastSearch = { kind: 'text'; query: string } | { kind: 'nearby'; includedType: string } | null;
 
 interface UsePlaceSearchResult {
   hits: SearchHit[];

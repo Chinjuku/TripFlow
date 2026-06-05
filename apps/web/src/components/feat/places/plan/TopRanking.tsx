@@ -125,7 +125,9 @@ function RankingRow({
     >
       <RankBadge rank={rank} />
       <div className="min-w-0 flex-1">
-        <p className="text-foreground truncate text-sm font-semibold leading-tight">{displayName}</p>
+        <p className="text-foreground truncate text-sm font-semibold leading-tight">
+          {displayName}
+        </p>
         <div className="mt-1 flex items-center gap-1.5">
           <span className="bg-muted text-muted-foreground inline-block rounded-full px-2 py-0.5 text-[0.65rem] font-medium">
             {place.voteCount} {place.voteCount === 1 ? 'Vote' : 'Votes'}

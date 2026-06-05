@@ -168,9 +168,7 @@ function RouteFlowStep({ index, total, item, next }: RouteFlowStepProps) {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1">
               <Icon className={cn('h-3 w-3 shrink-0', tone.text)} strokeWidth={2.25} aria-hidden />
-              <span className={cn('truncate text-xs font-semibold', tone.text)}>
-                {name}
-              </span>
+              <span className={cn('truncate text-xs font-semibold', tone.text)}>{name}</span>
             </div>
             <p className="text-primary-foreground/80 mt-0.5 text-[0.65rem] tabular-nums">
               {formatTime(item.startMinute)} · {formatDuration(item.durationMinutes)}

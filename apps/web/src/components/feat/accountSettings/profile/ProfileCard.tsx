@@ -1,10 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShieldCheck, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ProfileAvatar } from './ProfileAvatar';

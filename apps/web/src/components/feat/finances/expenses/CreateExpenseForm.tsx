@@ -153,7 +153,9 @@ export function CreateExpenseForm({
       }));
 
     if (activeSplits.length === 0) {
-      toast.error(t('finances.errorNoTravelerSelected', 'At least one traveler must be in the split'));
+      toast.error(
+        t('finances.errorNoTravelerSelected', 'At least one traveler must be in the split'),
+      );
       return;
     }
 

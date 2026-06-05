@@ -22,7 +22,11 @@ interface Swatch {
   primary: string;
 }
 
-const PREVIEWS: { value: Theme; labelKey: 'settings.themeLight' | 'settings.themeDark'; swatch: Swatch }[] = [
+const PREVIEWS: {
+  value: Theme;
+  labelKey: 'settings.themeLight' | 'settings.themeDark';
+  swatch: Swatch;
+}[] = [
   {
     value: 'light',
     labelKey: 'settings.themeLight',
@@ -54,7 +58,11 @@ export function ThemePicker() {
   const { t } = useTranslation();
 
   return (
-    <div role="radiogroup" aria-label="Theme preference" className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <div
+      role="radiogroup"
+      aria-label="Theme preference"
+      className="grid grid-cols-1 gap-3 sm:grid-cols-2"
+    >
       {PREVIEWS.map(({ value, labelKey, swatch }) => {
         const isActive = theme === value;
         return (
@@ -66,13 +74,14 @@ export function ThemePicker() {
             onClick={() => setTheme(value)}
             className={cn(
               'group focus-visible:ring-ring relative overflow-hidden rounded-xl border-2 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-              isActive
-                ? 'border-primary shadow-sm'
-                : 'border-border hover:border-primary/40',
+              isActive ? 'border-primary shadow-sm' : 'border-border hover:border-primary/40',
             )}
           >
             {/* Mini app-shell mock-up painted in the theme's own colours. */}
-            <div className="flex h-36 w-full gap-1.5 p-2.5" style={{ background: swatch.background }}>
+            <div
+              className="flex h-36 w-full gap-1.5 p-2.5"
+              style={{ background: swatch.background }}
+            >
               {/* Sidebar */}
               <div
                 className="flex w-1/3 flex-col gap-1 rounded-md p-1.5"
@@ -87,7 +96,10 @@ export function ThemePicker() {
                 className="flex flex-1 flex-col gap-1.5 rounded-md p-1.5"
                 style={{ background: swatch.card, border: `1px solid ${swatch.border}` }}
               >
-                <span className="h-2 w-1/2 rounded-full" style={{ background: swatch.foreground }} />
+                <span
+                  className="h-2 w-1/2 rounded-full"
+                  style={{ background: swatch.foreground }}
+                />
                 <span className="h-1.5 w-full rounded-full" style={{ background: swatch.muted }} />
                 <span className="h-1.5 w-5/6 rounded-full" style={{ background: swatch.muted }} />
                 <span
@@ -103,9 +115,7 @@ export function ThemePicker() {
               <span
                 className={cn(
                   'flex h-4 w-4 items-center justify-center rounded-full border transition-colors',
-                  isActive
-                    ? 'border-primary bg-primary text-primary-foreground'
-                    : 'border-border',
+                  isActive ? 'border-primary bg-primary text-primary-foreground' : 'border-border',
                 )}
               >
                 {isActive && <Check className="h-3 w-3" strokeWidth={3} />}

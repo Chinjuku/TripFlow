@@ -14,7 +14,13 @@ interface PoiPreviewCardProps {
 }
 
 /** Content of the map's POI InfoWindow - hero photo/rating, name, hours, add. */
-export function PoiPreviewCard({ poi, loading, alreadyPicked, onAdd, onClose }: PoiPreviewCardProps) {
+export function PoiPreviewCard({
+  poi,
+  loading,
+  alreadyPicked,
+  onAdd,
+  onClose,
+}: PoiPreviewCardProps) {
   const { t, i18n } = useTranslation();
   const [adding, setAdding] = useState(false);
 
@@ -37,12 +43,7 @@ export function PoiPreviewCard({ poi, loading, alreadyPicked, onAdd, onClose }: 
       {/* Hero */}
       <div className="relative h-36 w-full overflow-hidden">
         {poi.photoUrl ? (
-          <img
-            src={poi.photoUrl}
-            alt=""
-            loading="lazy"
-            className="h-full w-full object-cover"
-          />
+          <img src={poi.photoUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
         ) : (
           <div className="from-primary/25 via-tertiary/15 flex h-full w-full items-center justify-center bg-gradient-to-br to-transparent">
             <ImageOff className="text-muted-foreground/40 h-8 w-8" strokeWidth={1.5} />

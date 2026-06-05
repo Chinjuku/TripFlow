@@ -1,10 +1,7 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { Wallet, AlertTriangle, TrendingUp, PieChart, Target, Users } from 'lucide-react';
-import {
-  TripFinancesLayout,
-  useTripFinancesContext,
-} from '@/components/feat/finances';
+import { TripFinancesLayout, useTripFinancesContext } from '@/components/feat/finances';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import type { HydratedExpense } from '@/components/feat/finances';
@@ -32,7 +29,8 @@ function TripFinancesMonitoringContent() {
 
   const centralFundTotal = finances.summary.centralFundTotal;
   const centralFundSpent = finances.summary.centralFundSpent;
-  const centralFundProgressPercent = centralFundTotal > 0 ? (centralFundSpent / centralFundTotal) * 100 : 0;
+  const centralFundProgressPercent =
+    centralFundTotal > 0 ? (centralFundSpent / centralFundTotal) * 100 : 0;
   const isCentralFundLow = centralFundSpent > centralFundTotal;
 
   // Group costs by category
@@ -164,9 +162,18 @@ function TripFinancesMonitoringContent() {
                     />
                   </div>
                   <div className="flex justify-between text-[10px] font-extrabold text-muted-foreground uppercase font-label">
-                    <span>{t('finances.spent', 'Spent')}: ฿{centralFundSpent.toLocaleString()}</span>
-                    {isCentralFundLow && <span className="text-destructive font-bold">{t('finances.lowLiquidity', 'Low Liquidity!')}</span>}
-                    <span>{t('finances.centralFund.totalPool', 'Pool')}: ฿{centralFundTotal.toLocaleString()}</span>
+                    <span>
+                      {t('finances.spent', 'Spent')}: ฿{centralFundSpent.toLocaleString()}
+                    </span>
+                    {isCentralFundLow && (
+                      <span className="text-destructive font-bold">
+                        {t('finances.lowLiquidity', 'Low Liquidity!')}
+                      </span>
+                    )}
+                    <span>
+                      {t('finances.centralFund.totalPool', 'Pool')}: ฿
+                      {centralFundTotal.toLocaleString()}
+                    </span>
                   </div>
                 </div>
               )}
@@ -186,8 +193,12 @@ function TripFinancesMonitoringContent() {
                   />
                 </div>
                 <div className="flex justify-between text-[10px] font-extrabold text-muted-foreground uppercase font-label">
-                  <span>{t('finances.spent', 'Spent')}: ฿{totalCost.toLocaleString()}</span>
-                  <span>{t('finances.budgetLimit', 'Budget')}: ฿{budgetAmount.toLocaleString()}</span>
+                  <span>
+                    {t('finances.spent', 'Spent')}: ฿{totalCost.toLocaleString()}
+                  </span>
+                  <span>
+                    {t('finances.budgetLimit', 'Budget')}: ฿{budgetAmount.toLocaleString()}
+                  </span>
                 </div>
               </div>
             </div>

@@ -27,10 +27,9 @@ export function BankSelect({
   compact,
 }: BankSelectProps) {
   const { t, i18n } = useTranslation();
-  
-  const actualPlaceholder = placeholder === 'Search or select a bank…' 
-    ? t('finances.searchOrSelectBank') 
-    : placeholder;
+
+  const actualPlaceholder =
+    placeholder === 'Search or select a bank…' ? t('finances.searchOrSelectBank') : placeholder;
 
   const [query, setQuery] = useState(value);
   const [isOpen, setIsOpen] = useState(false);
@@ -43,7 +42,9 @@ export function BankSelect({
   const selectedBank = findBank(value);
 
   const displayValue = selectedBank
-    ? (i18n.language.startsWith('th') ? selectedBank.thaiName : selectedBank.niceName)
+    ? i18n.language.startsWith('th')
+      ? selectedBank.thaiName
+      : selectedBank.niceName
     : value || '';
 
   // Sync external value changes
@@ -178,9 +179,7 @@ export function BankSelect({
                 onMouseEnter={() => setHighlightedIndex(i)}
                 onClick={() => selectBank(bank)}
                 className={`flex items-center gap-2.5 px-3 py-2 cursor-pointer transition-colors ${
-                  highlightedIndex === i
-                    ? 'bg-accent text-accent-foreground'
-                    : 'hover:bg-accent/50'
+                  highlightedIndex === i ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'
                 } ${value === bank.niceName ? 'font-semibold' : ''}`}
               >
                 {/* Color dot */}

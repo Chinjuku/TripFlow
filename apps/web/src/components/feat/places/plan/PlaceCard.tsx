@@ -159,11 +159,7 @@ function PlanCard({
 
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex items-start justify-between gap-2">
-          <button
-            type="button"
-            onClick={onViewDetails}
-            className="min-w-0 text-left"
-          >
+          <button type="button" onClick={onViewDetails} className="min-w-0 text-left">
             <h4 className="text-foreground hover:text-primary truncate text-sm font-semibold leading-tight transition-colors sm:text-[0.95rem]">
               {displayName}
             </h4>

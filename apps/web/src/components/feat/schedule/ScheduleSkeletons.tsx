@@ -86,10 +86,7 @@ export function PlaceListSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-1" aria-hidden>
       {Array.from({ length: 6 }).map((_, i) => (
-        <div
-          key={i}
-          className="border-border bg-card flex items-start gap-3 rounded-xl border p-3"
-        >
+        <div key={i} className="border-border bg-card flex items-start gap-3 rounded-xl border p-3">
           <Skeleton className="h-12 w-12 shrink-0 rounded-lg" />
           <div className="min-w-0 flex-1 space-y-2">
             <Skeleton className="h-4 w-3/4 rounded" />

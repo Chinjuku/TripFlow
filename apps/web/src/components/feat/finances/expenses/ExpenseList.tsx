@@ -94,7 +94,9 @@ export function ExpenseList({
 
         // 2. Date filter
         if (filterDate) {
-          const filterDateStr = new Date(filterDate.getTime() - filterDate.getTimezoneOffset() * 60000)
+          const filterDateStr = new Date(
+            filterDate.getTime() - filterDate.getTimezoneOffset() * 60000,
+          )
             .toISOString()
             .split('T')[0];
           const itemDate = new Date(item.date).toISOString().split('T')[0];
@@ -131,7 +133,7 @@ export function ExpenseList({
 
         if (filterDirection === 'receive') {
           if (item.type === 'expense') {
-            if (!isMePayer || (item.data.amount - mySplitAmount <= 0)) return false;
+            if (!isMePayer || item.data.amount - mySplitAmount <= 0) return false;
           } else {
             if (item.data.payee_id !== currentUserId) return false;
           }
@@ -146,7 +148,16 @@ export function ExpenseList({
         return true;
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [expenses, settlements, searchTerm, filterDate, filterCategory, filterDirection, filterInvolved, currentUserId]);
+  }, [
+    expenses,
+    settlements,
+    searchTerm,
+    filterDate,
+    filterCategory,
+    filterDirection,
+    filterInvolved,
+    currentUserId,
+  ]);
 
   // Category styling helpers
   const categoryStyles = {
@@ -233,7 +244,7 @@ export function ExpenseList({
                 className="pl-8 h-8 text-xs bg-background"
               />
             </div>
-            
+
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               <select
                 className="flex h-8 w-full items-center justify-between rounded-md border border-input bg-background px-2.5 py-1 text-xs ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-medium"
@@ -246,7 +257,9 @@ export function ExpenseList({
                 <option value="lodging">{t('finances.categoryLodging', 'Lodging')}</option>
                 <option value="activity">{t('finances.categoryActivity', 'Activity')}</option>
                 <option value="other">{t('finances.categoryOther', 'Other')}</option>
-                <option value="central_fund">{t('finances.centralFund.title', 'Central Fund')}</option>
+                <option value="central_fund">
+                  {t('finances.centralFund.title', 'Central Fund')}
+                </option>
                 <option value="transfer">{t('finances.filterTransfer', 'Transfer')}</option>
               </select>
 
@@ -357,7 +370,10 @@ export function ExpenseList({
                       >
                         <CatIcon className="w-5 h-5" />
                         {exp.is_central_fund && (
-                          <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center border-2 border-background" title={t('finances.centralFund.title')}>
+                          <div
+                            className="absolute -bottom-1 -right-1 w-5 h-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center border-2 border-background"
+                            title={t('finances.centralFund.title')}
+                          >
                             <PiggyBank className="w-3 h-3" />
                           </div>
                         )}
@@ -523,7 +539,10 @@ export function ExpenseList({
                         <ArrowRightLeft className="w-5 h-5" />
                       )}
                       {set.is_central_fund && (
-                        <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center border-2 border-background" title={t('finances.centralFund.title')}>
+                        <div
+                          className="absolute -bottom-1 -right-1 w-5 h-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center border-2 border-background"
+                          title={t('finances.centralFund.title')}
+                        >
                           <PiggyBank className="w-3 h-3" />
                         </div>
                       )}

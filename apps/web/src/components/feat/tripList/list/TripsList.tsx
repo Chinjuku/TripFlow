@@ -25,7 +25,14 @@ interface TripsListProps {
  * Presentational - the page owns the filter/sort/group derivations so the
  * toolbar can share the same `processed` count.
  */
-export function TripsList({ total, processed, grouped, loading, onCreate, onJoin }: TripsListProps) {
+export function TripsList({
+  total,
+  processed,
+  grouped,
+  loading,
+  onCreate,
+  onJoin,
+}: TripsListProps) {
   const { t } = useTranslation();
 
   if (loading) {

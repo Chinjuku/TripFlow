@@ -1,11 +1,6 @@
 import { api } from '@/lib/api';
 import { unwrap } from '@/lib/unwrap';
-import type {
-  CreateTripPayload,
-  UpdateTripPayload,
-  TripDetail,
-  TripSummary,
-} from '@/types/trips';
+import type { CreateTripPayload, UpdateTripPayload, TripDetail, TripSummary } from '@/types/trips';
 
 export async function listTrips(): Promise<TripSummary[]> {
   const res = await api.trips.get();

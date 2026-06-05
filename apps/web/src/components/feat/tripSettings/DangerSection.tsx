@@ -50,7 +50,11 @@ export function DangerSection({ tripId, title, onDeleted }: DangerSectionProps) 
         </div>
       </section>
 
-      <Modal open={confirmOpen} onOpenChange={setConfirmOpen} title={t('trips.settings.deleteTrip')}>
+      <Modal
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={t('trips.settings.deleteTrip')}
+      >
         <div className="space-y-5">
           <p className="text-muted-foreground text-sm leading-relaxed">
             {t('trips.settings.deleteConfirm', { title })}

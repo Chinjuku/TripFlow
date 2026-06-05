@@ -165,63 +165,65 @@ export function DestinationPicker({ value, onChange, placeholder }: DestinationP
             className="bg-card border-border animate-in fade-in-0 zoom-in-95 z-[60] overflow-hidden rounded-xl border shadow-lg"
           >
             {/* Search field inside the menu. */}
-          <div className="border-border flex items-center gap-2 border-b px-3 py-2">
-            <Search className="text-muted-foreground h-4 w-4 shrink-0" strokeWidth={2} />
-            <input
-              ref={inputRef}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={placeholder}
-              className="placeholder:text-muted-foreground flex-1 bg-transparent text-sm outline-none"
-            />
-          </div>
+            <div className="border-border flex items-center gap-2 border-b px-3 py-2">
+              <Search className="text-muted-foreground h-4 w-4 shrink-0" strokeWidth={2} />
+              <input
+                ref={inputRef}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={placeholder}
+                className="placeholder:text-muted-foreground flex-1 bg-transparent text-sm outline-none"
+              />
+            </div>
 
-          <ul id={listId} role="listbox" className="max-h-64 overflow-auto p-1.5">
-            {results.length === 0 ? (
-              <li className="text-muted-foreground flex flex-col items-center gap-2 px-3 py-8 text-center text-sm">
-                <MapPin className="h-6 w-6 opacity-40" strokeWidth={1.5} />
-                {t('trips.destinationSearchEmpty')}
-              </li>
-            ) : (
-              results.map((p) => {
-                const isActive = value?.name === p.th;
-                return (
-                  <li key={p.en} role="option" aria-selected={isActive}>
-                    <button
-                      type="button"
-                      onClick={() => selectProvince(p)}
-                      className={cn(
-                        'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors',
-                        isActive ? 'bg-primary/10' : 'hover:bg-muted',
-                      )}
-                    >
-                      <span
+            <ul id={listId} role="listbox" className="max-h-64 overflow-auto p-1.5">
+              {results.length === 0 ? (
+                <li className="text-muted-foreground flex flex-col items-center gap-2 px-3 py-8 text-center text-sm">
+                  <MapPin className="h-6 w-6 opacity-40" strokeWidth={1.5} />
+                  {t('trips.destinationSearchEmpty')}
+                </li>
+              ) : (
+                results.map((p) => {
+                  const isActive = value?.name === p.th;
+                  return (
+                    <li key={p.en} role="option" aria-selected={isActive}>
+                      <button
+                        type="button"
+                        onClick={() => selectProvince(p)}
                         className={cn(
-                          'flex h-7 w-7 shrink-0 items-center justify-center rounded-md',
-                          isActive ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground',
+                          'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors',
+                          isActive ? 'bg-primary/10' : 'hover:bg-muted',
                         )}
                       >
-                        <MapPin className="h-3.5 w-3.5" strokeWidth={1.75} />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="text-foreground block truncate font-medium">
-                          {labelOf(p)}
+                        <span
+                          className={cn(
+                            'flex h-7 w-7 shrink-0 items-center justify-center rounded-md',
+                            isActive
+                              ? 'bg-primary/15 text-primary'
+                              : 'bg-muted text-muted-foreground',
+                          )}
+                        >
+                          <MapPin className="h-3.5 w-3.5" strokeWidth={1.75} />
                         </span>
-                        {!isThai && (
-                          <span className="text-muted-foreground block truncate text-xs">
-                            {p.th}
+                        <span className="min-w-0 flex-1">
+                          <span className="text-foreground block truncate font-medium">
+                            {labelOf(p)}
                           </span>
+                          {!isThai && (
+                            <span className="text-muted-foreground block truncate text-xs">
+                              {p.th}
+                            </span>
+                          )}
+                        </span>
+                        {isActive && (
+                          <Check className="text-primary h-4 w-4 shrink-0" strokeWidth={2.5} />
                         )}
-                      </span>
-                      {isActive && (
-                        <Check className="text-primary h-4 w-4 shrink-0" strokeWidth={2.5} />
-                      )}
-                    </button>
-                  </li>
-                );
-              })
-            )}
-          </ul>
+                      </button>
+                    </li>
+                  );
+                })
+              )}
+            </ul>
           </div>,
           findPortalHost(triggerRef.current),
         )}
