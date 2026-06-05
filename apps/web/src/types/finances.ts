@@ -14,6 +14,15 @@ export type HydratedExpenseSplit = HydratedExpense['splits'][number];
 export type HydratedSettlement = FinancesData['settlements'][number];
 export type UserPaymentDetail = NonNullable<FinanceSummary['paymentDetails'][string]>;
 
+/** A single expense line shown inside a debtor/creditor settlement card. */
+export interface Transaction {
+  id: string;
+  description: string;
+  date: string;
+  amount: number;
+  category: 'food' | 'transport' | 'accommodation' | 'activity' | 'shopping' | 'lodging' | 'other';
+}
+
 export interface CreateExpensePayload {
   tripId: string;
   description: string;

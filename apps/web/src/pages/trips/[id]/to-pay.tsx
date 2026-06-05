@@ -9,7 +9,7 @@ import {
   type Creditor,
 } from '@/components/feat/finances';
 import type { DebtRelation, HydratedExpense, HydratedSettlement } from '@/components/feat/finances';
-import type { Transaction } from '@/components/feat/finances/settlement/CreditorCard';
+import type { Transaction } from '@/types/finances';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { formatLocalizedDate } from '@/lib/utils';

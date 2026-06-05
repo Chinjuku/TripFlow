@@ -79,10 +79,29 @@ const config: Config = {
           from: { strokeDashoffset: '0' },
           to: { strokeDashoffset: '-16' },
         },
+        // Sweeps a highlight bar left-to-right for indeterminate progress
+        // (e.g. the receipt-scanning indicator in the expense forms).
+        'infinite-loading': {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+        // Reveals an element while sliding it down/up into place; used by the
+        // expense split cards and the add-person dropdown.
+        'slide-down': {
+          '0%': { opacity: '0', transform: 'translateY(-8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'slide-up': {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
       },
       animation: {
         'route-flow': 'route-flow-dash 0.9s linear infinite',
         'spin-slow': 'spin 3s linear infinite',
+        'infinite-loading': 'infinite-loading 1.5s infinite linear',
+        'slide-down': 'slide-down 0.2s ease-out forwards',
+        'slide-up': 'slide-up 0.2s ease-out forwards',
       },
     },
   },

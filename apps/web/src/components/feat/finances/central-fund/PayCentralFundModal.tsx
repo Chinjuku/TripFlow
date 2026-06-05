@@ -165,15 +165,6 @@ export function PayCentralFundModal({
       description={t('finances.centralFund.payDesc', 'Record an expense paid using the central fund.')}
       className="sm:max-w-md"
     >
-      <style>{`
-        @keyframes infinite-loading {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        .animate-infinite-loading {
-          animation: infinite-loading 1.5s infinite linear;
-        }
-      `}</style>
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6 pt-4">
         {/* OCR Dropzone */}
         <div

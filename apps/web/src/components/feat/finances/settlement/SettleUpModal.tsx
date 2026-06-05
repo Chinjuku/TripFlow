@@ -14,6 +14,7 @@ import {
 import type { DebtRelation, UserPaymentDetail, HydratedSettlement } from '@/types/finances';
 import { useTranslation, Trans } from 'react-i18next';
 import { findBank } from '@/utils/thai-banks';
+import { Avatar } from '@/components/ui/avatar';
 import { verifySlip, confirmSettlement } from '@/api/finances';
 
 interface SettleUpModalProps {
@@ -219,17 +220,13 @@ export function SettleUpModal({
         {/* Payee Info Panel */}
         <div className="bg-muted/40 border border-border flex items-center justify-between p-4 rounded-xl">
           <div className="flex items-center gap-3">
-            {payee.avatarUrl ? (
-              <img
-                src={payee.avatarUrl}
-                alt={payee.name}
-                className="w-10 h-10 rounded-full object-cover shadow-sm ring-2 ring-emerald-100 dark:ring-emerald-900"
-              />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 font-bold flex items-center justify-center text-sm">
-                {payee.name.charAt(0)}
-              </div>
-            )}
+            <Avatar
+              name={payee.name}
+              src={payee.avatarUrl}
+              size="w-10 h-10"
+              className="text-sm shadow-sm ring-2 ring-emerald-100 dark:ring-emerald-900"
+              fallbackClassName="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+            />
             <div>
               <span className="text-muted-foreground text-xs block">
                 {t('finances.sendingRepaymentTo', 'Sending to')}

@@ -12,14 +12,9 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import type { Transaction } from '@/types/finances';
 
-export interface Transaction {
-  id: string;
-  description: string;
-  date: string;
-  amount: number;
-  category: 'food' | 'transport' | 'accommodation' | 'activity' | 'shopping' | 'lodging' | 'other';
-}
+export type { Transaction };
 
 export interface Debtor {
   id: string;
