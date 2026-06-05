@@ -13,6 +13,7 @@ import {
 import { TrendingDown, TrendingUp, HandCoins, Receipt, Wallet, CheckCircle2, Circle, Clock, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/useToast';
 
 export default function TripCentralFundPage() {
   return (
@@ -34,6 +35,7 @@ function TripCentralFundContent() {
     handleDeleteSettlement,
   } = useTripFinancesContext();
   const { t, i18n } = useTranslation();
+  const toast = useToast();
 
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
@@ -182,7 +184,7 @@ function TripCentralFundContent() {
       await refreshFinances();
     } catch (err) {
       console.error('Failed to record central fund expense', err);
-      alert(err instanceof Error ? err.message : 'Failed to record expense');
+      toast.error(err instanceof Error ? err.message : 'Failed to record expense');
     } finally {
       setIsSubmitting(false);
     }
@@ -202,7 +204,7 @@ function TripCentralFundContent() {
       await refreshFinances();
     } catch (err) {
       console.error('Failed to request reimbursement', err);
-      alert(err instanceof Error ? err.message : 'Failed to request reimbursement');
+      toast.error(err instanceof Error ? err.message : 'Failed to request reimbursement');
     } finally {
       setIsSubmitting(false);
     }

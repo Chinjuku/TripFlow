@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/cn';
 import { useTrip } from '@/hooks/useTrips';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/useToast';
 import { BackLink } from '@/components/shared/navigation/BackLink';
 import { PageHeader } from '@/components/shared/navigation/PageHeader';
 import { formatLocalizedDateRange } from '@/lib/utils';
@@ -106,7 +107,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   const [isSubmittingBudget, setIsSubmittingBudget] = useState(false);
   const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
   const [confirmingSettlementId, setConfirmingSettlementId] = useState<string | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const toast = useToast();
 
   // Load general trip detail & members
   const {
@@ -120,13 +121,12 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
 
   const setIsOptimized = async (val: boolean) => {
     if (!id) return;
-    setErrorMsg(null);
     try {
       await optimizeTrip(id, val);
       await Promise.all([refreshFinances(), refreshTrip()]);
     } catch (err) {
       console.error('[finances] failed to toggle optimization', err);
-      setErrorMsg(err instanceof Error ? err.message : 'Failed to update optimization setting');
+      toast.error(err instanceof Error ? err.message : 'Failed to update optimization setting');
     }
   };
 
@@ -160,7 +160,6 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   const handleRecordExpenseSubmit = async (values: Omit<CreateExpensePayload, 'tripId'>) => {
     if (!id) return;
     setIsSubmittingExpense(true);
-    setErrorMsg(null);
     try {
       await createExpense({
         ...values,
@@ -170,7 +169,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
       setCreateOpen(false);
     } catch (err) {
       console.error('[finances] failed to record expense', err);
-      setErrorMsg(err instanceof Error ? err.message : 'Failed to save expense');
+      toast.error(err instanceof Error ? err.message : 'Failed to save expense');
     } finally {
       setIsSubmittingExpense(false);
     }
@@ -180,7 +179,6 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   const handleSettleUpSubmit = async (payeeId: string, amount: number, isCentralFund?: boolean) => {
     if (!id) return null;
     setIsSubmittingSettlement(true);
-    setErrorMsg(null);
     try {
       const created = await createSettlement({
         tripId: id,
@@ -193,7 +191,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
       return created;
     } catch (err) {
       console.error('[finances] failed to record repayment', err);
-      setErrorMsg(err instanceof Error ? err.message : 'Failed to record repayment');
+      toast.error(err instanceof Error ? err.message : 'Failed to record repayment');
       return null;
     } finally {
       setIsSubmittingSettlement(false);
@@ -203,13 +201,12 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   // Handle Payee Confirming settlement received
   const handleConfirmSettlementReceived = async (settlementId: string) => {
     setConfirmingSettlementId(settlementId);
-    setErrorMsg(null);
     try {
       await confirmSettlement(settlementId);
       await refreshFinances();
     } catch (err) {
       console.error('[finances] failed to confirm repayment', err);
-      setErrorMsg(err instanceof Error ? err.message : 'Failed to confirm repayment');
+      toast.error(err instanceof Error ? err.message : 'Failed to confirm repayment');
     } finally {
       setConfirmingSettlementId(null);
     }
@@ -218,13 +215,12 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   // Handle Rejecting / Deleting a settlement
   const handleDeleteSettlement = async (settlementId: string) => {
     setConfirmingSettlementId(settlementId);
-    setErrorMsg(null);
     try {
       await deleteSettlement(settlementId);
       await refreshFinances();
     } catch (err) {
       console.error('[finances] failed to delete/reject settlement', err);
-      setErrorMsg(err instanceof Error ? err.message : 'Failed to delete/reject settlement');
+      toast.error(err instanceof Error ? err.message : 'Failed to delete/reject settlement');
     } finally {
       setConfirmingSettlementId(null);
     }
@@ -234,7 +230,6 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   const handleUpdateBudgetSubmit = async (amount: number) => {
     if (!id) return;
     setIsSubmittingBudget(true);
-    setErrorMsg(null);
     try {
       await updateBudget({
         tripId: id,
@@ -244,7 +239,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
       setBudgetOpen(false);
     } catch (err) {
       console.error('[finances] failed to update budget', err);
-      setErrorMsg(err instanceof Error ? err.message : 'Failed to update budget');
+      toast.error(err instanceof Error ? err.message : 'Failed to update budget');
     } finally {
       setIsSubmittingBudget(false);
     }
@@ -253,14 +248,13 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   // Handle Saving Payment Receiving details
   const handleSavePaymentDetailsSubmit = async (details: SavePaymentDetailsPayload) => {
     setIsSubmittingPayment(true);
-    setErrorMsg(null);
     try {
       await savePaymentDetails(details);
       await refreshFinances();
       setPaymentOpen(false);
     } catch (err) {
       console.error('[finances] failed to save payment details', err);
-      setErrorMsg(err instanceof Error ? err.message : 'Failed to save payment details');
+      toast.error(err instanceof Error ? err.message : 'Failed to save payment details');
     } finally {
       setIsSubmittingPayment(false);
     }
@@ -465,14 +459,6 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
           subtitle={headerConfig.subtitle}
           actions={headerConfig.actions}
         />
-
-        {/* Error alert toast */}
-        {errorMsg && (
-          <div className="border-rose-100 bg-rose-50 text-rose-800 p-4 rounded-xl border text-xs flex items-center gap-2 dark:bg-rose-950/20 dark:border-rose-950/30 dark:text-rose-400">
-            <AlertCircle className="w-5 h-5 shrink-0" />
-            <span>{errorMsg}</span>
-          </div>
-        )}
 
         <div className="flex flex-col flex-1 min-h-0 space-y-6">
           {/* 2. Tabs Selector */}
