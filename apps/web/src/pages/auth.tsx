@@ -1,5 +1,4 @@
-import { AuthHeroPanel } from '@/components/feat/auth/AuthHeroPanel';
-import { AuthSignInPanel } from '@/components/feat/auth/AuthSignInPanel';
+import { AuthHeroPanel, AuthSignInPanel } from '@/components/feat/auth';
 
 export default function AuthPage() {
   return (

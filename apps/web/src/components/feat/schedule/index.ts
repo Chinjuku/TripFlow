@@ -33,17 +33,24 @@ export {
   toneFor,
 } from '@/utils/schedule';
 
-// * Components
-export { AddPlaceSheet } from './AddPlaceSheet';
-export { DayTabsScroller } from './DayTabsScroller';
-export { DedupeConfirmModal } from './DedupeConfirmModal';
-export { DraggablePlace, PlacePill } from './DraggablePlace';
-export { DuplicateModeToggle } from './DuplicateModeToggle';
-export { EditEventSheet } from './EditEventSheet';
-export { EventBlock } from './EventBlock';
-export { MobileTimeline, TappablePlace } from './MobileTimeline';
-export { RouteFlowCard } from './RouteFlowCard';
-export { Timeline, TravelGap } from './Timeline';
+// * Timeline components
+export { Timeline, TravelGap } from './timeline/Timeline';
+export { MobileTimeline, TappablePlace } from './timeline/MobileTimeline';
+export { EventBlock } from './timeline/EventBlock';
+export { RouteFlowCard } from './timeline/RouteFlowCard';
+export { DayTabsScroller } from './timeline/DayTabsScroller';
+
+// * Sidebar components
+export { DraggablePlace, PlacePill } from './sidebar/DraggablePlace';
+export { DuplicateModeToggle } from './sidebar/DuplicateModeToggle';
+export { TopVotedPanel } from './sidebar/TopVotedPanel';
+
+// * Sheets / modals
+export { AddPlaceSheet } from './sheets/AddPlaceSheet';
+export { EditEventSheet } from './sheets/EditEventSheet';
+export { DedupeConfirmModal } from './sheets/DedupeConfirmModal';
+
+// * Skeletons
 export {
   TimelineSkeleton,
   DayTabsSkeleton,

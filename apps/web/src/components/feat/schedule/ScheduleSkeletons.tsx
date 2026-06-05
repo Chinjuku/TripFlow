@@ -1,4 +1,4 @@
-import { Skeleton } from '@trip-flow/ui/components/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { HOURS_END, HOURS_START, HOUR_HEIGHT_PX, TIMELINE_HEIGHT_PX } from '@/utils/schedule';
 
 /**

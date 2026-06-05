@@ -16,10 +16,10 @@
 @import '@fontsource/noto-sans-thai/700.css';
 
 /**
- * Thai-language font overrides. Lives here (the app) rather than in
- * `@trip-flow/ui` because the package shouldn't decide which languages
- * the app supports. `:lang(th)` is preferred over `html[lang="th"]` so
- * nested elements with their own `lang` attribute still resolve.
+ * Thai-language font overrides. Kept separate from the design tokens in
+ * `ui-tokens.css` so language support stays a concern of the app, not the
+ * token layer. `:lang(th)` is preferred over `html[lang="th"]` so nested
+ * elements with their own `lang` attribute still resolve.
  *
  * The Latin fallbacks (Manrope/Inter) stay identical to the base
  * tokens - only Noto Sans Thai is prepended to render Thai glyphs.

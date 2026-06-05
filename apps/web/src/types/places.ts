@@ -57,4 +57,14 @@ export interface BucketMeta {
 export type FilterKey = 'all' | 'voted' | 'mine' | 'photos';
 export type SortKey = 'votes' | 'name' | 'recent';
 export type PlanTab = 'plan' | 'vote';
+
+export interface PlanTabMeta {
+  id: PlanTab;
+  label: string;
+  heading: string;
+  helper: string;
+  /** Count shown as a pill next to the label (e.g. picked places / voted). */
+  count: number;
+}
+
 export type RankDelta = { kind: 'up' | 'down'; by: number } | { kind: 'new' };
