@@ -71,7 +71,7 @@ mock.module('./trips', () => ({
 
 describe('Finance calculations', () => {
   test('No netting when optimized=false (keeps debts separate)', async () => {
-    const { getFinancesByTripId } = await import('./finances');
+    const { getFinancesByTripId } = await import('../services/finances');
 
     mockTripRow = { id: 'some-trip-id', is_debt_optimized: false };
 
@@ -128,7 +128,7 @@ describe('Finance calculations', () => {
   });
 
   test('Pairwise netting when optimized=true (nets opposing debts)', async () => {
-    const { getFinancesByTripId } = await import('./finances');
+    const { getFinancesByTripId } = await import('../services/finances');
 
     mockTripRow = { id: 'some-trip-id', is_debt_optimized: true };
 
@@ -176,7 +176,7 @@ describe('Finance calculations', () => {
   });
 
   test('Override to false even when DB has optimized=true (e.g., Settlements page)', async () => {
-    const { getFinancesByTripId } = await import('./finances');
+    const { getFinancesByTripId } = await import('../services/finances');
 
     mockTripRow = { id: 'some-trip-id', is_debt_optimized: true };
 
