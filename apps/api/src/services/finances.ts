@@ -215,6 +215,13 @@ export async function getFinancesByTripId(
   const centralFundPerPerson = tripRow?.central_fund_per_person ?? null;
   const centralFundTotal = centralFundPerPerson ? centralFundPerPerson * members.length : 0;
 
+  // Also count completed central fund settlements (reimbursements) where the treasurer pays members
+  for (const set of rawSettlements) {
+    if (set.is_central_fund && set.status === 'completed' && set.payer_id === tripRow?.treasurer_id) {
+      centralFundSpent += set.amount;
+    }
+  }
+
 
   // B. Net Balances Calculation (based on expenses, splits, and completed settlements)
   const netBalances: Record<string, number> = {};
@@ -483,6 +490,7 @@ export async function createExpense(
 export interface CreateSettlementInput {
   tripId: string;
   payeeId: string;
+  payerId?: string;
   amount: number;
   isCentralFund?: boolean;
 }
@@ -494,30 +502,46 @@ export async function createSettlement(
   userId: string,
   input: CreateSettlementInput,
 ): Promise<HydratedSettlement> {
-  await ensureTripMember(userId, input.tripId);
+  const actualPayerId = input.payerId ?? userId;
+  await ensureTripMember(actualPayerId, input.tripId);
   await ensureTripMember(input.payeeId, input.tripId);
 
-  if (userId === input.payeeId) {
+  if (actualPayerId === input.payeeId) {
     throw new Error('You cannot settle up with yourself');
+  }
+
+  if (actualPayerId !== userId) {
+    if (!input.isCentralFund) {
+      throw new Error('You can only create settlements on behalf of someone else for central fund requests');
+    }
+    const [trip] = await db.select().from(trips).where(eq(trips.id, input.tripId)).limit(1);
+    if (actualPayerId !== trip?.treasurer_id) {
+      throw new Error('You can only request central fund reimbursement from the treasurer');
+    }
+    if (input.payeeId !== userId) {
+      throw new Error('You can only request reimbursement for yourself');
+    }
   }
 
   if (input.isCentralFund) {
     const [trip] = await db.select().from(trips).where(eq(trips.id, input.tripId)).limit(1);
     if (trip && trip.central_fund_per_person) {
-      const userCentralSettlements = await db
-        .select()
-        .from(settlements)
-        .where(
-          and(
-            eq(settlements.trip_id, input.tripId),
-            eq(settlements.payer_id, userId),
-            eq(settlements.is_central_fund, true)
-          )
-        );
-      
-      const currentPaidAndPending = userCentralSettlements.reduce((acc, s) => acc + s.amount, 0);
-      if (currentPaidAndPending + input.amount > trip.central_fund_per_person) {
-        throw new ConflictError(`Cannot pay more than the required central fund amount (฿${trip.central_fund_per_person.toLocaleString()})`);
+      if (actualPayerId === userId && actualPayerId !== trip.treasurer_id) {
+        const userCentralSettlements = await db
+          .select()
+          .from(settlements)
+          .where(
+            and(
+              eq(settlements.trip_id, input.tripId),
+              eq(settlements.payer_id, actualPayerId),
+              eq(settlements.is_central_fund, true)
+            )
+          );
+        
+        const currentPaidAndPending = userCentralSettlements.reduce((acc, s) => acc + s.amount, 0);
+        if (currentPaidAndPending + input.amount > trip.central_fund_per_person) {
+          throw new ConflictError(`Cannot pay more than the required central fund amount (฿${trip.central_fund_per_person.toLocaleString()})`);
+        }
       }
     }
   }
@@ -526,7 +550,7 @@ export async function createSettlement(
     .insert(settlements)
     .values({
       trip_id: input.tripId,
-      payer_id: userId,
+      payer_id: actualPayerId,
       payee_id: input.payeeId,
       amount: input.amount,
       is_central_fund: input.isCentralFund ?? false,
@@ -568,10 +592,22 @@ export async function confirmSettlement(
   }
 
   // Ensure caller is the payee (recipient of money), since they should be the one confirming they received it.
+  // In central fund settlements, the treasurer can also confirm payouts or contributions.
   // In development mode, we allow the payer to confirm as well to facilitate testing.
+  const [trip] = await db
+    .select()
+    .from(trips)
+    .where(eq(trips.id, settlement.trip_id))
+    .limit(1);
+  const isTreasurer = trip?.treasurer_id === userId;
+
   const isDev = process.env.NODE_ENV === 'development';
-  if (settlement.payee_id !== userId && !(isDev && settlement.payer_id === userId)) {
-    throw new ForbiddenError('Only the recipient of the settlement can confirm it');
+  if (
+    settlement.payee_id !== userId &&
+    !(settlement.is_central_fund && isTreasurer) &&
+    !(isDev && settlement.payer_id === userId)
+  ) {
+    throw new ForbiddenError('Only the recipient of the settlement or the treasurer can confirm it');
   }
 
   const [updated] = await db
@@ -594,6 +630,44 @@ export async function confirmSettlement(
     payeeName: payee?.name ?? 'Traveller',
     payeeAvatarUrl: payee?.avatarUrl ?? null,
   };
+}
+
+/**
+ * Deletes/rejects a settlement (pending or completed).
+ */
+export async function deleteSettlement(
+  userId: string,
+  settlementId: string,
+): Promise<{ success: boolean }> {
+  const [settlement] = await db
+    .select()
+    .from(settlements)
+    .where(eq(settlements.id, settlementId))
+    .limit(1);
+
+  if (!settlement) {
+    throw new NotFoundError('Settlement not found');
+  }
+
+  const [trip] = await db
+    .select()
+    .from(trips)
+    .where(eq(trips.id, settlement.trip_id))
+    .limit(1);
+
+  const isTreasurer = trip?.treasurer_id === userId;
+
+  if (
+    settlement.payer_id !== userId &&
+    settlement.payee_id !== userId &&
+    !(settlement.is_central_fund && isTreasurer)
+  ) {
+    throw new ForbiddenError('You do not have permission to delete this settlement');
+  }
+
+  await db.delete(settlements).where(eq(settlements.id, settlementId));
+
+  return { success: true };
 }
 
 /**
@@ -640,8 +714,62 @@ export async function updateCentralFund(
   const [trip] = await db.select().from(trips).where(eq(trips.id, input.tripId)).limit(1);
   if (!trip) throw new NotFoundError('Trip not found');
 
-  if (trip.owner_id !== userId) {
-    throw new ForbiddenError('Only the trip owner can update the central fund settings');
+  const isOwner = trip.owner_id === userId;
+  const isTreasurer = trip.treasurer_id === userId;
+
+  if (!isOwner && !isTreasurer) {
+    throw new ForbiddenError('Only the trip owner or the treasurer can update the central fund settings');
+  }
+
+  // If treasurer is calling, they cannot change the treasurer
+  if (isTreasurer && !isOwner) {
+    if (input.treasurerId !== trip.treasurer_id) {
+      throw new ForbiddenError('The treasurer cannot change the treasurer assignment');
+    }
+  }
+
+  // If owner is calling, and central fund is already configured, they cannot change the amount
+  const isConfigured = Boolean(trip.treasurer_id && trip.central_fund_per_person && Number(trip.central_fund_per_person) > 0);
+  if (isOwner && isConfigured) {
+    if (input.centralFundPerPerson !== null && Number(input.centralFundPerPerson) !== Number(trip.central_fund_per_person)) {
+      throw new ForbiddenError('Only the treasurer can update the central fund amount per person after setup');
+    }
+  }
+
+  // Prevent changing the treasurer if any contributions already exist
+  if (isOwner && input.treasurerId !== trip.treasurer_id && trip.treasurer_id !== null) {
+    const centralSettlements = await db
+      .select()
+      .from(settlements)
+      .where(
+        and(
+          eq(settlements.trip_id, input.tripId),
+          eq(settlements.is_central_fund, true),
+          eq(settlements.payee_id, trip.treasurer_id)
+        )
+      );
+    
+    if (centralSettlements.length > 0) {
+      throw new ConflictError('Cannot change the treasurer because contributions have already been made');
+    }
+  }
+
+  // Prevent decreasing the per-person amount if contributions already exist
+  if (input.centralFundPerPerson !== null && trip.central_fund_per_person !== null && Number(input.centralFundPerPerson) < Number(trip.central_fund_per_person)) {
+    const centralSettlements = await db
+      .select()
+      .from(settlements)
+      .where(
+        and(
+          eq(settlements.trip_id, input.tripId),
+          eq(settlements.is_central_fund, true),
+          eq(settlements.payee_id, trip.treasurer_id || '')
+        )
+      );
+    
+    if (centralSettlements.length > 0) {
+      throw new ConflictError('Cannot decrease the amount per person because members have already made contributions');
+    }
   }
 
   if (input.treasurerId) {

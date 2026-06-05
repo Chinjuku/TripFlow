@@ -35,7 +35,6 @@ const createExpenseSchema = z.object({
   category: z.enum(['food', 'transport', 'activity', 'lodging', 'other']),
   splitMethod: z.enum(['equally', 'exact_amount']),
   expenseDate: z.string().min(1, 'Date is required'),
-  isCentralFund: z.boolean().optional(),
   splits: z.array(
     z.object({
       userId: z.string().uuid(),
@@ -54,7 +53,6 @@ interface CreateExpenseFormProps {
   onSubmit: (values: any) => Promise<void>;
   onCancel: () => void;
   isSubmitting: boolean;
-  hasCentralFund?: boolean;
 }
 
 // Avatar color helper based on member's name string length/chars to match design screenshots perfectly
@@ -77,7 +75,6 @@ export function CreateExpenseForm({
   onSubmit,
   onCancel,
   isSubmitting,
-  hasCentralFund = false,
 }: CreateExpenseFormProps) {
   // OCR Scan state variables
   const [isScanning, setIsScanning] = useState(false);
@@ -111,7 +108,6 @@ export function CreateExpenseForm({
       category: 'food',
       splitMethod: 'equally',
       expenseDate: localISOTime,
-      isCentralFund: false,
       splits: members.map((m) => ({
         userId: m.userId,
         amount: 0,
@@ -132,23 +128,6 @@ export function CreateExpenseForm({
   const watchSplits = watch('splits') || [];
   const watchDescription = watch('description') || '';
   const watchPaidById = watch('paidById');
-  const watchIsCentralFund = watch('isCentralFund');
-
-  // When 'isCentralFund' is toggled to true, default to 'equally' and select everyone
-  useEffect(() => {
-    if (watchIsCentralFund) {
-      if (getValues('splitMethod') !== 'equally') {
-        setValue('splitMethod', 'equally');
-      }
-      const currentSplits = getValues('splits') || [];
-      currentSplits.forEach((split, index) => {
-        if (!split.checked) {
-          setValue(`splits.${index}.checked`, true);
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [watchIsCentralFund, setValue]);
 
   const checkedCount = watchSplits.filter((s) => s.checked).length;
   const lastDescriptionRef = useRef(watchDescription);
@@ -350,7 +329,6 @@ export function CreateExpenseForm({
       category: data.category,
       splitMethod: data.splitMethod,
       expenseDate: localISOTime,
-      isCentralFund: data.isCentralFund,
       splits: activeSplits,
     });
   };
@@ -606,28 +584,6 @@ export function CreateExpenseForm({
             )}
           </div>
         </div>
-
-        {/* Central Fund Toggle */}
-        {hasCentralFund && (
-          <div className="flex items-center justify-between border border-border rounded-2xl p-5 bg-primary/[0.03]">
-            <div className="space-y-1">
-              <Label htmlFor="isCentralFund" className="text-xs font-bold text-foreground">
-                {t('finances.centralFund.payFromCentral', 'Deduct from Central Fund?')}
-              </Label>
-              <p className="text-[11px] text-muted-foreground">
-                {t('finances.centralFund.payFromCentralDesc', "Use the trip's pooled money to pay for this expense.")}
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="isCentralFund"
-                className="w-5 h-5 accent-primary cursor-pointer"
-                {...register('isCentralFund')}
-              />
-            </div>
-          </div>
-        )}
 
         {/* Split Method Pill selector */}
         <div className="space-y-2">

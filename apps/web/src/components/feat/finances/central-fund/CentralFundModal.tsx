@@ -15,6 +15,9 @@ interface CentralFundModalProps {
   currentPerPerson: number | null;
   onSuccess: () => void;
   suggestedPerPerson?: number; // From budget
+  isOwner: boolean;
+  isTreasurer: boolean;
+  hasContributions: boolean;
 }
 
 export function CentralFundModal({
@@ -26,6 +29,9 @@ export function CentralFundModal({
   currentPerPerson,
   onSuccess,
   suggestedPerPerson,
+  isOwner,
+  isTreasurer,
+  hasContributions,
 }: CentralFundModalProps) {
   const { t } = useTranslation();
   const [treasurerId, setTreasurerId] = useState<string>(currentTreasurerId || '');
@@ -34,6 +40,8 @@ export function CentralFundModal({
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  const isConfigured = Boolean(currentTreasurerId && currentPerPerson && currentPerPerson > 0);
 
   // When opened, reset to current if not set
   React.useEffect(() => {
@@ -54,6 +62,27 @@ export function CentralFundModal({
     const numAmount = parseFloat(perPerson);
     if (isNaN(numAmount) || numAmount < 0) {
       setError(t('finances.centralFund.errorInvalidAmount', 'Invalid amount.'));
+      return;
+    }
+
+    if (hasContributions && currentPerPerson !== null && numAmount < currentPerPerson) {
+      setError(
+        t(
+          'finances.centralFund.errorCannotReduceAmount',
+          'Cannot decrease the amount per person because members have already made contributions. The new amount must be at least ฿{{amount}}.',
+          { amount: currentPerPerson.toLocaleString() }
+        )
+      );
+      return;
+    }
+
+    if (isOwner && hasContributions && treasurerId !== currentTreasurerId) {
+      setError(
+        t(
+          'finances.centralFund.errorCannotChangeTreasurer',
+          'Cannot change the treasurer because contributions have already been made.'
+        )
+      );
       return;
     }
 
@@ -93,45 +122,79 @@ export function CentralFundModal({
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           {error && <div className="text-destructive text-sm font-medium">{error}</div>}
 
-          <div className="space-y-2">
-            <Label>{t('finances.centralFund.treasurerLabel', 'Treasurer')}</Label>
-            <select
-              value={treasurerId}
-              onChange={(e) => setTreasurerId(e.target.value)}
-              className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold"
-            >
-              <option value="" disabled>
-                {t('finances.centralFund.selectTreasurer', 'Select a treasurer')}
-              </option>
-              {members.map((m) => (
-                <option key={m.userId} value={m.userId}>
-                  {m.name}
+          {isOwner ? (
+            <div className="space-y-2">
+              <Label>{t('finances.centralFund.treasurerLabel', 'Treasurer')}</Label>
+              <select
+                value={treasurerId}
+                onChange={(e) => setTreasurerId(e.target.value)}
+                disabled={hasContributions}
+                className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold disabled:cursor-not-allowed disabled:opacity-85"
+              >
+                <option value="" disabled>
+                  {t('finances.centralFund.selectTreasurer', 'Select a treasurer')}
                 </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t('finances.centralFund.amountPerPersonLabel', 'Amount per Person (฿)')}</Label>
-            <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="e.g. 500"
-                value={perPerson}
-                onChange={(e) => setPerPerson(e.target.value)}
-              />
-              {suggestedPerPerson !== undefined && suggestedPerPerson > 0 && (
-                <Button type="button" variant="outline" size="sm" onClick={applySuggested}>
-                  {t('finances.centralFund.suggestAmount', 'Suggest ฿{{amount}}', { amount: suggestedPerPerson.toFixed(0) })}
-                </Button>
+                {members.map((m) => (
+                  <option key={m.userId} value={m.userId}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+              {hasContributions && (
+                <p className="text-[10px] text-muted-foreground mt-0.5">
+                  {t('finances.centralFund.cannotChangeTreasurer', 'The treasurer cannot be changed because contributions have already been made.')}
+                </p>
               )}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {t('finances.centralFund.amountDesc', 'This amount will be used to calculate the total central fund size.')}
-            </p>
-          </div>
+          ) : (
+            <div className="space-y-1 bg-muted/40 p-3 rounded-xl border border-border">
+              <span className="text-xs font-bold text-muted-foreground block uppercase tracking-wider">
+                {t('finances.centralFund.treasurerLabel', 'Treasurer')}
+              </span>
+              <span className="text-sm font-semibold text-foreground">
+                {members.find((m) => m.userId === treasurerId)?.name || t('finances.centralFund.assignedTreasurer', 'Assigned Treasurer')}
+              </span>
+            </div>
+          )}
+
+          {/* Amount per Person */}
+          {((isOwner && !isConfigured) || isTreasurer) ? (
+            <div className="space-y-2">
+              <Label>{t('finances.centralFund.amountPerPersonLabel', 'Amount per Person (฿)')}</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="e.g. 500"
+                  value={perPerson}
+                  onChange={(e) => setPerPerson(e.target.value)}
+                />
+                {suggestedPerPerson !== undefined && suggestedPerPerson > 0 && (
+                  <Button type="button" variant="outline" size="sm" onClick={applySuggested}>
+                    {t('finances.centralFund.suggestAmount', 'Suggest ฿{{amount}}', { amount: suggestedPerPerson.toFixed(0) })}
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t('finances.centralFund.amountDesc', 'This amount will be used to calculate the total central fund size.')}
+              </p>
+            </div>
+          ) : (
+            isConfigured && (
+              <div className="space-y-1 bg-muted/40 p-3 rounded-xl border border-border">
+                <span className="text-xs font-bold text-muted-foreground block uppercase tracking-wider">
+                  {t('finances.centralFund.amountPerPersonLabel', 'Amount per Person')}
+                </span>
+                <span className="text-sm font-semibold text-foreground">
+                  ฿{currentPerPerson?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </span>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  {t('finances.centralFund.treasurerOnlyEdit', 'Only the assigned treasurer can edit the amount after set up.')}
+                </p>
+              </div>
+            )
+          )}
 
           <div className="pt-4 flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

@@ -39,6 +39,15 @@ export function SettleUpModal({
 }: SettleUpModalProps) {
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [isCentralFund, setIsCentralFund] = useState(defaultIsCentralFund);
+  const [amountToPay, setAmountToPay] = useState<number>(0);
+
+  useEffect(() => {
+    if (open && payee) {
+      setAmountToPay(payee.amount);
+    }
+  }, [open, payee]);
+
+
 
   // ตัดโหมด qr_image ออกไป เหลือแค่ Bank Account และ PromptPay
   const [method, setMethod] = useState<'promptpay_id' | 'bank' | null>(null);
@@ -79,6 +88,9 @@ export function SettleUpModal({
 
   if (!payee) return null;
 
+  const finalAmount = isCentralFund ? amountToPay : payee.amount;
+  const isAmountInvalid = isCentralFund && (!amountToPay || isNaN(amountToPay) || amountToPay <= 0 || amountToPay > payee.amount);
+
   const handleCopy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     setCopiedText(label);
@@ -87,7 +99,7 @@ export function SettleUpModal({
 
   const promptPayId = paymentDetails?.promptpay_id;
   const dynamicQrUrl = promptPayId
-    ? `https://promptpay.io/${promptPayId}/${payee.amount.toFixed(2)}.png`
+    ? `https://promptpay.io/${promptPayId}/${finalAmount.toFixed(2)}.png`
     : null;
 
   const handleReceiptUpload = async (
@@ -111,7 +123,7 @@ export function SettleUpModal({
       // 1. Create the pending settlement first if not already created
       let settlementId = pendingSettlementId;
       if (!settlementId) {
-        const createdSettlement = await onSubmit(payee.userId, payee.amount, isCentralFund);
+        const createdSettlement = await onSubmit(payee.userId, finalAmount, isCentralFund);
         if (!createdSettlement) {
           setIsScanning(false);
           return;
@@ -155,7 +167,7 @@ export function SettleUpModal({
     setScanError(null);
     setIsScanning(true);
     try {
-      const createdSettlement = await onSubmit(payee.userId, payee.amount, isCentralFund);
+      const createdSettlement = await onSubmit(payee.userId, finalAmount, isCentralFund);
       if (!createdSettlement) {
         setIsScanning(false);
         return;
@@ -175,7 +187,7 @@ export function SettleUpModal({
     setScanError(null);
     setIsScanning(true);
     try {
-      const createdSettlement = await onSubmit(payee.userId, payee.amount, isCentralFund);
+      const createdSettlement = await onSubmit(payee.userId, finalAmount, isCentralFund);
       if (createdSettlement) {
         onVerified?.();
         onOpenChange(false);
@@ -230,6 +242,55 @@ export function SettleUpModal({
             </span>
           </div>
         </div>
+
+        {/* Payment Amount Input (Only when isCentralFund is true) */}
+        {isCentralFund && (
+          <div className="space-y-1.5 animate-in fade-in duration-200">
+            <label htmlFor="paymentAmount" className="text-xs font-bold text-muted-foreground block">
+              {t('finances.paymentAmount', 'Payment Amount (THB)')}
+            </label>
+            <div className="relative">
+              <input
+                id="paymentAmount"
+                type="number"
+                step="0.01"
+                min="0.01"
+                max={payee.amount}
+                placeholder="0.00"
+                value={amountToPay === 0 ? '' : amountToPay}
+                onChange={(e) => {
+                  const valStr = e.target.value;
+                  if (valStr === '') {
+                    setAmountToPay(0);
+                  } else {
+                    const val = parseFloat(valStr);
+                    if (!isNaN(val)) {
+                      setAmountToPay(val);
+                    }
+                  }
+                }}
+                onBlur={() => {
+                  if (amountToPay <= 0) {
+                    setAmountToPay(0.01);
+                  } else if (amountToPay > payee.amount) {
+                    setAmountToPay(payee.amount);
+                  } else {
+                    setAmountToPay(Number(amountToPay.toFixed(2)));
+                  }
+                }}
+                className={`flex h-11 w-full rounded-xl border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-foreground font-bold ${isAmountInvalid ? 'border-destructive focus-visible:ring-destructive' : 'border-input focus-visible:ring-primary'}`}
+              />
+              <div className="absolute right-3 top-3 text-[10px] text-muted-foreground font-bold uppercase">
+                Max: ฿{payee.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              </div>
+            </div>
+            {isAmountInvalid && (
+              <p className="text-destructive text-[11px] font-medium mt-0.5">
+                {t('finances.amountInvalidDesc', 'Amount must be between ฿0.01 and ฿')}{payee.amount.toFixed(2)}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Method Toggle */}
         {activeMethods.length > 1 && (
@@ -324,11 +385,11 @@ export function SettleUpModal({
               </span>
               <div className="flex items-center gap-2">
                 <span className="text-destructive text-xs font-bold font-mono tracking-wide">
-                  ฿{payee.amount.toFixed(2)}
+                  ฿{finalAmount.toFixed(2)}
                 </span>
                 <button
                   type="button"
-                  onClick={() => handleCopy(payee.amount.toFixed(2), 'amount')}
+                  onClick={() => handleCopy(finalAmount.toFixed(2), 'amount')}
                   className="text-muted-foreground hover:text-primary transition-colors bg-muted/50 p-1.5 rounded-md"
                 >
                   {copiedText === 'amount' ? (
@@ -383,7 +444,7 @@ export function SettleUpModal({
               <Trans
                 i18nKey="finances.scanQrAnyApp"
                 defaultValue="Scan this QR code with any banking app to pay exactly <b>฿{{amount}}</b>."
-                values={{ amount: payee.amount.toFixed(2) }}
+                values={{ amount: finalAmount.toFixed(2) }}
                 components={{ 1: <b className="text-foreground" /> }}
               />
             </p>
@@ -437,7 +498,7 @@ export function SettleUpModal({
             )}
             <Button
               type="button"
-              disabled={isScanning}
+              disabled={isScanning || isAmountInvalid}
               onClick={handleDevConfirm}
               className="w-full text-xs h-10 rounded-xl bg-primary text-primary-foreground font-bold hover:opacity-90 transition-all flex items-center justify-center gap-1.5"
             >
@@ -459,17 +520,17 @@ export function SettleUpModal({
                 </div>
               )}
               <div
-                onDragOver={handleDragOver}
-                onDrop={handleReceiptUpload}
-                className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-4 text-center transition-all duration-200 ${scanError ? 'border-destructive bg-destructive/5' : 'border-border hover:border-primary/50 bg-muted/50'}`}
+                onDragOver={isAmountInvalid ? undefined : handleDragOver}
+                onDrop={isAmountInvalid ? undefined : handleReceiptUpload}
+                className={`relative group border-2 border-dashed rounded-2xl p-4 text-center transition-all duration-200 ${isAmountInvalid ? 'opacity-50 cursor-not-allowed border-border' : scanError ? 'border-destructive bg-destructive/5' : 'border-border hover:border-primary/50 bg-muted/50'}`}
               >
                 <input
                   id="slip-upload"
                   type="file"
                   accept="image/*,application/pdf"
                   onChange={handleReceiptUpload}
-                  disabled={isScanning}
-                  className={`absolute inset-0 w-full h-full opacity-0 ${isScanning ? 'cursor-not-allowed' : 'cursor-pointer'} z-10`}
+                  disabled={isScanning || isAmountInvalid}
+                  className={`absolute inset-0 w-full h-full opacity-0 ${isScanning || isAmountInvalid ? 'cursor-not-allowed' : 'cursor-pointer'} z-10`}
                 />
                 <div className="flex flex-col items-center justify-center gap-2">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-105 transition-transform duration-200">
@@ -513,7 +574,7 @@ export function SettleUpModal({
           <Button
             type="button"
             variant="outline"
-            disabled={isScanning}
+            disabled={isScanning || isAmountInvalid}
             onClick={handleManualSettle}
             className="w-full text-xs h-10 rounded-xl border border-primary/20 hover:bg-primary/5 text-primary font-bold transition-colors"
           >

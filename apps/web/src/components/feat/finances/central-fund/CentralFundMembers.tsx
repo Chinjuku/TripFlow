@@ -1,14 +1,13 @@
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Circle, Clock } from 'lucide-react';
-import type { HydratedExpense, HydratedSettlement } from '@/types/finances';
+import type { HydratedSettlement } from '@/types/finances';
 
 interface CentralFundMembersProps {
   members: { userId: string; name: string; avatarUrl?: string | null }[];
   treasurerId: string | null;
   centralFundPerPerson: number | null;
   settlements: HydratedSettlement[];
-  expenses: HydratedExpense[];
 }
 
 export function CentralFundMembers({
@@ -16,26 +15,17 @@ export function CentralFundMembers({
   treasurerId,
   centralFundPerPerson,
   settlements,
-  expenses,
 }: CentralFundMembersProps) {
   const { t } = useTranslation();
 
   const memberStatuses = useMemo(() => {
     return members.map((member) => {
-      const memberUsedAmount = expenses
-        .filter((e) => e.is_central_fund)
-        .reduce((sum, e) => {
-          const split = e.splits.find((s) => s.user_id === member.userId);
-          return sum + (split ? split.amount : 0);
-        }, 0);
-
       if (member.userId === treasurerId) {
         return {
           ...member,
           status: 'treasurer' as const,
           paidAmount: centralFundPerPerson || 0,
           pendingAmount: 0,
-          usedAmount: memberUsedAmount,
         };
       }
 
@@ -67,10 +57,9 @@ export function CentralFundMembers({
         status,
         paidAmount,
         pendingAmount,
-        usedAmount: memberUsedAmount,
       };
     });
-  }, [members, treasurerId, centralFundPerPerson, settlements, expenses]);
+  }, [members, treasurerId, centralFundPerPerson, settlements]);
 
   if (!centralFundPerPerson || !treasurerId) {
     return null;
@@ -117,17 +106,6 @@ export function CentralFundMembers({
                     <span>
                       ฿{member.paidAmount.toLocaleString()} / ฿
                       {centralFundPerPerson.toLocaleString()}
-                    </span>
-                  )}
-                  {member.usedAmount > 0 && (
-                    <span className="text-[10px] text-rose-500/80 font-medium flex items-center gap-1">
-                      <span>
-                        Spent: ฿
-                        {member.usedAmount.toLocaleString(undefined, {
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 2,
-                        })}
-                      </span>
                     </span>
                   )}
                 </div>
