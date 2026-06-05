@@ -1,13 +1,14 @@
 import { Modal } from '@/components/ui/modal';
 import { CreateExpenseForm } from './CreateExpenseForm';
 import { useTranslation } from 'react-i18next';
+import type { CreateExpensePayload } from '@/types/finances';
 
 interface CreateExpenseModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   members: { userId: string; name: string; avatarUrl: string | null }[];
   currentUserId: string;
-  onSubmit: (values: any) => Promise<void>;
+  onSubmit: (values: Omit<CreateExpensePayload, 'tripId'>) => Promise<void>;
   isSubmitting: boolean;
 }
 

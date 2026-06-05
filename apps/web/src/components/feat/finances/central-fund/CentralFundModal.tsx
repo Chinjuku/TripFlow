@@ -97,8 +97,12 @@ export function CentralFundModal({
       });
       onSuccess();
       onOpenChange(false);
-    } catch (err: any) {
-      setError(err.message || t('finances.centralFund.errorFailedUpdate', 'Failed to update central fund.'));
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : t('finances.centralFund.errorFailedUpdate', 'Failed to update central fund.'),
+      );
     } finally {
       setLoading(false);
     }

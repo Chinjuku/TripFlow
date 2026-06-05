@@ -26,7 +26,13 @@ import {
   BudgetModal,
   PaymentDetailsModal,
   type DebtRelation,
+  type FinancesData,
+  type HydratedSettlement,
+  type CreateExpensePayload,
+  type SavePaymentDetailsPayload,
 } from '@/components/feat/finances';
+import type { TripDetail } from '@/types/trips';
+import type { AuthUser } from '@/types/auth';
 
 import { TripFinancesAllSkeleton } from './TripFinancesAllSkeleton';
 import { TripFinancesAllExpensesSkeleton } from '../expenses/TripFinancesAllExpensesSkeleton';
@@ -37,9 +43,11 @@ import { CentralFundSkeleton } from '@/components/feat/finances/central-fund/Cen
 type TabId = 'all' | 'all-expense' | 'settlements' | 'monitoring' | 'central-fund';
 
 interface TripFinancesContextType {
-  trip: any;
-  finances: any;
-  user: any;
+  // `trip` and `finances` are guaranteed non-null here: the layout only renders
+  // its children (the consumers of this context) once both have loaded.
+  trip: TripDetail;
+  finances: FinancesData;
+  user: AuthUser | null;
   isLoading: boolean;
   isOptimized: boolean;
   setIsOptimized: (v: boolean) => void;
@@ -48,7 +56,7 @@ interface TripFinancesContextType {
   handleDeleteSettlement: (settlementId: string) => Promise<void>;
   handleSettleUpTrigger: (payee: DebtRelation, isCentralFund?: boolean) => void;
   setBudgetOpen: (v: boolean) => void;
-  refreshFinances: () => Promise<any>;
+  refreshFinances: (silent?: boolean) => Promise<void>;
 }
 
 const TripFinancesContext = createContext<TripFinancesContextType | null>(null);
@@ -149,7 +157,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   }
 
   // Handle Recording an Expense
-  const handleRecordExpenseSubmit = async (values: any) => {
+  const handleRecordExpenseSubmit = async (values: Omit<CreateExpensePayload, 'tripId'>) => {
     if (!id) return;
     setIsSubmittingExpense(true);
     setErrorMsg(null);
@@ -243,7 +251,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   };
 
   // Handle Saving Payment Receiving details
-  const handleSavePaymentDetailsSubmit = async (details: any) => {
+  const handleSavePaymentDetailsSubmit = async (details: SavePaymentDetailsPayload) => {
     setIsSubmittingPayment(true);
     setErrorMsg(null);
     try {
@@ -269,17 +277,21 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
   const treasurerId = finances?.summary?.treasurerId;
 
   // Check user's paid amount for central fund
-  const userCentralSettlements = finances?.settlements?.filter(
-    (s: any) => s.payer_id === user?.id && s.is_central_fund && s.payee_id === treasurerId
-  ) || [];
-  
-  const userCentralPaidAndPending = userCentralSettlements.reduce((sum: number, s: any) => sum + s.amount, 0);
+  const userCentralSettlements =
+    finances?.settlements?.filter(
+      (s) => s.payer_id === user?.id && s.is_central_fund && s.payee_id === treasurerId,
+    ) ?? [];
+
+  const userCentralPaidAndPending = userCentralSettlements.reduce(
+    (sum: number, s) => sum + s.amount,
+    0,
+  );
   const hasFullyPaidCentralFund = centralFundPerPerson > 0 && userCentralPaidAndPending >= centralFundPerPerson;
   const remainingCentralContribution = Math.max(0, centralFundPerPerson - userCentralPaidAndPending);
 
   const handlePayContribution = () => {
     if (!treasurerId || !centralFundPerPerson) return;
-    const treasurerMember = trip?.members.find((m: any) => m.userId === treasurerId);
+    const treasurerMember = trip?.members.find((m) => m.userId === treasurerId);
     if (treasurerMember) {
       handleSettleUpTrigger({
         userId: treasurerMember.userId,
@@ -425,23 +437,26 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
 
   const headerConfig = TABS_SETTING_HEADERS[activeTab] || TABS_SETTING_HEADERS.all;
 
+  // While trip/finances are loading they are null, but the context is only ever
+  // read by the children rendered below the `!trip || !finances` guard, so the
+  // non-null contract on TripFinancesContextType holds for every consumer.
+  const contextValue = {
+    trip: trip!,
+    finances: finances!,
+    user,
+    isLoading,
+    isOptimized: queryOptimized,
+    setIsOptimized,
+    confirmingSettlementId,
+    handleConfirmSettlementReceived,
+    handleDeleteSettlement,
+    handleSettleUpTrigger,
+    setBudgetOpen,
+    refreshFinances,
+  } satisfies TripFinancesContextType;
+
   return (
-    <TripFinancesContext.Provider
-      value={{
-        trip,
-        finances,
-        user,
-        isLoading,
-        isOptimized: queryOptimized,
-        setIsOptimized,
-        confirmingSettlementId,
-        handleConfirmSettlementReceived,
-        handleDeleteSettlement,
-        handleSettleUpTrigger,
-        setBudgetOpen,
-        refreshFinances,
-      }}
-    >
+    <TripFinancesContext.Provider value={contextValue}>
       <div className="mx-auto flex max-w-6xl flex-col gap-8 h-full lg:h-[calc(100vh-5.5rem)] lg:overflow-hidden animate-in fade-in duration-300">
         <PageHeader
           backTo={`/trips/${id}`}

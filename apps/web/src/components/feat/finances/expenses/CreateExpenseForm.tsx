@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTranslation } from 'react-i18next';
 import { extractReceipt } from '@/api/finances';
+import type { CreateExpensePayload } from '@/types/finances';
 
 // Zod schema for validation
 const createExpenseSchema = z.object({
@@ -50,7 +51,7 @@ type ExpenseFormValues = z.infer<typeof createExpenseSchema>;
 interface CreateExpenseFormProps {
   members: { userId: string; name: string; avatarUrl: string | null }[];
   currentUserId: string;
-  onSubmit: (values: any) => Promise<void>;
+  onSubmit: (values: Omit<CreateExpensePayload, 'tripId'>) => Promise<void>;
   onCancel: () => void;
   isSubmitting: boolean;
 }

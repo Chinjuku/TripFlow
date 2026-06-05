@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { QrCode, CreditCard, Banknote, User, Upload, X, AlertCircle } from 'lucide-react';
-import type { UserPaymentDetail } from '@/types/finances';
+import type { UserPaymentDetail, SavePaymentDetailsPayload } from '@/types/finances';
 import { BankSelect } from '@/components/shared/form/BankSelect';
 import jsQR from 'jsqr';
 import { parse } from 'promptparse';
@@ -14,7 +14,7 @@ interface PaymentDetailsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialDetails: UserPaymentDetail | undefined;
-  onSubmit: (details: any) => Promise<void>;
+  onSubmit: (details: SavePaymentDetailsPayload) => Promise<void>;
   isSubmitting: boolean;
 }
 
@@ -83,7 +83,7 @@ export function PaymentDetailsModal({
                 // Auto-fill promptPayId if a PromptPay tag (Tag 29) is found
                 const tag29 = parsed.getTag('29');
                 if (tag29 && tag29.subTags) {
-                  const subTag01 = tag29.subTags.find((sub: any) => sub.id === '01');
+                  const subTag01 = tag29.subTags.find((sub) => sub.id === '01');
                   if (subTag01 && subTag01.value) {
                     let extractedId = subTag01.value;
                     // Normalize phone format: if 0066XXXXXXXXX, convert to 0XXXXXXXXX
