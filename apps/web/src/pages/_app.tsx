@@ -10,6 +10,7 @@
 import { Outlet, matchPath, useLocation } from 'react-router-dom';
 import { AuthProvider, ProtectedRoute, PublicRoute } from '@/components/feat/auth';
 import { ThemeProvider } from '@/components/shared/theme/ThemeProvider';
+import { ToastProvider } from '@/components/shared/toast/ToastProvider';
 import { GlobalLayout } from '@/components/shared/layout/GlobalLayout';
 
 const PUBLIC_PATHS = ['/auth'] as const;
@@ -28,17 +29,19 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <AuthProvider>
-        {isPublicPath(pathname) ? (
-          <PublicRoute>
-            <Outlet />
-          </PublicRoute>
-        ) : (
-          <ProtectedRoute>
-            {isTripDetailPath(pathname) ? <Outlet /> : <GlobalLayout />}
-          </ProtectedRoute>
-        )}
-      </AuthProvider>
+      <ToastProvider>
+        <AuthProvider>
+          {isPublicPath(pathname) ? (
+            <PublicRoute>
+              <Outlet />
+            </PublicRoute>
+          ) : (
+            <ProtectedRoute>
+              {isTripDetailPath(pathname) ? <Outlet /> : <GlobalLayout />}
+            </ProtectedRoute>
+          )}
+        </AuthProvider>
+      </ToastProvider>
     </ThemeProvider>
   );
 }

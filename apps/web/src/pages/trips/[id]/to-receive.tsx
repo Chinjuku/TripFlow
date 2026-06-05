@@ -12,6 +12,7 @@ import type { Transaction } from '@/types/finances';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { formatLocalizedDate } from '@/lib/utils';
+import { useToast } from '@/hooks/useToast';
 
 function buildDebtorsList(
   currentUserId: string,
@@ -161,10 +162,9 @@ function TripToReceiveContent() {
   // Interactive states
   const [remindedList, setRemindedList] = useState<Record<string, boolean>>({});
   const [isRequestingAll, setIsRequestingAll] = useState(false);
-  const [showSuccessToast, setShowSuccessToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
   const { t, i18n } = useTranslation();
+  const toast = useToast();
 
   // Reconstruct debtors list from context
   const nonCentralExpenses = finances.expenses.filter((e) => !e.is_central_fund);
@@ -186,7 +186,7 @@ function TripToReceiveContent() {
   const handleRemind = (name: string, id: string) => {
     if (remindedList[id]) return;
     setRemindedList((prev) => ({ ...prev, [id]: true }));
-    triggerToast(t('finances.toastRemind', { name }));
+    toast.success(t('finances.toastRemind', { name }));
   };
 
   // Handle requesting payment from everyone
@@ -197,7 +197,7 @@ function TripToReceiveContent() {
 
     setTimeout(() => {
       setIsRequestingAll(false);
-      triggerToast(t('finances.toastRequestAll', { names: debtorNames || t('finances.everyone') }));
+      toast.success(t('finances.toastRequestAll', { names: debtorNames || t('finances.everyone') }));
     }, 1200);
   };
 
@@ -206,21 +206,12 @@ function TripToReceiveContent() {
     setExpandedCards((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // Trigger premium micro-toast
-  const triggerToast = (msg: string) => {
-    setToastMessage(msg);
-    setShowSuccessToast(true);
-    setTimeout(() => {
-      setShowSuccessToast(false);
-    }, 4000);
-  };
-
   const handleConfirmSettlementWithToast = async (
     pendingSettlementId: string,
     debtorName: string,
   ) => {
     await handleConfirmSettlementReceived(pendingSettlementId);
-    triggerToast(
+    toast.success(
       t('finances.toastConfirmPaid', {
         name: debtorName,
         defaultValue: `ยืนยันการรับเงินจาก ${debtorName} เรียบร้อยแล้ว`,
@@ -293,18 +284,6 @@ function TripToReceiveContent() {
 
       {/* Informational Help Note */}
       <SettlementHelpNote />
-
-      {/* Success Notification (Toast) */}
-      {showSuccessToast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-primary text-primary-foreground py-3.5 px-5 rounded-xl shadow-xl flex items-center gap-3 border border-primary/10 animate-in fade-in-0 slide-in-from-bottom-5 duration-300">
-          <div className="bg-primary-foreground/20 p-1 rounded-lg">
-            <Check className="w-4 h-4 text-primary-foreground" />
-          </div>
-          <span className="text-xs md:text-sm font-bold tracking-wide font-label">
-            {toastMessage}
-          </span>
-        </div>
-      )}
     </div>
   );
 }

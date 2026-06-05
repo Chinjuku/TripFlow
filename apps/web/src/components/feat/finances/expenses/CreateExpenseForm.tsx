@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar } from '@/components/ui/avatar';
 import { useTranslation } from 'react-i18next';
+import { useToast } from '@/hooks/useToast';
 import { useReceiptScan } from '@/hooks/useReceiptScan';
 import { useSplitCalculator } from '@/hooks/useSplitCalculator';
 import {
@@ -49,6 +50,7 @@ export function CreateExpenseForm({
   const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
   const addPersonRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
+  const toast = useToast();
 
   // Calculate local timezone ISO string
   const tzOffset = new Date().getTimezoneOffset() * 60000;
@@ -151,12 +153,12 @@ export function CreateExpenseForm({
       }));
 
     if (activeSplits.length === 0) {
-      alert(t('finances.errorNoTravelerSelected', 'At least one traveler must be in the split'));
+      toast.error(t('finances.errorNoTravelerSelected', 'At least one traveler must be in the split'));
       return;
     }
 
     if (data.splitMethod === 'exact_amount' && isExactMismatch) {
-      alert(
+      toast.error(
         t('finances.errorExactMismatch', 'Total splits must sum to ฿{{amount}}', {
           amount: data.amount.toLocaleString(),
         }),
