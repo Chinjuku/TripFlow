@@ -64,6 +64,11 @@ export async function confirmSettlement(id: string): Promise<HydratedSettlement>
   return unwrap(res) as HydratedSettlement;
 }
 
+export async function deleteSettlement(id: string): Promise<{ success: boolean }> {
+  const res = await api.finances.settlement[id]!.delete();
+  return unwrap(res) as { success: boolean };
+}
+
 export async function updateBudget(payload: UpdateBudgetPayload): Promise<any> {
   const res = await api.finances.budget.post(payload);
   return unwrap(res);

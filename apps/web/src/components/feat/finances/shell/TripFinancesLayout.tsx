@@ -17,6 +17,7 @@ import {
   createExpense,
   createSettlement,
   confirmSettlement,
+  deleteSettlement,
   updateBudget,
   optimizeTrip,
   savePaymentDetails,
@@ -44,6 +45,7 @@ interface TripFinancesContextType {
   setIsOptimized: (v: boolean) => void;
   confirmingSettlementId: string | null;
   handleConfirmSettlementReceived: (settlementId: string) => Promise<void>;
+  handleDeleteSettlement: (settlementId: string) => Promise<void>;
   handleSettleUpTrigger: (payee: DebtRelation, isCentralFund?: boolean) => void;
   setBudgetOpen: (v: boolean) => void;
   refreshFinances: () => Promise<any>;
@@ -200,6 +202,21 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
     } catch (err) {
       console.error('[finances] failed to confirm repayment', err);
       setErrorMsg(err instanceof Error ? err.message : 'Failed to confirm repayment');
+    } finally {
+      setConfirmingSettlementId(null);
+    }
+  };
+
+  // Handle Rejecting / Deleting a settlement
+  const handleDeleteSettlement = async (settlementId: string) => {
+    setConfirmingSettlementId(settlementId);
+    setErrorMsg(null);
+    try {
+      await deleteSettlement(settlementId);
+      await refreshFinances();
+    } catch (err) {
+      console.error('[finances] failed to delete/reject settlement', err);
+      setErrorMsg(err instanceof Error ? err.message : 'Failed to delete/reject settlement');
     } finally {
       setConfirmingSettlementId(null);
     }
@@ -419,6 +436,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
         setIsOptimized,
         confirmingSettlementId,
         handleConfirmSettlementReceived,
+        handleDeleteSettlement,
         handleSettleUpTrigger,
         setBudgetOpen,
         refreshFinances,
@@ -508,12 +526,6 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
                   currentUserId={user?.id || ''}
                   onSubmit={handleRecordExpenseSubmit}
                   isSubmitting={isSubmittingExpense}
-                  hasCentralFund={
-                    finances?.summary?.treasurerId != null &&
-                    finances?.summary?.centralFundPerPerson != null &&
-                    finances?.summary?.centralFundPerPerson > 0 &&
-                    finances?.summary?.treasurerId === user?.id
-                  }
                 />
               )}
 

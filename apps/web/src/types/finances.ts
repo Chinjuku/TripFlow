@@ -33,6 +33,7 @@ export interface CreateExpensePayload {
 export interface CreateSettlementPayload {
   tripId: string;
   payeeId: string;
+  payerId?: string;
   amount: number;
   isCentralFund?: boolean;
 }

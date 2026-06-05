@@ -38,6 +38,13 @@ export async function handleConfirmSettlement({
   return await financesService.confirmSettlement(user.sub, params.id);
 }
 
+export async function handleDeleteSettlement({
+  user,
+  params,
+}: AuthContext & { params: { id: string } }) {
+  return await financesService.deleteSettlement(user.sub, params.id);
+}
+
 export async function handleUpdateTripBudget({ user, body }: AuthContext & { body: any }) {
   return await financesService.updateTripBudget(user.sub, body);
 }

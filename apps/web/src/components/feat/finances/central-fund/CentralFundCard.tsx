@@ -11,6 +11,8 @@ interface CentralFundCardProps {
   summary: FinanceSummary;
   members: { userId: string; name: string }[];
   isOwner: boolean;
+  currentUserId: string;
+  hasContributions: boolean;
   onRefresh: () => void;
 }
 
@@ -19,10 +21,14 @@ export function CentralFundCard({
   summary,
   members,
   isOwner,
+  currentUserId,
+  hasContributions,
   onRefresh,
 }: CentralFundCardProps) {
   const { t } = useTranslation();
   const [modalOpen, setModalOpen] = useState(false);
+
+  const isTreasurer = currentUserId === summary.treasurerId;
 
   const isConfigured =
     summary.treasurerId != null &&
@@ -33,6 +39,11 @@ export function CentralFundCard({
   const progressPercent =
     summary.centralFundTotal > 0
       ? Math.min(100, Math.round((summary.centralFundSpent / summary.centralFundTotal) * 100))
+      : 0;
+
+  const spentPerPerson =
+    members.length > 0
+      ? summary.centralFundSpent / members.length
       : 0;
 
   const suggestedPerPerson =
@@ -62,7 +73,7 @@ export function CentralFundCard({
               <Landmark className="h-4 w-4" />
               {t('finances.centralFund.title', 'Central Fund')}
             </div>
-            {isOwner && (
+            {(isOwner || isTreasurer) && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -144,6 +155,17 @@ export function CentralFundCard({
                   </span>
                   <span className="text-muted-foreground">
                     {t('finances.centralFund.amountUsed', '{{amount}} used', { amount: `฿${summary.centralFundSpent.toLocaleString()}` })}
+                    {summary.centralFundSpent > 0 && (
+                      <span className="text-muted-foreground/80 font-normal">
+                        {' '}
+                        (฿
+                        {spentPerPerson.toLocaleString(undefined, {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 2,
+                        })}{' '}
+                        {t('finances.centralFund.perPerson', 'per person')})
+                      </span>
+                    )}
                   </span>
                 </div>
               </div>
@@ -152,7 +174,7 @@ export function CentralFundCard({
         </CardContent>
       </Card>
 
-      {isOwner && (
+      {(isOwner || isTreasurer) && (
         <CentralFundModal
           isOpen={modalOpen}
           onOpenChange={setModalOpen}
@@ -162,6 +184,9 @@ export function CentralFundCard({
           currentPerPerson={summary.centralFundPerPerson}
           onSuccess={onRefresh}
           suggestedPerPerson={suggestedPerPerson}
+          isOwner={isOwner}
+          isTreasurer={isTreasurer}
+          hasContributions={hasContributions}
         />
       )}
     </>

@@ -9,7 +9,6 @@ interface CreateExpenseModalProps {
   currentUserId: string;
   onSubmit: (values: any) => Promise<void>;
   isSubmitting: boolean;
-  hasCentralFund?: boolean;
 }
 
 export function CreateExpenseModal({
@@ -19,7 +18,6 @@ export function CreateExpenseModal({
   currentUserId,
   onSubmit,
   isSubmitting,
-  hasCentralFund = false,
 }: CreateExpenseModalProps) {
   const { t } = useTranslation();
   return (
@@ -40,7 +38,6 @@ export function CreateExpenseModal({
         }}
         onCancel={() => onOpenChange(false)}
         isSubmitting={isSubmitting}
-        hasCentralFund={hasCentralFund}
       />
     </Modal>
   );
