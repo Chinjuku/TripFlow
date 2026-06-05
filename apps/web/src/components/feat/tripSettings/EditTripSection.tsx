@@ -6,7 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DateRangePicker, type DateRange } from '@/components/ui/date-range-picker';
 import { updateTrip } from '@/api/trips';
-import { DestinationPicker, type DestinationValue } from '@/components/shared/form/DestinationPicker';
+import {
+  DestinationPicker,
+  type DestinationValue,
+} from '@/components/shared/form/DestinationPicker';
 import { SettingsCard } from './SettingsCard';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -150,7 +153,10 @@ export function EditTripSection({ tripId, trip, onSaved }: EditTripSectionProps)
             onChange={(e) =>
               setCentralFundPerPerson(e.target.value === '' ? '' : Number(e.target.value))
             }
-            placeholder={t('finances.centralFund.amountDesc', 'Amount that each person should contribute')}
+            placeholder={t(
+              'finances.centralFund.amountDesc',
+              'Amount that each person should contribute',
+            )}
           />
         </div>
 

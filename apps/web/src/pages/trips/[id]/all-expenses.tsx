@@ -4,10 +4,7 @@ import { Input } from '@/components/ui/input';
 import { useTranslation } from 'react-i18next';
 import { DatePicker } from '@/components/ui/date-picker';
 
-import {
-  TripFinancesLayout,
-  useTripFinancesContext,
-} from '@/components/feat/finances';
+import { TripFinancesLayout, useTripFinancesContext } from '@/components/feat/finances';
 import { AllExpenseItem } from '@/components/feat/finances';
 import { AllExpensesSkeleton } from '@/components/feat/finances';
 import type { HydratedExpense } from '@/components/feat/finances';

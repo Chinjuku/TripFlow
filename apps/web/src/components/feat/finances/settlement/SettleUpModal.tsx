@@ -1,21 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
-import {
-  Check,
-  Copy,
-  QrCode,
-  CreditCard,
-  CheckCircle2,
-  CloudUpload,
-  Loader2,
-  AlertCircle,
-} from 'lucide-react';
+import { Check, Copy, QrCode, CreditCard, CloudUpload, Loader2, AlertCircle } from 'lucide-react';
 import type { DebtRelation, UserPaymentDetail, HydratedSettlement } from '@/types/finances';
 import { useTranslation, Trans } from 'react-i18next';
 import { findBank } from '@/utils/thai-banks';
 import { Avatar } from '@/components/ui/avatar';
-import { verifySlip, confirmSettlement } from '@/api/finances';
+import { verifySlip } from '@/api/finances';
+import { useToast } from '@/hooks/useToast';
 
 interface SettleUpModalProps {
   open: boolean;
@@ -46,17 +38,10 @@ export function SettleUpModal({
   const [isCentralFund, setIsCentralFund] = useState(defaultIsCentralFund);
   const [amountToPay, setAmountToPay] = useState<number>(0);
 
-  useEffect(() => {
-    if (open && payee) {
-      setAmountToPay(payee.amount);
-    }
-  }, [open, payee]);
-
-
-
   // ตัดโหมด qr_image ออกไป เหลือแค่ Bank Account และ PromptPay
   const [method, setMethod] = useState<'promptpay_id' | 'bank' | null>(null);
   const { t, i18n } = useTranslation();
+  const toast = useToast();
 
   // E-Slip Verification states
   const [uploadedFile, setUploadedFile] = useState<{
@@ -67,16 +52,35 @@ export function SettleUpModal({
   const [isScanning, setIsScanning] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
   const [pendingSettlementId, setPendingSettlementId] = useState<string | null>(null);
+  const [scanAttempts, setScanAttempts] = useState<number>(0);
+
+  useEffect(() => {
+    if (open) {
+      setScanAttempts(0);
+      setScanError(null);
+      setUploadedFile(null);
+      if (payee) {
+        setAmountToPay(payee.amount);
+      }
+    }
+  }, [open, payee]);
 
   const activeMethods: ('promptpay_id' | 'bank')[] = [];
 
   // ดึงข้อมูล Bank Account มาแสดง (ถ้ามีข้อมูลและเปิดใช้งาน)
-  if (paymentDetails?.is_show_mobile_banking && paymentDetails?.bank_name && paymentDetails?.bank_account_number) {
+  if (
+    paymentDetails?.is_show_mobile_banking &&
+    paymentDetails?.bank_name &&
+    paymentDetails?.bank_account_number
+  ) {
     activeMethods.push('bank');
   }
 
   // ดึงข้อมูล PromptPay ID มาแสดง (ถ้ามีข้อมูลและเปิดใช้งาน)
-  if (paymentDetails?.is_show_promptpay && (paymentDetails?.promptpay_id || paymentDetails?.qr_code_url)) {
+  if (
+    paymentDetails?.is_show_promptpay &&
+    (paymentDetails?.promptpay_id || paymentDetails?.qr_code_url)
+  ) {
     activeMethods.push('promptpay_id');
   }
 
@@ -94,7 +98,9 @@ export function SettleUpModal({
   if (!payee) return null;
 
   const finalAmount = isCentralFund ? amountToPay : payee.amount;
-  const isAmountInvalid = isCentralFund && (!amountToPay || isNaN(amountToPay) || amountToPay <= 0 || amountToPay > payee.amount);
+  const isAmountInvalid =
+    isCentralFund &&
+    (!amountToPay || isNaN(amountToPay) || amountToPay <= 0 || amountToPay > payee.amount);
 
   const handleCopy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -119,6 +125,7 @@ export function SettleUpModal({
     }
     if (!file) return;
 
+    setScanAttempts((prev) => prev + 1);
     const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
     setUploadedFile({ name: file.name, size: `${sizeInMB} MB`, file });
     setScanError(null);
@@ -142,20 +149,25 @@ export function SettleUpModal({
 
       if (result.isMatch) {
         onVerified?.();
+        toast.success(t('finances.slipVerifiedSuccess', 'อัปโหลดและตรวจสอบสลิปสำเร็จ!'));
         onOpenChange(false);
       } else {
-        setScanError(result.reason || 'ไม่สามารถตรวจสอบสลิปนี้ได้ หรือสลิปนี้อาจถูกใช้งานไปแล้ว');
+        const errorMsg =
+          result.reason || 'ไม่สามารถตรวจสอบสลิปนี้ได้ หรือสลิปนี้อาจถูกใช้งานไปแล้ว';
+        setScanError(errorMsg);
+        toast.error(errorMsg);
         setUploadedFile(null); // allow re-upload if failed
         setPendingSettlementId(null);
         onVerified?.(true); // refresh silently to remove pending status without blinking
       }
     } catch (err) {
       console.error('Verify slip error:', err);
-      setScanError(
+      const errorMsg =
         err instanceof Error
           ? err.message
-          : 'ไม่สามารถตรวจสอบสลิปนี้ได้ หรือสลิปนี้อาจถูกใช้งานไปแล้ว',
-      );
+          : 'ไม่สามารถตรวจสอบสลิปนี้ได้ หรือสลิปนี้อาจถูกใช้งานไปแล้ว';
+      setScanError(errorMsg);
+      toast.error(errorMsg);
       setUploadedFile(null); // allow re-upload
       setPendingSettlementId(null);
       onVerified?.(true); // refresh silently to remove pending status without blinking
@@ -168,26 +180,6 @@ export function SettleUpModal({
     e.preventDefault();
   };
 
-  const handleDevConfirm = async () => {
-    setScanError(null);
-    setIsScanning(true);
-    try {
-      const createdSettlement = await onSubmit(payee.userId, finalAmount, isCentralFund);
-      if (!createdSettlement) {
-        setIsScanning(false);
-        return;
-      }
-      await confirmSettlement(createdSettlement.id);
-      onVerified?.();
-      onOpenChange(false);
-    } catch (err) {
-      console.error('Dev confirm error:', err);
-      setScanError(err instanceof Error ? err.message : t('finances.centralFund.confirmDevError', 'Failed to confirm settlement'));
-    } finally {
-      setIsScanning(false);
-    }
-  };
-
   const handleManualSettle = async () => {
     setScanError(null);
     setIsScanning(true);
@@ -195,11 +187,16 @@ export function SettleUpModal({
       const createdSettlement = await onSubmit(payee.userId, finalAmount, isCentralFund);
       if (createdSettlement) {
         onVerified?.();
+        toast.success(
+          t('finances.manualSettleSuccess', 'ส่งหลักฐานการโอนเงินเรียบร้อยแล้ว รอการตรวจสอบ'),
+        );
         onOpenChange(false);
       }
     } catch (err) {
       console.error('Manual settle error:', err);
-      setScanError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการบันทึกรายการ');
+      const errorMsg = err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการบันทึกรายการ';
+      setScanError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setIsScanning(false);
     }
@@ -247,7 +244,10 @@ export function SettleUpModal({
         {/* Payment Amount Input (Only when isCentralFund is true) */}
         {isCentralFund && (
           <div className="space-y-1.5 animate-in fade-in duration-200">
-            <label htmlFor="paymentAmount" className="text-xs font-bold text-muted-foreground block">
+            <label
+              htmlFor="paymentAmount"
+              className="text-xs font-bold text-muted-foreground block"
+            >
               {t('finances.paymentAmount', 'Payment Amount (THB)')}
             </label>
             <div className="relative">
@@ -287,7 +287,8 @@ export function SettleUpModal({
             </div>
             {isAmountInvalid && (
               <p className="text-destructive text-[11px] font-medium mt-0.5">
-                {t('finances.amountInvalidDesc', 'Amount must be between ฿0.01 and ฿')}{payee.amount.toFixed(2)}
+                {t('finances.amountInvalidDesc', 'Amount must be between ฿0.01 and ฿')}
+                {payee.amount.toFixed(2)}
               </p>
             )}
           </div>
@@ -475,7 +476,10 @@ export function SettleUpModal({
                 {t('finances.centralFund.payFromCentral', 'Pay from Central Fund?')}
               </span>
               <span className="text-[10px] text-muted-foreground block">
-                {t('finances.centralFund.payFromCentralDesc', 'Mark this payment as using the shared pool.')}
+                {t(
+                  'finances.centralFund.payFromCentralDesc',
+                  'Mark this payment as using the shared pool.',
+                )}
               </span>
             </div>
             <input
@@ -488,42 +492,31 @@ export function SettleUpModal({
           </div>
         )}
 
-        {/* DEV MODE Confirmation Button or OCR Dropzone */}
-        {import.meta.env.DEV ? (
-          <div className="border-t border-border pt-4 space-y-3">
-            {scanError && (
-              <div className="border-rose-100 bg-rose-50 text-rose-800 p-3 rounded-xl border text-xs flex items-center gap-2 dark:bg-rose-950/20 dark:border-rose-950/30 dark:text-rose-400">
-                <AlertCircle className="w-5 h-5 shrink-0" />
-                <span>{scanError}</span>
-              </div>
-            )}
-            <Button
-              type="button"
-              disabled={isScanning || isAmountInvalid}
-              onClick={handleDevConfirm}
-              className="w-full text-xs h-10 rounded-xl bg-primary text-primary-foreground font-bold hover:opacity-90 transition-all flex items-center justify-center gap-1.5"
-            >
-              {isScanning ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <CheckCircle2 className="w-3.5 h-3.5" />
-              )}
-              {t('finances.centralFund.confirmDevMode', 'Confirm Payment (Dev Mode)')}
-            </Button>
-          </div>
-        ) : (
-          activeMethods.length > 0 && (
-            <div className="border-t border-border pt-4">
-              {scanError && (
-                <div className="mb-3 border-rose-100 bg-rose-50 text-rose-800 p-3 rounded-xl border text-xs flex items-center gap-2 dark:bg-rose-950/20 dark:border-rose-950/30 dark:text-rose-400">
+        {/* OCR Dropzone */}
+        {activeMethods.length > 0 && (
+          <div className="border-t border-border pt-4">
+            {scanError ? (
+              <div className="space-y-3">
+                <div className="border-rose-100 bg-rose-50 text-rose-800 p-3 rounded-xl border text-xs flex items-center gap-2 dark:bg-rose-950/20 dark:border-rose-950/30 dark:text-rose-400 animate-in fade-in duration-200">
                   <AlertCircle className="w-5 h-5 shrink-0" />
                   <span>{scanError}</span>
                 </div>
-              )}
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setScanError(null);
+                    setUploadedFile(null);
+                  }}
+                  className="w-full text-xs h-10 rounded-xl bg-primary text-primary-foreground font-bold hover:opacity-90 transition-all flex items-center justify-center gap-1.5"
+                >
+                  ลองอีกครั้ง
+                </Button>
+              </div>
+            ) : (
               <div
                 onDragOver={isAmountInvalid ? undefined : handleDragOver}
                 onDrop={isAmountInvalid ? undefined : handleReceiptUpload}
-                className={`relative group border-2 border-dashed rounded-2xl p-4 text-center transition-all duration-200 ${isAmountInvalid ? 'opacity-50 cursor-not-allowed border-border' : scanError ? 'border-destructive bg-destructive/5' : 'border-border hover:border-primary/50 bg-muted/50'}`}
+                className={`relative group border-2 border-dashed rounded-2xl p-4 text-center transition-all duration-200 ${isAmountInvalid ? 'opacity-50 cursor-not-allowed border-border' : 'border-border hover:border-primary/50 bg-muted/50'}`}
               >
                 <input
                   id="slip-upload"
@@ -547,12 +540,15 @@ export function SettleUpModal({
                         {t('finances.centralFund.verifyingSlip', 'Verifying slip, please wait...')}
                       </p>
                     </div>
-                  ) : uploadedFile && !scanError ? (
+                  ) : uploadedFile ? (
                     <div className="z-20">
                       <p className="text-xs font-semibold text-primary flex items-center gap-1 justify-center">
-                        <Check className="w-3.5 h-3.5" /> {t('finances.centralFund.slipAttached', 'Slip attached')}
+                        <Check className="w-3.5 h-3.5" />{' '}
+                        {t('finances.centralFund.slipAttached', 'Slip attached')}
                       </p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">{uploadedFile.name}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {uploadedFile.name}
+                      </p>
                     </div>
                   ) : (
                     <div className="z-20">
@@ -560,27 +556,32 @@ export function SettleUpModal({
                         {t('finances.centralFund.uploadSlip', 'Upload transfer slip')}
                       </p>
                       <p className="text-[10px] text-muted-foreground mt-0.5">
-                        {t('finances.centralFund.autoVerificationDesc', 'The system will automatically verify the amount.')}
+                        {t(
+                          'finances.centralFund.autoVerificationDesc',
+                          'The system will automatically verify the amount.',
+                        )}
                       </p>
                     </div>
                   )}
                 </div>
               </div>
-            </div>
-          )
+            )}
+          </div>
         )}
 
         {/* Confirm Settlement Buttons */}
         <div className="pt-2 flex flex-col gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            disabled={isScanning || isAmountInvalid}
-            onClick={handleManualSettle}
-            className="w-full text-xs h-10 rounded-xl border border-primary/20 hover:bg-primary/5 text-primary font-bold transition-colors"
-          >
-            {t('finances.submitManualConfirm', 'Submit for Manual Verification')}
-          </Button>
+          {scanError && scanAttempts >= 2 && (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isScanning || isAmountInvalid}
+              onClick={handleManualSettle}
+              className="w-full text-xs h-10 rounded-xl border border-primary/20 hover:bg-primary/5 text-primary font-bold transition-colors animate-in fade-in duration-300"
+            >
+              {t('finances.submitManualConfirm', 'Submit for Manual Verification')}
+            </Button>
+          )}
           <Button
             type="button"
             variant="outline"

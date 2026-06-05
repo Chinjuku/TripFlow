@@ -47,7 +47,9 @@ export function AddPlaceSheet({
   onConfirm,
 }: AddPlaceSheetProps) {
   const { t, i18n } = useTranslation();
-  const displayName = place ? (localized(i18n.language, place.name, place.nameEn) ?? place.name) : '';
+  const displayName = place
+    ? (localized(i18n.language, place.name, place.nameEn) ?? place.name)
+    : '';
   const initialDuration = place?.stayMinutes || DEFAULT_DURATION;
   const [duration, setDuration] = useState(initialDuration);
   const [startMinute, setStartMinute] = useState(() => suggestStart(daySchedule, initialDuration));
@@ -160,13 +162,21 @@ export function TimeStepper({ label, value, onChange, min, max, step, format }: 
         {label}
       </p>
       <div className="border-border flex items-center justify-between rounded-lg border">
-        <StepperButton onClick={dec} disabled={value <= min} aria-label={t('schedule.decreaseTime')}>
+        <StepperButton
+          onClick={dec}
+          disabled={value <= min}
+          aria-label={t('schedule.decreaseTime')}
+        >
           −
         </StepperButton>
         <span className="text-foreground flex-1 text-center text-lg font-bold tabular-nums">
           {format(value)}
         </span>
-        <StepperButton onClick={inc} disabled={value >= max} aria-label={t('schedule.increaseTime')}>
+        <StepperButton
+          onClick={inc}
+          disabled={value >= max}
+          aria-label={t('schedule.increaseTime')}
+        >
           +
         </StepperButton>
       </div>
@@ -203,7 +213,11 @@ export function DurationStepper({ value, onChange, max }: DurationStepperProps) 
         <span className="text-foreground flex-1 text-center text-lg font-bold tabular-nums">
           {formatDuration(value)}
         </span>
-        <StepperButton onClick={inc} disabled={value >= ceiling} aria-label={t('schedule.increaseTime')}>
+        <StepperButton
+          onClick={inc}
+          disabled={value >= ceiling}
+          aria-label={t('schedule.increaseTime')}
+        >
           +
         </StepperButton>
       </div>

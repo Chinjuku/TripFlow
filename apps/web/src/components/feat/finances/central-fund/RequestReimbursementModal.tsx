@@ -27,10 +27,13 @@ export function RequestReimbursementModal({
   const { t } = useTranslation();
 
   const schema = z.object({
-    amount: z.number().min(0.01).max(
-      remainingCentralFund,
-      `Cannot exceed remaining central fund (฿${remainingCentralFund.toLocaleString()})`
-    ),
+    amount: z
+      .number()
+      .min(0.01)
+      .max(
+        remainingCentralFund,
+        `Cannot exceed remaining central fund (฿${remainingCentralFund.toLocaleString()})`,
+      ),
   });
 
   type FormValues = z.infer<typeof schema>;
@@ -54,7 +57,10 @@ export function RequestReimbursementModal({
       open={open}
       onOpenChange={onOpenChange}
       title={t('finances.centralFund.requestReimbursement', 'Request Reimbursement')}
-      description={t('finances.centralFund.requestReimbursementDesc', 'Request money back from the central fund for expenses you paid.')}
+      description={t(
+        'finances.centralFund.requestReimbursementDesc',
+        'Request money back from the central fund for expenses you paid.',
+      )}
       className="sm:max-w-sm"
     >
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6 pt-4">

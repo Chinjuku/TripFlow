@@ -96,7 +96,12 @@ export function DatePicker({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
 
-  const locale = typeof document !== 'undefined' ? (document.documentElement.lang === 'th' ? 'th-TH' : 'en-US') : undefined;
+  const locale =
+    typeof document !== 'undefined'
+      ? document.documentElement.lang === 'th'
+        ? 'th-TH'
+        : 'en-US'
+      : undefined;
   const weekdayLabels = locale === 'th-TH' ? WEEKDAY_LABELS_TH : WEEKDAY_LABELS_EN;
   const defaultPlaceholder = locale === 'th-TH' ? 'เลือกวันที่' : 'Pick a date';
   const resolvedPlaceholder = placeholder ?? defaultPlaceholder;

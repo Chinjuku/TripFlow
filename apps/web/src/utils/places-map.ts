@@ -157,9 +157,7 @@ export function serializeOpeningPeriods(
 }
 
 /** Today's human-readable opening hours from a Google OpeningHours object. */
-export function openingHoursSummary(
-  hours: google.maps.places.OpeningHours | null,
-): string | null {
+export function openingHoursSummary(hours: google.maps.places.OpeningHours | null): string | null {
   if (!hours) return null;
   const today = new Date().getDay();
   const idx = (today + 6) % 7; // Google lists Mon-first.

@@ -107,11 +107,7 @@ export async function getFinancesByTripId(
     .from(tripBudgets)
     .where(and(eq(tripBudgets.trip_id, tripId), sql`${tripBudgets.category} is null`))
     .limit(1);
-  const tripPromise = db
-    .select()
-    .from(trips)
-    .where(eq(trips.id, tripId))
-    .limit(1);
+  const tripPromise = db.select().from(trips).where(eq(trips.id, tripId)).limit(1);
 
   // Wait for the first wave of queries
   const [members, rawExpenses, rawSettlements, [budget], [tripRow]] = await Promise.all([
@@ -122,9 +118,10 @@ export async function getFinancesByTripId(
     tripPromise,
   ]);
 
-  const finalIsDebtOptimized = isDebtOptimizedOverride !== undefined
-    ? isDebtOptimizedOverride
-    : (tripRow?.is_debt_optimized ?? false);
+  const finalIsDebtOptimized =
+    isDebtOptimizedOverride !== undefined
+      ? isDebtOptimizedOverride
+      : (tripRow?.is_debt_optimized ?? false);
 
   const memberMap = new Map<string, TripMemberProfile>();
   const memberUserIds: string[] = [];
@@ -217,11 +214,14 @@ export async function getFinancesByTripId(
 
   // Also count completed central fund settlements (reimbursements) where the treasurer pays members
   for (const set of rawSettlements) {
-    if (set.is_central_fund && set.status === 'completed' && set.payer_id === tripRow?.treasurer_id) {
+    if (
+      set.is_central_fund &&
+      set.status === 'completed' &&
+      set.payer_id === tripRow?.treasurer_id
+    ) {
       centralFundSpent += set.amount;
     }
   }
-
 
   // B. Net Balances Calculation (based on expenses, splits, and completed settlements)
   const netBalances: Record<string, number> = {};
@@ -229,7 +229,9 @@ export async function getFinancesByTripId(
     netBalances[m.userId] = 0;
   }
 
-  const centralFundExpenseIds = new Set(rawExpenses.filter(e => e.is_central_fund).map(e => e.id));
+  const centralFundExpenseIds = new Set(
+    rawExpenses.filter((e) => e.is_central_fund).map((e) => e.id),
+  );
 
   // Plus amount paid in expenses
   for (const exp of rawExpenses) {
@@ -512,7 +514,9 @@ export async function createSettlement(
 
   if (actualPayerId !== userId) {
     if (!input.isCentralFund) {
-      throw new Error('You can only create settlements on behalf of someone else for central fund requests');
+      throw new Error(
+        'You can only create settlements on behalf of someone else for central fund requests',
+      );
     }
     const [trip] = await db.select().from(trips).where(eq(trips.id, input.tripId)).limit(1);
     if (actualPayerId !== trip?.treasurer_id) {
@@ -534,13 +538,15 @@ export async function createSettlement(
             and(
               eq(settlements.trip_id, input.tripId),
               eq(settlements.payer_id, actualPayerId),
-              eq(settlements.is_central_fund, true)
-            )
+              eq(settlements.is_central_fund, true),
+            ),
           );
-        
+
         const currentPaidAndPending = userCentralSettlements.reduce((acc, s) => acc + s.amount, 0);
         if (currentPaidAndPending + input.amount > trip.central_fund_per_person) {
-          throw new ConflictError(`Cannot pay more than the required central fund amount (฿${trip.central_fund_per_person.toLocaleString()})`);
+          throw new ConflictError(
+            `Cannot pay more than the required central fund amount (฿${trip.central_fund_per_person.toLocaleString()})`,
+          );
         }
       }
     }
@@ -594,11 +600,7 @@ export async function confirmSettlement(
   // Ensure caller is the payee (recipient of money), since they should be the one confirming they received it.
   // In central fund settlements, the treasurer can also confirm payouts or contributions.
   // In development mode, we allow the payer to confirm as well to facilitate testing.
-  const [trip] = await db
-    .select()
-    .from(trips)
-    .where(eq(trips.id, settlement.trip_id))
-    .limit(1);
+  const [trip] = await db.select().from(trips).where(eq(trips.id, settlement.trip_id)).limit(1);
   const isTreasurer = trip?.treasurer_id === userId;
 
   const isDev = process.env.NODE_ENV === 'development';
@@ -607,7 +609,9 @@ export async function confirmSettlement(
     !(settlement.is_central_fund && isTreasurer) &&
     !(isDev && settlement.payer_id === userId)
   ) {
-    throw new ForbiddenError('Only the recipient of the settlement or the treasurer can confirm it');
+    throw new ForbiddenError(
+      'Only the recipient of the settlement or the treasurer can confirm it',
+    );
   }
 
   const [updated] = await db
@@ -649,11 +653,7 @@ export async function deleteSettlement(
     throw new NotFoundError('Settlement not found');
   }
 
-  const [trip] = await db
-    .select()
-    .from(trips)
-    .where(eq(trips.id, settlement.trip_id))
-    .limit(1);
+  const [trip] = await db.select().from(trips).where(eq(trips.id, settlement.trip_id)).limit(1);
 
   const isTreasurer = trip?.treasurer_id === userId;
 
@@ -718,7 +718,9 @@ export async function updateCentralFund(
   const isTreasurer = trip.treasurer_id === userId;
 
   if (!isOwner && !isTreasurer) {
-    throw new ForbiddenError('Only the trip owner or the treasurer can update the central fund settings');
+    throw new ForbiddenError(
+      'Only the trip owner or the treasurer can update the central fund settings',
+    );
   }
 
   // If treasurer is calling, they cannot change the treasurer
@@ -729,10 +731,17 @@ export async function updateCentralFund(
   }
 
   // If owner is calling, and central fund is already configured, they cannot change the amount
-  const isConfigured = Boolean(trip.treasurer_id && trip.central_fund_per_person && Number(trip.central_fund_per_person) > 0);
+  const isConfigured = Boolean(
+    trip.treasurer_id && trip.central_fund_per_person && Number(trip.central_fund_per_person) > 0,
+  );
   if (isOwner && isConfigured) {
-    if (input.centralFundPerPerson !== null && Number(input.centralFundPerPerson) !== Number(trip.central_fund_per_person)) {
-      throw new ForbiddenError('Only the treasurer can update the central fund amount per person after setup');
+    if (
+      input.centralFundPerPerson !== null &&
+      Number(input.centralFundPerPerson) !== Number(trip.central_fund_per_person)
+    ) {
+      throw new ForbiddenError(
+        'Only the treasurer can update the central fund amount per person after setup',
+      );
     }
   }
 
@@ -745,17 +754,23 @@ export async function updateCentralFund(
         and(
           eq(settlements.trip_id, input.tripId),
           eq(settlements.is_central_fund, true),
-          eq(settlements.payee_id, trip.treasurer_id)
-        )
+          eq(settlements.payee_id, trip.treasurer_id),
+        ),
       );
-    
+
     if (centralSettlements.length > 0) {
-      throw new ConflictError('Cannot change the treasurer because contributions have already been made');
+      throw new ConflictError(
+        'Cannot change the treasurer because contributions have already been made',
+      );
     }
   }
 
   // Prevent decreasing the per-person amount if contributions already exist
-  if (input.centralFundPerPerson !== null && trip.central_fund_per_person !== null && Number(input.centralFundPerPerson) < Number(trip.central_fund_per_person)) {
+  if (
+    input.centralFundPerPerson !== null &&
+    trip.central_fund_per_person !== null &&
+    Number(input.centralFundPerPerson) < Number(trip.central_fund_per_person)
+  ) {
     const centralSettlements = await db
       .select()
       .from(settlements)
@@ -763,12 +778,14 @@ export async function updateCentralFund(
         and(
           eq(settlements.trip_id, input.tripId),
           eq(settlements.is_central_fund, true),
-          eq(settlements.payee_id, trip.treasurer_id || '')
-        )
+          eq(settlements.payee_id, trip.treasurer_id || ''),
+        ),
       );
-    
+
     if (centralSettlements.length > 0) {
-      throw new ConflictError('Cannot decrease the amount per person because members have already made contributions');
+      throw new ConflictError(
+        'Cannot decrease the amount per person because members have already made contributions',
+      );
     }
   }
 
@@ -1026,19 +1043,24 @@ export async function verifySlipService(
     .where(eq(userPaymentDetails.user_id, settlement.payee_id))
     .limit(1);
 
-  const expectedPromptpayId = payeePaymentDetails?.promptpay_id || '';
-  const expectedBankName = payeePaymentDetails?.bank_name || '';
-  const expectedBankAccountNumber = payeePaymentDetails?.bank_account_number || '';
-  const expectedBankAccountName = payeePaymentDetails?.bank_account_name || '';
+  const expectedPromptpayId = payeePaymentDetails?.is_show_promptpay
+    ? payeePaymentDetails?.promptpay_id || ''
+    : '';
+  const expectedBankName = payeePaymentDetails?.is_show_mobile_banking
+    ? payeePaymentDetails?.bank_name || ''
+    : '';
+  const expectedBankAccountNumber = payeePaymentDetails?.is_show_mobile_banking
+    ? payeePaymentDetails?.bank_account_number || ''
+    : '';
+  const expectedBankAccountName = payeePaymentDetails?.is_show_mobile_banking
+    ? payeePaymentDetails?.bank_account_name || ''
+    : '';
 
-  // 2. Setup Gemini
+  // 2. Setup Typhoon OCR
   const { env } = await import('../env');
-  if (!env.geminiApiKey) {
-    throw new Error('GEMINI_API_KEY is not configured on the server');
+  if (!env.typhoonOcrApiKey) {
+    throw new Error('TYPHOON_OCR_API_KEY is not configured on the server');
   }
-
-  const { GoogleGenAI } = await import('@google/genai');
-  const ai = new GoogleGenAI({ apiKey: env.geminiApiKey });
 
   const prompt = `
 คุณคือ AI ผู้เชี่ยวชาญด้านการตรวจสอบและสกัดข้อมูลจากภาพสลิปโอนเงิน (e-slip) ของธนาคารในประเทศไทยและ TrueMoney Wallet
@@ -1050,15 +1072,27 @@ export async function verifySlipService(
    - ธนาคารผู้รับคาดหวัง (Bank Name): "${expectedBankName || 'ไม่ได้ลงทะเบียน'}"
    - เลขบัญชีผู้รับคาดหวัง (Bank Account Number): "${expectedBankAccountNumber || 'ไม่ได้ลงทะเบียน'}"
    - เบอร์ PromptPay ผู้รับคาดหวัง (PromptPay ID): "${expectedPromptpayId || 'ไม่ได้ลงทะเบียน'}"
+   - ยอดเงินที่คาดหวัง (Expected Amount): ${expectedAmount} บาท
 
-ข้อกำหนดการตรวจสอบ (Verification Rules):
-- **สำคัญมาก**: ภาพที่แนบมา **ต้องเป็นภาพสลิปการโอนเงิน (e-slip) ที่ออกโดยแอปพลิเคชันธนาคาร หรือ TrueMoney จริงๆ เท่านั้น** หากรูปภาพเป็นเพียงภาพแคปหน้าจอ (Screenshot) ของแอปพลิเคชันอื่น, เป็นรูปถ่ายธรรมดา, หรือมีลักษณะไม่ใช่สลิปโอนเงิน ให้ถือว่าไม่ถูกต้องทันที และระบุ mismatch_reason เป็น "รูปภาพที่อัปโหลดไม่ใช่สลิปการโอนเงินที่ถูกต้อง"
-- "receiver_name" ในสลิปต้องสอดคล้องหรือใกล้เคียงกับชื่อผู้รับโอนคาดหวัง (เช่น มีความคล้ายคลึงของตัวอักษร, มีการแปลไทย-อังกฤษ หรือเป็นคนเดียวกันแต่เขียนต่างรูปแบบ)
-- หากมีข้อมูล PromptPay คาดหวัง: ตรวจสอบว่าสลิปโอนเข้าเบอร์/รหัส PromptPay นี้จริงหรือไม่
-- หากมีข้อมูลเลขที่บัญชีคาดหวัง: ตรวจสอบว่าสลิปโอนเข้าธนาคารนี้และเลขที่บัญชีนี้หรือไม่ (เช่น เลข 3-4 ตัวท้ายของเลขบัญชีในสลิปตรงกัน)
-- หากข้อมูลผู้รับเงินไม่ตรงกัน ตรวจไม่พบ หรือไม่ใช่สลิปโอนเงิน ให้ประเมิน is_receiver_match: false และระบุเหตุผลใน "mismatch_reason" ด้วยภาษาไทย
+ข้อกำหนดการตรวจสอบ (Verification Rules) แบ่งเป็น 2 กรณีตามประเภทสลิป:
 
-ข้อกำหนดด้านความถูกต้อง:
+1. **กรณีเป็นสลิปพร้อมเพย์ (PromptPay)** (สลิปที่มีการโอนเข้าเบอร์โทรศัพท์/เลขบัตรประชาชน/รหัสพร้อมเพย์):
+   - ให้ตรวจสอบ **เบอร์โทรศัพท์หรือรหัส PromptPay ปลายทางผู้รับ (ผู้รับโอน) เท่านั้น** บนสลิป ว่าตรงกับเบอร์ PromptPay ผู้รับคาดหวัง: "${expectedPromptpayId}" หรือไม่ **ห้ามสับสนหรือไปตรวจกับเบอร์/รหัสของฝั่งผู้โอน (ต้นทาง) เด็ดขาด**
+   - ตรวจสอบ **จำนวนเงินที่โอน (Amount)** บนสลิป ว่าตรงกับยอดเงินที่คาดหวัง: ${expectedAmount} บาทหรือไม่
+   - หากข้อมูลไม่ถูกต้องหรือตรวจสอบไม่ได้ ให้ประเมิน is_receiver_match: false และระบุเหตุผลใน mismatch_reason
+   - หากตรงกัน ให้ถือว่าผ่าน (is_receiver_match: true)
+
+2. **กรณีเป็นสลิปโอนเข้าบัญชีธนาคารโดยตรง (Mobile Banking / Bank Transfer)** (สลิปที่มีการโอนเข้าเลขบัญชีธนาคาร):
+   - ให้ตรวจสอบ **เลขที่บัญชีปลายทาง (ผู้รับโอน) เท่านั้น** บนสลิป (โดยปกติธนาคารจะใส่ดอกจันเซนเซอร์ตัวเลขหรือกากาบาท (X) ให้เช็คว่าเลขท้าย 3-4 หลักที่แสดงอยู่บนสลิป ตรงกับเลขบัญชีผู้รับคาดหวัง: "${expectedBankAccountNumber}" หรือไม่) **ห้ามสับสนหรือนำเลขที่บัญชีของผู้โอน (ต้นทาง) มาใช้ตรวจสอบเด็ดขาด**
+   - ตรวจสอบ **จำนวนเงินที่โอน (Amount)** บนสลิป ว่าตรงกับยอดเงินที่คาดหวัง: ${expectedAmount} บาทหรือไม่
+   - ตรวจสอบ **ชื่อบัญชีผู้รับปลายทาง (Receiver Name)** บนสลิป ว่าตรงหรือใกล้เคียงกับชื่อบัญชีคาดหวัง: "${expectedBankAccountName || payeeName}" (มีความคล้ายคลึง มีการแปลภาษา หรือเป็นคนเดียวกัน) หรือไม่
+   - หากข้อมูลไม่ถูกต้องหรือตรวจสอบไม่ได้ ให้ประเมิน is_receiver_match: false และระบุเหตุผลใน mismatch_reason
+   - หากตรงกันทั้งหมด ให้ถือว่าผ่าน (is_receiver_match: true)
+
+ข้อกำหนดเพิ่มเติม:
+- **สำคัญมาก**: ภาพที่แนบมา **ต้องเป็นภาพสลิปการโอนเงิน (e-slip) ที่ออกโดยแอปพลิเคชันธนาคาร หรือ TrueMoney จริงๆ เท่านั้น** หากรูปภาพเป็นเพียงภาพแคปหน้าจอ (Screenshot) ของแอปพลิเคชันอื่น, เป็นรูปถ่ายธรรมดา, หรือมีลักษณะไม่ใช่สลิปโอนเงิน ให้ถือว่าไม่ถูกต้องทันที และระบุ mismatch_reason เป็น "รูปภาพที่อัปโหลดไม่ใช่สลิปการโอนเงินที่ถูกต้อง" และให้ is_receiver_match: false
+
+ข้อกำหนดด้านความถูกต้องของผลลัพธ์:
 1. หากอ่านข้อมูลส่วนไหนไม่ได้ หรือไม่มีในสลิป ให้ใส่ค่าเป็น null
 2. "amount" ต้องเป็นตัวเลขเท่านั้น (Number) ไม่เอาเครื่องหมายลูกน้ำ (,) หรือตัวอักษร หากไม่ใช่สลิปให้ใส่ 0
 3. "datetime" ให้อยู่ในรูปแบบ "YYYY-MM-DD HH:MM" (ปี ค.ศ.)
@@ -1074,41 +1108,79 @@ export async function verifySlipService(
   "datetime": "YYYY-MM-DD HH:MM",
   "reference_no": "เลขอ้างอิงรายการ (ถ้ามี)",
   "is_receiver_match": true หรือ false,
-  "mismatch_reason": "ระบุเหตุผลภาษาไทยที่ข้อมูลไม่ตรง เช่น 'ชื่อผู้รับเงินบนสลิปไม่ตรงกับคุณ...' หรือ 'เลขที่บัญชีปลายทางไม่ตรงกับบัญชีที่ลงทะเบียนไว้' (หากตรงกันดีทั้งหมดให้ใส่ null)"
+  "mismatch_reason": "ระบุเหตุผลภาษาไทยที่ข้อมูลไม่ตรง เช่น 'เบอร์ PromptPay ปลายทางไม่ตรงกับที่ลงทะเบียนไว้' หรือ 'เลขบัญชีปลายทางไม่ตรงกับบัญชีที่ลงทะเบียนไว้' (หากตรงกันดีทั้งหมดให้ใส่ null)"
 }
   `;
 
-  // 3. Call Gemini Vision API
+  // 3. Call Typhoon OCR API to extract raw text
   let responseText = '';
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: [
-        {
-          role: 'user',
-          parts: [
-            { text: prompt },
-            {
-              inlineData: {
-                data: slipImageBase64,
-                mimeType,
-              },
-            },
-          ],
-        },
-      ],
-      config: {
-        temperature: 0.1,
+    let rawOcrText = '';
+    const formData = new FormData();
+    const buffer = Buffer.from(slipImageBase64, 'base64');
+    const blob = new Blob([buffer], { type: mimeType });
+    formData.append('file', blob, 'slip.jpg');
+    formData.append('model', 'typhoon-ocr');
+
+    const ocrResponse = await fetch('https://api.opentyphoon.ai/v1/ocr', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.typhoonOcrApiKey}`,
       },
+      body: formData,
     });
-    responseText = response.text || '';
+
+    if (!ocrResponse.ok) {
+      const errorText = await ocrResponse.text();
+      throw new Error(`Typhoon OCR API error: ${ocrResponse.status} ${errorText}`);
+    }
+
+    const ocrResult = (await ocrResponse.json()) as any;
+    for (const pageResult of ocrResult.results || []) {
+      if (pageResult.success && pageResult.message) {
+        rawOcrText += pageResult.message.choices[0].message.content + '\n';
+      } else if (!pageResult.success) {
+        throw new Error(`Typhoon page processing error: ${pageResult.error}`);
+      }
+    }
+
+    // 4. Use Typhoon Chat Completions to parse the text into JSON
+    const chatPrompt = prompt + `\n\nTEXT:\n${rawOcrText}`;
+    const chatResponse = await fetch('https://api.opentyphoon.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.typhoonOcrApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'typhoon-v2.5-30b-a3b-instruct',
+        messages: [{ role: 'user', content: chatPrompt }],
+        temperature: 0.1,
+        response_format: { type: 'json_object' },
+      }),
+    });
+
+    if (!chatResponse.ok) {
+      const err = await chatResponse.text();
+      throw new Error(`Typhoon Chat API error: ${chatResponse.status} ${err}`);
+    }
+
+    const chatJson = (await chatResponse.json()) as any;
+    responseText = chatJson.choices[0].message.content;
   } catch (error) {
-    console.error('Gemini API Error:', error);
+    console.error('Typhoon OCR API Error:', error);
     await db.delete(settlements).where(eq(settlements.id, settlementId));
     const errStr = String(error);
-    let friendlyReason = 'ระบบ AI ตรวจสอบสลิปขัดข้องชั่วคราว กรุณาลองใหม่อีกครั้ง หรือยืนยันด้วยวิธีอื่น';
-    if (errStr.includes('429') || errStr.includes('RESOURCE_EXHAUSTED') || errStr.includes('quota') || errStr.includes('Quota')) {
-      friendlyReason = 'ระบบตรวจสอบสลิปอัตโนมัติ (AI) เกินโควตาการใช้งานชั่วคราวแล้ว กรุณายืนยันการชำระเงินด้วยวิธีอื่น หรือลองอีกครั้งในภายหลัง';
+    let friendlyReason =
+      'ระบบ AI ตรวจสอบสลิปขัดข้องชั่วคราว กรุณาลองใหม่อีกครั้ง หรือยืนยันด้วยวิธีอื่น';
+    if (
+      errStr.includes('429') ||
+      errStr.includes('RESOURCE_EXHAUSTED') ||
+      errStr.includes('quota') ||
+      errStr.includes('Quota')
+    ) {
+      friendlyReason =
+        'ระบบตรวจสอบสลิปอัตโนมัติ (AI) เกินโควตาการใช้งานชั่วคราวแล้ว กรุณายืนยันการชำระเงินด้วยวิธีอื่น หรือลองอีกครั้งในภายหลัง';
     }
     return {
       isMatch: false,
@@ -1163,7 +1235,9 @@ export async function verifySlipService(
     await db.delete(settlements).where(eq(settlements.id, settlementId));
     return {
       isMatch: false,
-      reason: extractedData.mismatch_reason || 'ข้อมูลบัญชีปลายทางผู้รับโอนไม่ตรงกับข้อมูลผู้รับเงินในระบบ',
+      reason:
+        extractedData.mismatch_reason ||
+        'ข้อมูลบัญชีปลายทางผู้รับโอนไม่ตรงกับข้อมูลผู้รับเงินในระบบ',
     };
   }
 
@@ -1214,12 +1288,9 @@ export async function extractReceiptService(
   mimeType: string,
 ): Promise<ExtractReceiptResult> {
   const { env } = await import('../env');
-  if (!env.geminiApiKey) {
-    throw new Error('GEMINI_API_KEY is not configured on the server');
+  if (!env.typhoonOcrApiKey) {
+    throw new Error('TYPHOON_OCR_API_KEY is not configured on the server');
   }
-
-  const { GoogleGenAI } = await import('@google/genai');
-  const ai = new GoogleGenAI({ apiKey: env.geminiApiKey });
 
   const prompt = `
 คุณคือ AI ผู้เชี่ยวชาญด้านการอ่านใบเสร็จรับเงิน (Receipt) หรือสลิปค่าใช้จ่าย
@@ -1247,33 +1318,71 @@ export async function extractReceiptService(
 
   let responseText = '';
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: [
-        {
-          role: 'user',
-          parts: [
-            { text: prompt },
-            {
-              inlineData: {
-                data: slipImageBase64,
-                mimeType,
-              },
-            },
-          ],
-        },
-      ],
-      config: {
-        temperature: 0.1,
+    let rawOcrText = '';
+    const formData = new FormData();
+    const buffer = Buffer.from(slipImageBase64, 'base64');
+    const blob = new Blob([buffer], { type: mimeType });
+    formData.append('file', blob, 'slip.jpg');
+    formData.append('model', 'typhoon-ocr');
+
+    const ocrResponse = await fetch('https://api.opentyphoon.ai/v1/ocr', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.typhoonOcrApiKey}`,
       },
+      body: formData,
     });
-    responseText = response.text || '';
+
+    if (!ocrResponse.ok) {
+      const errorText = await ocrResponse.text();
+      throw new Error(`Typhoon OCR API error: ${ocrResponse.status} ${errorText}`);
+    }
+
+    const ocrResult = (await ocrResponse.json()) as any;
+    for (const pageResult of ocrResult.results || []) {
+      if (pageResult.success && pageResult.message) {
+        rawOcrText += pageResult.message.choices[0].message.content + '\n';
+      } else if (!pageResult.success) {
+        throw new Error(`Typhoon page processing error: ${pageResult.error}`);
+      }
+    }
+
+    // Use Typhoon Chat Completions to parse the text into JSON
+    const chatPrompt = prompt + `\n\nTEXT:\n${rawOcrText}`;
+    const chatResponse = await fetch('https://api.opentyphoon.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.typhoonOcrApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'typhoon-v2.5-30b-a3b-instruct',
+        messages: [{ role: 'user', content: chatPrompt }],
+        temperature: 0.1,
+        response_format: { type: 'json_object' },
+      }),
+    });
+
+    if (!chatResponse.ok) {
+      const err = await chatResponse.text();
+      throw new Error(`Typhoon Chat API error: ${chatResponse.status} ${err}`);
+    }
+
+    const chatJson = (await chatResponse.json()) as any;
+    responseText = chatJson.choices[0].message.content;
   } catch (error) {
-    console.error('Gemini API Error:', error);
+    console.error('Typhoon OCR API Error:', error);
     const errStr = String(error);
-    let friendlyReason = 'ระบบ AI ตรวจสอบรูปภาพขัดข้องชั่วคราว กรุณาลองใหม่อีกครั้ง หรือกรอกข้อมูลด้วยตัวเอง';
-    if (errStr.includes('429') || errStr.includes('RESOURCE_EXHAUSTED') || errStr.includes('quota') || errStr.includes('Quota')) {
-      friendlyReason = 'ระบบสแกนอัตโนมัติ (AI) เกินโควตาการใช้งานชั่วคราวแล้ว กรุณากรอกข้อมูลค่าใช้จ่ายด้วยตัวเอง หรือลองอีกครั้งในภายหลัง';
+    let friendlyReason =
+      'ระบบ AI ตรวจสอบรูปภาพขัดข้องชั่วคราว กรุณาลองใหม่อีกครั้ง หรือกรอกข้อมูลด้วยตัวเอง';
+    if (
+      errStr.includes('429') ||
+      errStr.includes('RESOURCE_EXHAUSTED') ||
+      errStr.includes('quota') ||
+      errStr.includes('Quota')
+    ) {
+      friendlyReason =
+        'ระบบสแกนอัตโนมัติ (AI) เกินโควตาการใช้งานชั่วคราวแล้ว กรุณากรอกข้อมูลค่าใช้จ่ายด้วยตัวเอง หรือลองอีกครั้งในภายหลัง';
     }
     throw new DomainError(friendlyReason, 'VALIDATION_FAILED');
   }
@@ -1294,7 +1403,10 @@ export async function extractReceiptService(
     const amount = Number(extractedData.amount) || null;
 
     if (!merchant && !amount) {
-      throw new DomainError('รูปภาพที่อัปโหลดไม่ใช่ใบเสร็จหรือสลิปการโอนเงินที่ถูกต้อง กรุณาอัปโหลดรูปภาพที่ชัดเจนขึ้น หรือกรอกข้อมูลด้วยตัวเอง', 'VALIDATION_FAILED');
+      throw new DomainError(
+        'รูปภาพที่อัปโหลดไม่ใช่ใบเสร็จหรือสลิปการโอนเงินที่ถูกต้อง กรุณาอัปโหลดรูปภาพที่ชัดเจนขึ้น หรือกรอกข้อมูลด้วยตัวเอง',
+        'VALIDATION_FAILED',
+      );
     }
 
     return {
@@ -1306,6 +1418,11 @@ export async function extractReceiptService(
     };
   } catch (err) {
     console.error('Failed to parse Gemini output:', responseText);
-    throw new DomainError(err instanceof Error ? err.message : 'ไม่สามารถอ่านข้อมูลสลิปได้ กรุณาอัปโหลดภาพที่ชัดเจนขึ้น หรือกรอกข้อมูลด้วยตัวเอง', 'VALIDATION_FAILED');
+    throw new DomainError(
+      err instanceof Error
+        ? err.message
+        : 'ไม่สามารถอ่านข้อมูลสลิปได้ กรุณาอัปโหลดภาพที่ชัดเจนขึ้น หรือกรอกข้อมูลด้วยตัวเอง',
+      'VALIDATION_FAILED',
+    );
   }
 }

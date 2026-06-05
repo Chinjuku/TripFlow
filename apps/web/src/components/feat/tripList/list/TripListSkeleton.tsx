@@ -39,7 +39,10 @@ function TripCardSkeleton() {
         <div className="border-border/60 mt-auto flex items-center justify-between gap-3 border-t pt-3">
           <div className="flex -space-x-2">
             {[0, 1, 2].map((i) => (
-              <Skeleton key={i} className="border-card h-8 w-8 rounded-full border-2 sm:h-7 sm:w-7" />
+              <Skeleton
+                key={i}
+                className="border-card h-8 w-8 rounded-full border-2 sm:h-7 sm:w-7"
+              />
             ))}
           </div>
           <Skeleton className="h-6 w-16 rounded-full" />

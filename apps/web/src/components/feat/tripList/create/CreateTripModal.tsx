@@ -8,7 +8,10 @@ import { DateRangePicker, type DateRange } from '@/components/ui/date-range-pick
 import { Modal } from '@/components/ui/modal';
 import { ModalHeader } from '@/components/ui/modal-header';
 import { createTrip } from '@/components/feat/tripList';
-import { DestinationPicker, type DestinationValue } from '@/components/shared/form/DestinationPicker';
+import {
+  DestinationPicker,
+  type DestinationValue,
+} from '@/components/shared/form/DestinationPicker';
 
 interface CreateTripModalProps {
   open: boolean;
@@ -24,7 +27,10 @@ function formatRange(from: Date, to: Date): string {
   const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
   if (from.getTime() === to.getTime()) return from.toLocaleDateString(undefined, opts);
   const sameYear = from.getFullYear() === to.getFullYear();
-  const fromStr = from.toLocaleDateString(undefined, sameYear ? { day: 'numeric', month: 'short' } : opts);
+  const fromStr = from.toLocaleDateString(
+    undefined,
+    sameYear ? { day: 'numeric', month: 'short' } : opts,
+  );
   return `${fromStr} – ${to.toLocaleDateString(undefined, opts)}`;
 }
 
@@ -114,7 +120,10 @@ export function CreateTripModal({ open, onOpenChange, onCreated }: CreateTripMod
         onClose={handleClose}
       />
 
-      <form onSubmit={handleSubmit} className="space-y-5 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-1 sm:px-6 sm:pb-6">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-5 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-1 sm:px-6 sm:pb-6"
+      >
         <div className="space-y-1.5">
           <Label htmlFor="trip-title" className="text-xs font-semibold uppercase tracking-wide">
             {t('trips.tripName')}

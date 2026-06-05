@@ -48,7 +48,10 @@ export function Timeline({
   return (
     <div
       ref={composedRef}
-      className={cn('relative ml-10 transition-colors sm:ml-12', isOver && 'bg-primary/5 rounded-lg')}
+      className={cn(
+        'relative ml-10 transition-colors sm:ml-12',
+        isOver && 'bg-primary/5 rounded-lg',
+      )}
       style={{ height: TIMELINE_HEIGHT_PX }}
     >
       {hourLines.map((h, idx) => {

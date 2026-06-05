@@ -1,11 +1,5 @@
 import { useState } from 'react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bell } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/cn';
@@ -67,14 +61,19 @@ export function NotificationsCard() {
       </CardHeader>
       <CardContent className="divide-border divide-y">
         {PREFS.map((key) => (
-          <div key={key} className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
+          <div
+            key={key}
+            className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
+          >
             <div>
-              <p className="text-foreground text-sm font-medium">
-                {t(`settings.notif.${key}`)}
-              </p>
+              <p className="text-foreground text-sm font-medium">{t(`settings.notif.${key}`)}</p>
               <p className="text-muted-foreground text-xs">{t(`settings.notif.${key}Desc`)}</p>
             </div>
-            <Toggle checked={prefs[key]} onChange={() => toggle(key)} label={t(`settings.notif.${key}`)} />
+            <Toggle
+              checked={prefs[key]}
+              onChange={() => toggle(key)}
+              label={t(`settings.notif.${key}`)}
+            />
           </div>
         ))}
       </CardContent>

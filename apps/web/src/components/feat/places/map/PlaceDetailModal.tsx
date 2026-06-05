@@ -17,7 +17,12 @@ interface PlaceDetailModalProps {
   placeName: string;
 }
 
-export function PlaceDetailModal({ open, onOpenChange, placeId, placeName }: PlaceDetailModalProps) {
+export function PlaceDetailModal({
+  open,
+  onOpenChange,
+  placeId,
+  placeName,
+}: PlaceDetailModalProps) {
   if (!API_KEY) {
     return (
       <Modal open={open} onOpenChange={onOpenChange} title={placeName} className="sm:max-w-2xl">
@@ -27,7 +32,12 @@ export function PlaceDetailModal({ open, onOpenChange, placeId, placeName }: Pla
   }
   return (
     <APIProvider apiKey={API_KEY}>
-      <DetailModal open={open} onOpenChange={onOpenChange} placeId={placeId} placeName={placeName} />
+      <DetailModal
+        open={open}
+        onOpenChange={onOpenChange}
+        placeId={placeId}
+        placeName={placeName}
+      />
     </APIProvider>
   );
 }

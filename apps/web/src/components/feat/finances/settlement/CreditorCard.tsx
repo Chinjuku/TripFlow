@@ -76,11 +76,13 @@ export function CreditorCard({
             )}
           </div>
           <div>
-            <h3 className="font-headline font-bold text-foreground text-base">
-              {creditor.name}
-            </h3>
+            <h3 className="font-headline font-bold text-foreground text-base">{creditor.name}</h3>
             <p className="text-destructive text-xs font-semibold mt-0.5 font-label">
-              {t('finances.youOwe')} ฿{creditor.amountOwed.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {t('finances.youOwe')} ฿
+              {creditor.amountOwed.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </p>
           </div>
         </div>
@@ -109,10 +111,9 @@ export function CreditorCard({
           className="w-full px-5 py-3 text-xs font-bold text-muted-foreground hover:text-foreground flex items-center justify-between transition-colors cursor-pointer font-label"
         >
           <span>
-            {isOptimized 
+            {isOptimized
               ? t('finances.viewUnderlyingSplits', { count: creditor.transactions.length })
-              : t('finances.viewTransactions', { count: creditor.transactions.length })
-            }
+              : t('finances.viewTransactions', { count: creditor.transactions.length })}
           </span>
           {isExpanded ? (
             <ChevronUp className="w-4 h-4 text-muted-foreground" />
@@ -125,7 +126,9 @@ export function CreditorCard({
         {isExpanded && (
           <div className="px-5 pb-5 pt-1 space-y-2 bg-card animate-in slide-in-from-top-2 duration-200">
             {creditor.transactions.length === 0 ? (
-              <p className="text-muted-foreground text-xs py-2 italic font-label">{t('finances.noTransactionRecords')}</p>
+              <p className="text-muted-foreground text-xs py-2 italic font-label">
+                {t('finances.noTransactionRecords')}
+              </p>
             ) : (
               creditor.transactions.map((tx) => (
                 <div
@@ -149,8 +152,14 @@ export function CreditorCard({
                       </p>
                     </div>
                   </div>
-                  <span className={`font-headline font-bold text-xs whitespace-nowrap ${tx.amount > 0 ? 'text-destructive' : 'text-primary'}`}>
-                    {tx.amount > 0 ? '-' : '+'}฿{Math.abs(tx.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  <span
+                    className={`font-headline font-bold text-xs whitespace-nowrap ${tx.amount > 0 ? 'text-destructive' : 'text-primary'}`}
+                  >
+                    {tx.amount > 0 ? '-' : '+'}฿
+                    {Math.abs(tx.amount).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                   </span>
                 </div>
               ))

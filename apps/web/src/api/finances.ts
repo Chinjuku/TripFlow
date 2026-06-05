@@ -101,7 +101,10 @@ export async function getPaymentDetails(): Promise<UserPaymentDetail | null> {
   return res.data as UserPaymentDetail | null;
 }
 
-export async function verifySlip(id: string, file: File): Promise<{ isMatch: boolean; reason?: string; settlement?: HydratedSettlement }> {
+export async function verifySlip(
+  id: string,
+  file: File,
+): Promise<{ isMatch: boolean; reason?: string; settlement?: HydratedSettlement }> {
   const res = await api.finances.settlement[id]!['verify-slip'].post({
     slip_image: file,
   });

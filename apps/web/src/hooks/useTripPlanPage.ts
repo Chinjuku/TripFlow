@@ -197,7 +197,9 @@ export function useTripPlanPage(id: string | undefined) {
       exitBulkMode();
     } catch (err) {
       setAddError(
-        err instanceof Error ? err.message : t('plan.failedToRemove', 'Failed to remove some places'),
+        err instanceof Error
+          ? err.message
+          : t('plan.failedToRemove', 'Failed to remove some places'),
       );
     } finally {
       setBulkBusy(false);
@@ -229,7 +231,9 @@ export function useTripPlanPage(id: string | undefined) {
         return sortByVotesThenAge([added, ...without]);
       });
     } catch (err) {
-      setAddError(err instanceof Error ? err.message : t('plan.failedToAdd', 'Failed to add place'));
+      setAddError(
+        err instanceof Error ? err.message : t('plan.failedToAdd', 'Failed to add place'),
+      );
     }
   }
 

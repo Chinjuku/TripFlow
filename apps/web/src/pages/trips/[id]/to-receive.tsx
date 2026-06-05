@@ -197,7 +197,9 @@ function TripToReceiveContent() {
 
     setTimeout(() => {
       setIsRequestingAll(false);
-      toast.success(t('finances.toastRequestAll', { names: debtorNames || t('finances.everyone') }));
+      toast.success(
+        t('finances.toastRequestAll', { names: debtorNames || t('finances.everyone') }),
+      );
     }, 1200);
   };
 

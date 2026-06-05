@@ -41,7 +41,7 @@ export function ExpenseSummary({
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  
+
   // Trip owner is determined from trip data, but since we don't have it directly in summary,
   // wait, members array might have a 'role' or we can pass `isOwner` from parent.
   // We'll pass `isOwner` from parent to ExpenseSummary. Let's add it to props.
@@ -95,7 +95,10 @@ export function ExpenseSummary({
               <div className="flex justify-between items-center text-xs">
                 <span className="text-primary font-semibold">
                   {budgetAmount > 0
-                    ? t('finances.budgetProgress', '{{percent}}% of {{budget}} budget', { percent: progressPercent, budget: formattedBudget })
+                    ? t('finances.budgetProgress', '{{percent}}% of {{budget}} budget', {
+                        percent: progressPercent,
+                        budget: formattedBudget,
+                      })
                     : t('finances.noBudgetSetYet')}
                 </span>
                 <button

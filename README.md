@@ -57,7 +57,7 @@ trip-flow/
 - **Node ≥ 20** — see `.nvmrc`
 - A Supabase project (URL + anon key + service-role key)
 
-- **Bun ≥ 1.3** 
+- **Bun ≥ 1.3**
   Mac&OS
   — `curl -fsSL https://bun.sh/install | bash`
   Windows
@@ -66,14 +66,18 @@ trip-flow/
 - A Supabase project (URL + anon key + service-role key)
 
 ### Install & configure
+
 Mac&OS
+
 ```bash
 bun install
 cp .env.example .env
 # edit .env with your Supabase values
 ```
+
 Windows
-```bash
+
+````bash
 bun install
 copy .env.example .env
 # edit .env with your Supabase values
@@ -82,7 +86,7 @@ copy .env.example .env
 
 ```bash
 bun dev
-```
+````
 
 Turbo will start `@trip-flow/web` on <http://localhost:5173> and
 `@trip-flow/api` on <http://localhost:4000> in parallel.

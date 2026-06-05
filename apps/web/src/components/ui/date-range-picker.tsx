@@ -22,8 +22,18 @@ export interface DateRangePickerProps {
 const WEEKDAY_LABELS_EN = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 const WEEKDAY_LABELS_TH = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
 const MONTH_LABELS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 const POPOVER_WIDTH = 272;
@@ -47,7 +57,12 @@ function sameDay(a: Date, b: Date): boolean {
   );
 }
 function formatDate(date: Date): string {
-  const locale = typeof document !== 'undefined' ? (document.documentElement.lang === 'th' ? 'th-TH' : 'en-US') : undefined;
+  const locale =
+    typeof document !== 'undefined'
+      ? document.documentElement.lang === 'th'
+        ? 'th-TH'
+        : 'en-US'
+      : undefined;
   return date.toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
@@ -95,7 +110,12 @@ export function DateRangePicker({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
 
-  const locale = typeof document !== 'undefined' ? (document.documentElement.lang === 'th' ? 'th-TH' : 'en-US') : undefined;
+  const locale =
+    typeof document !== 'undefined'
+      ? document.documentElement.lang === 'th'
+        ? 'th-TH'
+        : 'en-US'
+      : undefined;
   const weekdayLabels = locale === 'th-TH' ? WEEKDAY_LABELS_TH : WEEKDAY_LABELS_EN;
   const defaultPlaceholder = locale === 'th-TH' ? 'เลือกวันที่' : 'Pick dates';
   const resolvedPlaceholder = placeholder ?? defaultPlaceholder;
@@ -204,7 +224,12 @@ export function DateRangePicker({
             ref={popoverRef}
             role="dialog"
             aria-label={locale === 'th-TH' ? 'เลือกช่วงเวลา' : 'Choose date range'}
-            style={{ position: 'fixed', top: position.top, left: position.left, width: POPOVER_WIDTH }}
+            style={{
+              position: 'fixed',
+              top: position.top,
+              left: position.left,
+              width: POPOVER_WIDTH,
+            }}
             className={cn(
               'bg-popover text-popover-foreground border-border z-[60] rounded-xl border p-4 shadow-lg',
               'animate-in fade-in-0 zoom-in-95',
@@ -275,7 +300,8 @@ export function DateRangePicker({
                         !inMonth && 'text-muted-foreground/50',
                         inMonth && !isEndpoint && !between && 'text-foreground hover:bg-muted',
                         between && 'text-foreground',
-                        isEndpoint && 'bg-primary text-primary-foreground hover:bg-primary rounded-full',
+                        isEndpoint &&
+                          'bg-primary text-primary-foreground hover:bg-primary rounded-full',
                         isDisabled && 'pointer-events-none opacity-30',
                         isToday &&
                           !isEndpoint &&

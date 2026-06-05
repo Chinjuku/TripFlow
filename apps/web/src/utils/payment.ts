@@ -37,9 +37,7 @@ export async function extractPromptpayId(dataUrl: string): Promise<string | null
     if (!subTag01?.value) return null;
 
     // PromptPay QR encodes phone as 0066XXXXXXXXX - normalize to 0XXXXXXXXX.
-    return subTag01.value.startsWith('0066')
-      ? '0' + subTag01.value.substring(4)
-      : subTag01.value;
+    return subTag01.value.startsWith('0066') ? '0' + subTag01.value.substring(4) : subTag01.value;
   } catch {
     // Valid QR image but not a PromptPay EMVCo payload - nothing to extract.
     return null;

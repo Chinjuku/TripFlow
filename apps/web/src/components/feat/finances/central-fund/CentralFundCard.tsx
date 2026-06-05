@@ -41,10 +41,7 @@ export function CentralFundCard({
       ? Math.min(100, Math.round((summary.centralFundSpent / summary.centralFundTotal) * 100))
       : 0;
 
-  const spentPerPerson =
-    members.length > 0
-      ? summary.centralFundSpent / members.length
-      : 0;
+  const spentPerPerson = members.length > 0 ? summary.centralFundSpent / members.length : 0;
 
   const suggestedPerPerson =
     summary.budget && summary.budget.amount > 0 && members.length > 0
@@ -89,7 +86,10 @@ export function CentralFundCard({
           {!isConfigured ? (
             <div className="flex flex-col items-center justify-center py-6 text-center z-10 relative">
               <p className="text-sm text-muted-foreground mb-4">
-                {t('finances.centralFund.notConfiguredDesc', 'No central fund configured. Pool money together for shared expenses.')}
+                {t(
+                  'finances.centralFund.notConfiguredDesc',
+                  'No central fund configured. Pool money together for shared expenses.',
+                )}
               </p>
               {isOwner ? (
                 <Button onClick={() => setModalOpen(true)} variant="outline" className="gap-2">
@@ -117,9 +117,12 @@ export function CentralFundCard({
                     })}
                   </div>
                   <div className="text-muted-foreground text-[10px]">
-                    ฿{summary.centralFundPerPerson?.toLocaleString()} {t('finances.centralFund.perPerson', 'per person')}
-                    {targetPool > 0 && ` • ${t('finances.centralFund.target', { amount: targetPool.toLocaleString() })}`}
-                    {budgetPercent > 0 && ` ${t('finances.centralFund.percentOfBudget', { percent: budgetPercent })}`}
+                    ฿{summary.centralFundPerPerson?.toLocaleString()}{' '}
+                    {t('finances.centralFund.perPerson', 'per person')}
+                    {targetPool > 0 &&
+                      ` • ${t('finances.centralFund.target', { amount: targetPool.toLocaleString() })}`}
+                    {budgetPercent > 0 &&
+                      ` ${t('finances.centralFund.percentOfBudget', { percent: budgetPercent })}`}
                   </div>
                 </div>
 
@@ -151,10 +154,14 @@ export function CentralFundCard({
                 </div>
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-muted-foreground font-medium">
-                    {t('finances.centralFund.percentSpent', '{{percent}}% spent', { percent: progressPercent })}
+                    {t('finances.centralFund.percentSpent', '{{percent}}% spent', {
+                      percent: progressPercent,
+                    })}
                   </span>
                   <span className="text-muted-foreground">
-                    {t('finances.centralFund.amountUsed', '{{amount}} used', { amount: `฿${summary.centralFundSpent.toLocaleString()}` })}
+                    {t('finances.centralFund.amountUsed', '{{amount}} used', {
+                      amount: `฿${summary.centralFundSpent.toLocaleString()}`,
+                    })}
                     {summary.centralFundSpent > 0 && (
                       <span className="text-muted-foreground/80 font-normal">
                         {' '}

@@ -118,7 +118,9 @@ export function AllExpenseItem({
                     ) : (
                       <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-inner ${
-                          isPayer ? 'bg-primary text-primary-foreground' : 'bg-muted-foreground text-white'
+                          isPayer
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted-foreground text-white'
                         }`}
                       >
                         {initials}
@@ -138,7 +140,10 @@ export function AllExpenseItem({
                       {exp.split_method === 'exact_amount' && split.item_paid && (
                         <div className="flex flex-wrap gap-1 mt-1">
                           {split.item_paid.split(',').map((item: string, idx: number) => (
-                            <span key={idx} className="bg-muted/50 text-muted-foreground border border-border px-2 py-0.5 rounded-md text-[10px] font-medium shadow-sm">
+                            <span
+                              key={idx}
+                              className="bg-muted/50 text-muted-foreground border border-border px-2 py-0.5 rounded-md text-[10px] font-medium shadow-sm"
+                            >
                               {item.trim()}
                             </span>
                           ))}

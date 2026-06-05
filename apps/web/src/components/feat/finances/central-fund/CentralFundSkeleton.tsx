@@ -5,7 +5,6 @@ export function CentralFundSkeleton() {
   return (
     <div className="flex flex-col flex-1 overflow-y-auto lg:overflow-hidden gap-6 h-full min-h-0">
       <div className="shrink-0 space-y-4">
-        
         {/* CentralFundCard Skeleton */}
         <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.05] to-transparent shadow-sm overflow-hidden relative dark:from-primary/[0.02]">
           <div className="p-6">
@@ -27,7 +26,7 @@ export function CentralFundSkeleton() {
                 <Skeleton className="h-9 w-32 mt-1" />
               </div>
             </div>
-            
+
             <div className="mt-8 space-y-2">
               <Skeleton className="h-3 w-full rounded-full" />
               <div className="flex justify-between items-center">
@@ -43,46 +42,46 @@ export function CentralFundSkeleton() {
         {/* Left Column: Member Contributions */}
         <div className="shrink-0 lg:flex lg:flex-col lg:min-h-0 lg:overflow-y-auto lg:pr-2 lg:pb-4">
           <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-border bg-muted/20">
-            <Skeleton className="h-4 w-48" />
-          </div>
-          <div className="divide-y divide-border">
-            <div className="p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Skeleton className="w-10 h-10 rounded-full shrink-0" />
-                <div className="min-w-0 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-3 w-16" />
+            <div className="p-4 border-b border-border bg-muted/20">
+              <Skeleton className="h-4 w-48" />
+            </div>
+            <div className="divide-y divide-border">
+              <div className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="w-10 h-10 rounded-full shrink-0" />
+                  <div className="min-w-0 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-3 w-16" />
+                    </div>
+                    <Skeleton className="h-3 w-32" />
                   </div>
-                  <Skeleton className="h-3 w-32" />
+                </div>
+                <div className="shrink-0 flex items-center pl-2">
+                  <div className="flex flex-col items-end gap-1">
+                    <Skeleton className="w-5 h-5 rounded-full" />
+                    <Skeleton className="h-2 w-8" />
+                  </div>
                 </div>
               </div>
-              <div className="shrink-0 flex items-center pl-2">
-                <div className="flex flex-col items-end gap-1">
-                  <Skeleton className="w-5 h-5 rounded-full" />
-                  <Skeleton className="h-2 w-8" />
-                </div>
-              </div>
-            </div>
 
-            <div className="p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Skeleton className="w-10 h-10 rounded-full shrink-0" />
-                <div className="min-w-0 space-y-2">
-                  <Skeleton className="h-4 w-28" />
-                  <Skeleton className="h-3 w-24" />
+              <div className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="w-10 h-10 rounded-full shrink-0" />
+                  <div className="min-w-0 space-y-2">
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
                 </div>
-              </div>
-              <div className="shrink-0 flex items-center pl-2">
-                <div className="flex flex-col items-end gap-1">
-                  <Skeleton className="w-5 h-5 rounded-full" />
-                  <Skeleton className="h-2 w-8" />
+                <div className="shrink-0 flex items-center pl-2">
+                  <div className="flex flex-col items-end gap-1">
+                    <Skeleton className="w-5 h-5 rounded-full" />
+                    <Skeleton className="h-2 w-8" />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
         </div>
 
         {/* Right Column: Activity Log */}
