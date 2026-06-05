@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Wallet, ArrowDownLeft, ArrowUpRight, Plus, Sparkles } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Avatar } from '@/components/ui/avatar';
 import type { FinanceSummary, DebtRelation } from '@/types/finances';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -139,17 +140,13 @@ export function ExpenseSummary({
                     className="flex items-center justify-between py-1 border-b border-primary/10 last:border-0 dark:border-primary/20"
                   >
                     <div className="flex items-center gap-2.5">
-                      {debt.avatarUrl ? (
-                        <img
-                          src={debt.avatarUrl}
-                          alt={debt.name}
-                          className="w-7 h-7 rounded-full object-cover shadow-sm"
-                        />
-                      ) : (
-                        <div className="w-7 h-7 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs dark:bg-primary/20 dark:text-primary">
-                          {debt.name.charAt(0)}
-                        </div>
-                      )}
+                      <Avatar
+                        name={debt.name}
+                        src={debt.avatarUrl}
+                        size="w-7 h-7"
+                        className="text-xs shadow-sm"
+                        fallbackClassName="dark:bg-primary/20"
+                      />
                       <span className="text-foreground text-xs font-semibold">{debt.name}</span>
                     </div>
                     <span className="text-primary text-xs font-bold">
@@ -194,17 +191,13 @@ export function ExpenseSummary({
                       className="flex items-center justify-between py-1 border-b border-destructive/10 last:border-0 dark:border-destructive/20"
                     >
                       <div className="flex items-center gap-2.5">
-                        {debt.avatarUrl ? (
-                          <img
-                            src={debt.avatarUrl}
-                            alt={debt.name}
-                            className="w-7 h-7 rounded-full object-cover shadow-sm"
-                          />
-                        ) : (
-                          <div className="w-7 h-7 rounded-full bg-destructive/10 text-destructive font-bold flex items-center justify-center text-xs dark:bg-destructive/20 dark:text-destructive-foreground">
-                            {debt.name.charAt(0)}
-                          </div>
-                        )}
+                        <Avatar
+                          name={debt.name}
+                          src={debt.avatarUrl}
+                          size="w-7 h-7"
+                          className="text-xs shadow-sm"
+                          fallbackClassName="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive-foreground"
+                        />
                         <span className="text-foreground text-xs font-semibold">{debt.name}</span>
                       </div>
                       <div className="flex items-center gap-3">

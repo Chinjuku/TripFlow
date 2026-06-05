@@ -11,15 +11,9 @@ import {
   ShoppingBag,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import type { DebtRelation } from '@/components/feat/finances';
+import type { DebtRelation, Transaction } from '@/types/finances';
 
-export interface Transaction {
-  id: string;
-  description: string;
-  date: string;
-  amount: number;
-  category: 'food' | 'transport' | 'accommodation' | 'activity' | 'shopping' | 'lodging' | 'other';
-}
+export type { Transaction };
 
 export interface Creditor {
   id: string;

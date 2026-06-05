@@ -1,18 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import {
   AlertCircle,
   Calendar,
   Tag,
   ReceiptText,
-  CloudUpload,
   Loader2,
   Sparkles,
   Store,
   Banknote,
-  Plus,
   Check,
   X,
   UserPlus,
@@ -21,54 +18,26 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Avatar } from '@/components/ui/avatar';
 import { useTranslation } from 'react-i18next';
-import { extractReceipt } from '@/api/finances';
+import { useReceiptScan } from '@/hooks/useReceiptScan';
+import { useSplitCalculator } from '@/hooks/useSplitCalculator';
+import {
+  createExpenseSchema,
+  type ExpenseFormValues,
+  type ExpenseFormMember,
+} from './expense-form-schema';
+import { ReceiptDropzone } from './ReceiptDropzone';
+import { SplitMemberCard } from './SplitMemberCard';
 import type { CreateExpensePayload } from '@/types/finances';
 
-// Zod schema for validation
-const createExpenseSchema = z.object({
-  description: z
-    .string()
-    .min(1, 'Merchant/Description is required')
-    .max(120, 'Merchant name is too long'),
-  amount: z.number().min(0.01, 'Amount must be greater than 0'),
-  paidById: z.string().uuid('Please select who paid'),
-  category: z.enum(['food', 'transport', 'activity', 'lodging', 'other']),
-  splitMethod: z.enum(['equally', 'exact_amount']),
-  expenseDate: z.string().min(1, 'Date is required'),
-  splits: z.array(
-    z.object({
-      userId: z.string().uuid(),
-      amount: z.number().min(0),
-      itemPaid: z.string().max(100).nullable().optional(),
-      checked: z.boolean(),
-    }),
-  ),
-});
-
-type ExpenseFormValues = z.infer<typeof createExpenseSchema>;
-
 interface CreateExpenseFormProps {
-  members: { userId: string; name: string; avatarUrl: string | null }[];
+  members: ExpenseFormMember[];
   currentUserId: string;
   onSubmit: (values: Omit<CreateExpensePayload, 'tripId'>) => Promise<void>;
   onCancel: () => void;
   isSubmitting: boolean;
 }
-
-// Avatar color helper based on member's name string length/chars to match design screenshots perfectly
-const getAvatarBgColor = (name: string) => {
-  const code = name.charCodeAt(0) + name.length;
-  const colors = [
-    'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300',
-    'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300',
-    'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300',
-    'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300',
-    'bg-violet-100 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300',
-    'bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300',
-  ];
-  return colors[code % colors.length];
-};
 
 export function CreateExpenseForm({
   members,
@@ -77,13 +46,6 @@ export function CreateExpenseForm({
   onCancel,
   isSubmitting,
 }: CreateExpenseFormProps) {
-  // OCR Scan state variables
-  const [isScanning, setIsScanning] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState<{ name: string; size: string } | null>(null);
-  const [isAutofilled, setIsAutofilled] = useState(false);
-  const [scanError, setScanError] = useState<string | null>(null);
-  const [extractedSenderName, setExtractedSenderName] = useState<string | null>(null);
-  const [extractedBankName, setExtractedBankName] = useState<string | null>(null);
   const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
   const addPersonRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
@@ -98,7 +60,6 @@ export function CreateExpenseForm({
     handleSubmit,
     watch,
     setValue,
-    getValues,
     formState: { errors },
   } = useForm<ExpenseFormValues>({
     resolver: zodResolver(createExpenseSchema),
@@ -123,68 +84,25 @@ export function CreateExpenseForm({
     name: 'splits',
   });
 
-  // Watch fields for dynamic split calculations
   const watchAmount = watch('amount') || 0;
   const watchSplitMethod = watch('splitMethod');
   const watchSplits = watch('splits') || [];
-  const watchDescription = watch('description') || '';
   const watchPaidById = watch('paidById');
 
-  const checkedCount = watchSplits.filter((s) => s.checked).length;
-  const lastDescriptionRef = useRef(watchDescription);
+  // OCR receipt scanning + autofill
+  const {
+    isScanning,
+    uploadedFile,
+    isAutofilled,
+    scanError,
+    extractedSenderName,
+    extractedBankName,
+    handleReceiptUpload,
+  } = useReceiptScan({ members, setValue });
 
-  // Auto-recalculate splits in 'equally' mode when amount or checked items change
-  useEffect(() => {
-    if (watchSplitMethod === 'equally') {
-      const equalShare = checkedCount > 0 ? Number((watchAmount / checkedCount).toFixed(2)) : 0;
-
-      // Distribute remainder (due to rounding) to the first checked member
-      let remainder = 0;
-      if (checkedCount > 0) {
-        remainder = Number((watchAmount - equalShare * checkedCount).toFixed(2));
-      }
-
-      let distributedFirst = false;
-
-      watchSplits.forEach((split, index) => {
-        if (split.checked) {
-          let finalAmount = equalShare;
-          if (!distributedFirst) {
-            finalAmount = Number((equalShare + remainder).toFixed(2));
-            distributedFirst = true;
-          }
-          setValue(`splits.${index}.amount`, finalAmount);
-        } else {
-          setValue(`splits.${index}.amount`, 0);
-        }
-      });
-    }
-  }, [watchAmount, watchSplitMethod, checkedCount, setValue]);
-
-  // Auto-calculate exact split for the payer (paidById) and default itemPaid to merchant description
-  // Auto-calculate exact split for the payer (paidById) and default itemPaid to merchant description
-  useEffect(() => {
-    if (watchSplitMethod === 'exact_amount') {
-      // Find the index of the payer (paidById) in splits
-      const payerIndex = watchSplits.findIndex((s) => s.userId === watchPaidById);
-      if (payerIndex !== -1) {
-        // Ensure the payer is checked/included by default in exact split
-        if (!watchSplits[payerIndex]?.checked) {
-          setValue(`splits.${payerIndex}.checked`, true);
-        }
-
-        // Set default itemPaid to merchant description for the payer if it's empty or needs to match
-        if (
-          watchDescription &&
-          (!watchSplits[payerIndex]?.itemPaid ||
-            watchSplits[payerIndex]?.itemPaid === lastDescriptionRef.current)
-        ) {
-          setValue(`splits.${payerIndex}.itemPaid`, watchDescription);
-        }
-      }
-    }
-    lastDescriptionRef.current = watchDescription;
-  }, [watchSplitMethod, watchPaidById, watchDescription, setValue, watchSplits]);
+  // Dynamic split math (equal/exact) + validation figures
+  const { exactPayerIndex, calculatedPayerAmount, exactSplitSum, isExactMismatch } =
+    useSplitCalculator({ watch, setValue });
 
   // Handle click outside "+ Add Person" dropdown to close it
   useEffect(() => {
@@ -196,83 +114,6 @@ export function CreateExpenseForm({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  // --- Render-time calculations for Exact Amount Split ---
-  const exactPayerIndex = watchSplits.findIndex((s) => s.userId === watchPaidById);
-  const exactOtherSplitsSum = watchSplits.reduce((sum, s, idx) => {
-    if (idx !== exactPayerIndex && s.checked) {
-      return sum + (Number(s.amount) || 0);
-    }
-    return sum;
-  }, 0);
-  const calculatedPayerAmount = Number(Math.max(0, watchAmount - exactOtherSplitsSum).toFixed(2));
-
-  // Validation: Sum of exact split amounts must match total expense amount
-  const exactSplitSum = watchSplits.reduce((sum, s, idx) => {
-    if (watchSplitMethod === 'exact_amount' && idx === exactPayerIndex) {
-      return sum + calculatedPayerAmount;
-    }
-    return sum + (s.checked ? Number(s.amount) || 0 : 0);
-  }, 0);
-  const isExactMismatch =
-    watchSplitMethod === 'exact_amount' && Math.abs(exactSplitSum - watchAmount) > 0.05;
-
-  // Simulate receipt upload & OCR parsing
-  const handleReceiptUpload = async (
-    e: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>,
-  ) => {
-    let file: File | null = null;
-
-    if ('files' in e.target && e.target.files) {
-      file = e.target.files[0] || null;
-    } else if ('dataTransfer' in e && e.dataTransfer.files) {
-      e.preventDefault();
-      file = e.dataTransfer.files[0] || null;
-    }
-
-    if (!file) return;
-
-    // Set file details
-    const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
-    setUploadedFile({ name: file.name, size: `${sizeInMB} MB` });
-    setIsScanning(true);
-    setIsAutofilled(false);
-    setScanError(null);
-    setExtractedSenderName(null);
-    setExtractedBankName(null);
-
-    try {
-      const result = await extractReceipt(file);
-      setIsAutofilled(true);
-
-      if (result.merchant) setValue('description', result.merchant);
-      if (result.amount) setValue('amount', result.amount);
-      if (result.datetime) setValue('expenseDate', result.datetime);
-      if (result.sender_name) setExtractedSenderName(result.sender_name);
-      if (result.bank_name) setExtractedBankName(result.bank_name);
-
-      // Auto-match payer from group members
-      if (result.sender_name && members.length > 0) {
-        const senderLower = result.sender_name.toLowerCase();
-        const matchedMember = members.find((m) => {
-          const nameLower = m.name.toLowerCase();
-          return senderLower.includes(nameLower) || nameLower.includes(senderLower);
-        });
-
-        if (matchedMember) {
-          setValue('paidById', matchedMember.userId);
-        }
-      }
-    } catch (err) {
-      setScanError(err instanceof Error ? err.message : 'Failed to extract receipt data');
-    } finally {
-      setIsScanning(false);
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-  };
 
   const handleExcludeTraveler = (index: number) => {
     setValue(`splits.${index}.checked`, false);
@@ -318,7 +159,7 @@ export function CreateExpenseForm({
       alert(
         t('finances.errorExactMismatch', 'Total splits must sum to ฿{{amount}}', {
           amount: data.amount.toLocaleString(),
-        })
+        }),
       );
       return;
     }
@@ -342,29 +183,6 @@ export function CreateExpenseForm({
 
   return (
     <div className="flex flex-col bg-background max-h-[90dvh] sm:max-h-[calc(100dvh-4rem)]">
-      <style>{`
-        @keyframes infinite-loading {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        .animate-infinite-loading {
-          animation: infinite-loading 1.5s infinite linear;
-        }
-        @keyframes slide-down {
-          0% { opacity: 0; transform: translateY(-8px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        .animate-slide-down {
-          animation: slide-down 0.2s ease-out forwards;
-        }
-        @keyframes slide-up {
-          0% { opacity: 0; transform: translateY(8px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        .animate-slide-up {
-          animation: slide-up 0.2s ease-out forwards;
-        }
-      `}</style>
       {/* Premium Header */}
       <div className="flex items-center justify-between px-6 py-5 border-b border-border">
         <div className="flex items-center gap-3">
@@ -391,57 +209,11 @@ export function CreateExpenseForm({
         onSubmit={handleSubmit(handleFormSubmit)}
         className="flex-1 overflow-y-auto p-6 space-y-6"
       >
-        {/* OCR Dropzone */}
-        <div
-          onDragOver={handleDragOver}
-          onDrop={handleReceiptUpload}
-          className="relative group cursor-pointer border-2 border-dashed border-border hover:border-primary/50 rounded-2xl p-6 bg-muted/50 text-center transition-all duration-200"
-        >
-          <input
-            id="receipt-upload"
-            type="file"
-            accept="image/*,application/pdf"
-            onChange={handleReceiptUpload}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-          />
-          <div className="flex flex-col items-center justify-center gap-2">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-105 transition-transform duration-200">
-              {isScanning ? (
-                <Loader2 className="w-6 h-6 animate-spin" />
-              ) : (
-                <CloudUpload className="w-6 h-6" />
-              )}
-            </div>
-            {isScanning ? (
-              <div className="space-y-1.5 z-20">
-                <p className="text-sm font-semibold text-muted-foreground">
-                  {t('finances.scanningReceipt')}
-                </p>
-                <div className="w-48 h-1.5 bg-muted rounded-full mx-auto overflow-hidden">
-                  <div className="h-full bg-primary animate-infinite-loading rounded-full" />
-                </div>
-              </div>
-            ) : uploadedFile ? (
-              <div className="z-20">
-                <p className="text-sm font-semibold text-primary flex items-center gap-1.5 justify-center">
-                  <Check className="w-4 h-4" /> {t('finances.receiptLoaded')}
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {uploadedFile.name} ({uploadedFile.size})
-                </p>
-              </div>
-            ) : (
-              <div className="z-20">
-                <p className="text-sm font-semibold text-muted-foreground">
-                  {t('finances.uploadReceipt')}
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {t('finances.uploadReceiptFormat')}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
+        <ReceiptDropzone
+          isScanning={isScanning}
+          uploadedFile={uploadedFile}
+          onUpload={handleReceiptUpload}
+        />
 
         {scanError && (
           <div className="bg-destructive/10 border border-destructive/20 text-destructive p-3 rounded-xl text-xs font-semibold flex items-center gap-2">
@@ -454,7 +226,7 @@ export function CreateExpenseForm({
         <div className="relative border border-border rounded-2xl p-5 bg-muted/30 space-y-4">
           {/* Sparkle Autofilled Badge */}
           {isAutofilled && (
-            <div className="absolute -top-3 left-4 flex items-center gap-1 bg-primary/10 text-primary border border-primary/20 px-2.5 py-1 rounded-full text-[10px] font-bold shadow-sm animate-pulse-once">
+            <div className="absolute -top-3 left-4 flex items-center gap-1 bg-primary/10 text-primary border border-primary/20 px-2.5 py-1 rounded-full text-[10px] font-bold shadow-sm">
               <Sparkles className="w-3 h-3" />
               <span>{t('finances.autoFilled')}</span>
             </div>
@@ -570,7 +342,10 @@ export function CreateExpenseForm({
                 ))}
               </select>
               <div className="absolute left-3.5 top-3.5 h-4 w-4 rounded-full bg-primary/20 flex items-center justify-center text-[8px] font-bold text-primary">
-                {members.find((m) => m.userId === watchPaidById)?.name.charAt(0).toUpperCase()}
+                {members
+                  .find((m) => m.userId === watchPaidById)
+                  ?.name.charAt(0)
+                  .toUpperCase()}
               </div>
             </div>
             {extractedSenderName && (
@@ -663,109 +438,18 @@ export function CreateExpenseForm({
                   />
 
                   {isChecked && (
-                    <div className="group relative border border-border bg-card p-4 rounded-2xl shadow-sm transition-all duration-200 hover:shadow-md animate-slide-down">
-                      {/* Close button X (excludes traveler) - hidden for current user and payer */}
-                      {field.userId !== currentUserId && field.userId !== watchPaidById && (
-                        <button
-                          type="button"
-                          onClick={() => handleExcludeTraveler(index)}
-                          className="absolute top-3 right-3 w-6 h-6 rounded-full flex items-center justify-center text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 duration-150"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-
-                      <div className="flex items-center justify-between gap-3">
-                        {/* User profile & Name */}
-                        <div className="flex items-center gap-3">
-                          {member?.avatarUrl ? (
-                            <img
-                              src={member.avatarUrl}
-                              alt={member.name}
-                              className="w-9 h-9 rounded-full object-cover shadow-sm ring-1 ring-border"
-                            />
-                          ) : (
-                            <div
-                              className={`w-9 h-9 rounded-full font-bold flex items-center justify-center text-xs ${getAvatarBgColor(member?.name || '')}`}
-                            >
-                              {member?.name.charAt(0).toUpperCase()}
-                            </div>
-                          )}
-                          <div>
-                            <span className="text-foreground text-sm font-semibold leading-none block">
-                              {member?.userId === currentUserId
-                                ? `${member?.name} (${t('common.you')})`
-                                : member?.name}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Amount display for Equal share */}
-                        {watchSplitMethod === 'equally' && (
-                          <span className="text-primary text-base font-extrabold min-w-[5rem] text-right">
-                            ฿{splitAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Inputs display for Exact split */}
-                      {watchSplitMethod === 'exact_amount' && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 border-t border-border/40 pt-3 animate-slide-down">
-                          <div className="space-y-1">
-                            <Label
-                              htmlFor={`splits.${index}.itemPaid`}
-                              className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center h-4"
-                            >
-                              {t('finances.itemPaidLabel')}
-                            </Label>
-                            <Input
-                              id={`splits.${index}.itemPaid`}
-                              type="text"
-                              placeholder={t('finances.itemPaidPlaceholder', 'Menu/item (e.g. Pad Thai)')}
-                              className="h-9 text-xs border-input rounded-xl focus-visible:ring-primary bg-muted/30"
-                              {...register(`splits.${index}.itemPaid`)}
-                            />
-                          </div>
-
-                          <div className="space-y-1">
-                            <Label
-                              htmlFor={`splits.${index}.amount`}
-                              className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between h-4"
-                            >
-                              <span>{t('finances.amountThbLabel')}</span>
-                              {field.userId === watchPaidById && (
-                                <span className="text-[9px] text-primary font-extrabold normal-case leading-none">
-                                  ({t('finances.autoPayerRemainder')})
-                                </span>
-                              )}
-                            </Label>
-                            <div className="relative">
-                              <Input
-                                id={`splits.${index}.amount`}
-                                type="number"
-                                step="0.01"
-                                placeholder="0.00"
-                                readOnly={field.userId === watchPaidById}
-                                value={
-                                  field.userId === watchPaidById ? calculatedPayerAmount : undefined
-                                }
-                                className={`h-9 pl-6 pr-2 text-xs font-bold border-input rounded-xl focus-visible:ring-primary text-right ${
-                                  field.userId === watchPaidById
-                                    ? 'bg-muted text-muted-foreground cursor-not-allowed select-none'
-                                    : 'text-foreground'
-                                }`}
-                                {...(field.userId === watchPaidById
-                                  ? {}
-                                  : register(`splits.${index}.amount`, { valueAsNumber: true }))}
-                              />
-                              <span className="absolute left-2.5 top-2.5 text-[10px] font-bold text-muted-foreground">
-                                ฿
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    <SplitMemberCard
+                      index={index}
+                      userId={field.userId}
+                      member={member}
+                      splitAmount={splitAmount}
+                      splitMethod={watchSplitMethod}
+                      currentUserId={currentUserId}
+                      paidById={watchPaidById}
+                      calculatedPayerAmount={calculatedPayerAmount}
+                      register={register}
+                      onExclude={handleExcludeTraveler}
+                    />
                   )}
                 </div>
               );
@@ -815,19 +499,12 @@ export function CreateExpenseForm({
                         onClick={() => handleIncludeTraveler(field.originalIndex)}
                         className="w-full flex items-center gap-2.5 p-2 rounded-xl text-left hover:bg-muted transition-colors"
                       >
-                        {member?.avatarUrl ? (
-                          <img
-                            src={member.avatarUrl}
-                            alt={member.name}
-                            className="w-6 h-6 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div
-                            className={`w-6 h-6 rounded-full font-bold flex items-center justify-center text-[10px] ${getAvatarBgColor(member?.name || '')}`}
-                          >
-                            {member?.name.charAt(0).toUpperCase()}
-                          </div>
-                        )}
+                        <Avatar
+                          name={member?.name || ''}
+                          src={member?.avatarUrl}
+                          size="w-6 h-6"
+                          className="text-[10px]"
+                        />
                         <span className="text-xs text-foreground font-semibold">
                           {member?.userId === currentUserId
                             ? `${member?.name} (${t('common.you')})`

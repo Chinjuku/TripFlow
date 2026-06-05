@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Circle, Clock } from 'lucide-react';
+import { Avatar } from '@/components/ui/avatar';
 import type { HydratedSettlement } from '@/types/finances';
 
 interface CentralFundMembersProps {
@@ -77,17 +78,12 @@ export function CentralFundMembers({
             className="p-4 flex items-center justify-between bg-card border border-border rounded-2xl shadow-sm transition-all hover:shadow-md"
           >
             <div className="flex items-center gap-3">
-              {member.avatarUrl ? (
-                <img
-                  src={member.avatarUrl}
-                  alt={member.name}
-                  className="w-10 h-10 rounded-full object-cover shrink-0"
-                />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0">
-                  {member.name.charAt(0).toUpperCase()}
-                </div>
-              )}
+              <Avatar
+                name={member.name}
+                src={member.avatarUrl}
+                size="w-10 h-10"
+                className="shrink-0"
+              />
               <div className="min-w-0">
                 <div className="font-semibold text-sm flex items-center gap-2 truncate">
                   <span className="truncate">{member.name}</span>
