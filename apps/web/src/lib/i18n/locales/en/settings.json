@@ -26,6 +26,7 @@
   "theme": "Theme",
   "themeDesc": "Switches the entire app, including the login screen.",
   "themeLight": "Light",
+  "themeSystem": "System Default",
   "themeDark": "Dark",
   "language": "Language",
   "languageDesc": "Select your preferred display language.",

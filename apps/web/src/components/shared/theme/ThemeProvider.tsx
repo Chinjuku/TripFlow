@@ -2,7 +2,7 @@ import { createContext, useCallback, useEffect, useMemo, useState, type ReactNod
 import type { Theme, ThemeContextValue } from '@/types/theme';
 
 export const THEME_STORAGE_KEY = 'trip-flow-theme';
-const DEFAULT_THEME: Theme = 'light';
+const DEFAULT_THEME: Theme = 'system';
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null);
 
@@ -10,7 +10,7 @@ function readStoredTheme(): Theme {
   if (typeof window === 'undefined') return DEFAULT_THEME;
   try {
     const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-    if (stored === 'light' || stored === 'dark') return stored;
+    if (stored === 'light' || stored === 'dark' || stored === 'system') return stored as Theme;
   } catch {
     /* storage disabled - fall through */
   }
@@ -19,21 +19,24 @@ function readStoredTheme(): Theme {
 
 function applyTheme(theme: Theme): void {
   const root = document.documentElement;
+  
+  const isDark = 
+    theme === 'dark' || 
+    (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
   root.classList.add('theme-switching');
-
-  root.classList.toggle('dark', theme === 'dark');
-
-  root.style.colorScheme = theme;
+  root.classList.toggle('dark', isDark);
+  root.style.colorScheme = isDark ? 'dark' : 'light';
 
   const manifestEl = document.querySelector('link[rel="manifest"]');
   if (manifestEl) {
-    manifestEl.setAttribute('href', theme === 'dark' ? '/manifest.json' : '/manifest-light.json');
+    manifestEl.setAttribute('href', isDark ? '/manifest.json' : '/manifest-light.json');
   }
 
-  const themeColorEl = document.querySelector('meta[name="theme-color"]');
-  if (themeColorEl) {
-    themeColorEl.setAttribute('content', theme === 'dark' ? '#0f172a' : '#ffffff');
-  }
+  const themeColorEls = document.querySelectorAll('meta[name="theme-color"]');
+  themeColorEls.forEach((el) => {
+    el.setAttribute('content', isDark ? '#0f172a' : '#ffffff');
+  });
   
   window.requestAnimationFrame(() => {
     window.requestAnimationFrame(() => {
@@ -47,6 +50,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     applyTheme(theme);
+
+    if (theme === 'system') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = () => applyTheme('system');
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
   }, [theme]);
 
   const setTheme = useCallback((next: Theme) => {
@@ -59,7 +69,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const toggleTheme = useCallback(() => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
+    // Cycle: light -> dark -> system -> light
+    setTheme(theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light');
   }, [theme, setTheme]);
 
   const value = useMemo(() => ({ theme, setTheme, toggleTheme }), [theme, setTheme, toggleTheme]);

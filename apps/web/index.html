@@ -5,16 +5,22 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#0f172a" />
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
   <link rel="manifest" href="/manifest.json" />
   <title>TripFlow</title>
-  <script type="module">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  
+  <!-- <script type="module">
     //! first bun i react-grab
     // then in head:
     if (import.meta.env.DEV) {
       import("react-grab");
     }
-  </script>
+  </script> -->
+  
   <script>
     // Anti-flash: apply theme before React mounts AND before the CSS bundle
     // loads. Setting only the `.dark` class isn't enough — `--background`
@@ -26,12 +32,19 @@
     // Must match ThemeProvider's storage key (default light when missing).
     (function () {
       try {
-        var dark = localStorage.getItem('trip-flow-theme') === 'dark';
+        // System preference sync
+        var stored = localStorage.getItem('trip-flow-theme');
+        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var dark = stored === 'dark' || (stored === 'system' && prefersDark) || (!stored && prefersDark);
+        
         var root = document.documentElement;
         if (dark) {
           root.classList.add('dark');
           // hsl(222 47% 11%) — the dark `--background` token.
           root.style.backgroundColor = 'hsl(222, 47%, 11%)';
+        } else {
+          // hsl(210 40% 98%) - the light `--background` token.
+          root.style.backgroundColor = 'hsl(210, 40%, 98%)';
         }
         root.style.colorScheme = dark ? 'dark' : 'light';
 
@@ -40,10 +53,10 @@
           manifestEl.setAttribute('href', dark ? '/manifest.json' : '/manifest-light.json');
         }
 
-        var themeColorEl = document.querySelector('meta[name="theme-color"]');
-        if (themeColorEl) {
-          themeColorEl.setAttribute('content', dark ? '#0f172a' : '#ffffff');
-        }
+        var themeColorEls = document.querySelectorAll('meta[name="theme-color"]');
+        themeColorEls.forEach(function (el) {
+          el.setAttribute('content', dark ? '#0f172a' : '#ffffff');
+        });
       } catch (_) {
         /* storage disabled - fall through with light theme */
       }
@@ -52,7 +65,35 @@
 </head>
 
 <body class="bg-background text-foreground antialiased">
-  <div id="root"></div>
+  <div id="root">
+    <style>
+      .initial-loader {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--bg-color, #f8fafc);
+      }
+      .dark .initial-loader {
+        --bg-color: #0f172a;
+      }
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(156, 163, 175, 0.2);
+        border-top-color: #059669; /* emerald-600 */
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+    <div class="initial-loader">
+      <div class="spinner"></div>
+    </div>
+  </div>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 

@@ -24,8 +24,9 @@ interface Swatch {
 
 const PREVIEWS: {
   value: Theme;
-  labelKey: 'settings.themeLight' | 'settings.themeDark';
-  swatch: Swatch;
+  labelKey: 'settings.themeLight' | 'settings.themeDark' | 'settings.themeSystem';
+  swatch?: Swatch; // optional, we might render a split view for system
+  isSystem?: boolean;
 }[] = [
   {
     value: 'light',
@@ -51,6 +52,11 @@ const PREVIEWS: {
       primary: 'hsl(160 84% 31%)',
     },
   },
+  {
+    value: 'system',
+    labelKey: 'settings.themeSystem',
+    isSystem: true,
+  },
 ];
 
 export function ThemePicker() {
@@ -61,9 +67,9 @@ export function ThemePicker() {
     <div
       role="radiogroup"
       aria-label="Theme preference"
-      className="grid grid-cols-1 gap-3 sm:grid-cols-2"
+      className="grid grid-cols-1 gap-3 sm:grid-cols-3"
     >
-      {PREVIEWS.map(({ value, labelKey, swatch }) => {
+      {PREVIEWS.map(({ value, labelKey, swatch, isSystem }) => {
         const isActive = theme === value;
         return (
           <button
@@ -78,36 +84,62 @@ export function ThemePicker() {
             )}
           >
             {/* Mini app-shell mock-up painted in the theme's own colours. */}
-            <div
-              className="flex h-36 w-full gap-1.5 p-2.5"
-              style={{ background: swatch.background }}
-            >
-              {/* Sidebar */}
-              <div
-                className="flex w-1/3 flex-col gap-1 rounded-md p-1.5"
-                style={{ background: swatch.card, border: `1px solid ${swatch.border}` }}
-              >
-                <span className="h-1.5 w-3/4 rounded-full" style={{ background: swatch.primary }} />
-                <span className="h-1.5 w-full rounded-full" style={{ background: swatch.muted }} />
-                <span className="h-1.5 w-full rounded-full" style={{ background: swatch.muted }} />
+            {isSystem ? (
+              <div className="flex h-36 w-full">
+                {/* Left side Light */}
+                <div
+                  className="flex h-full w-1/2 flex-col p-2.5 pr-1 gap-1.5"
+                  style={{ background: 'hsl(210 40% 98%)' }}
+                >
+                  <div className="flex h-full flex-col gap-1 rounded-l-md p-1.5" style={{ background: 'hsl(0 0% 100%)', border: '1px solid hsl(214 32% 91%)', borderRight: 'none' }}>
+                    <span className="h-2 w-1/2 rounded-full" style={{ background: 'hsl(222 47% 11%)' }} />
+                    <span className="h-1.5 w-full rounded-full" style={{ background: 'hsl(210 40% 96%)' }} />
+                  </div>
+                </div>
+                {/* Right side Dark */}
+                <div
+                  className="flex h-full w-1/2 flex-col p-2.5 pl-0 gap-1.5"
+                  style={{ background: 'hsl(222 47% 11%)' }}
+                >
+                  <div className="flex h-full flex-col gap-1 rounded-r-md p-1.5 items-end" style={{ background: 'hsl(222 47% 14%)', border: '1px solid hsl(217 33% 22%)', borderLeft: 'none' }}>
+                    <span className="h-2 w-1/2 rounded-full" style={{ background: 'hsl(210 40% 98%)' }} />
+                    <span className="h-1.5 w-full rounded-full" style={{ background: 'hsl(217 33% 18%)' }} />
+                    <span className="mt-auto h-2.5 w-1/3 rounded-full" style={{ background: 'hsl(160 84% 31%)' }} />
+                  </div>
+                </div>
               </div>
-              {/* Content */}
+            ) : (
               <div
-                className="flex flex-1 flex-col gap-1.5 rounded-md p-1.5"
-                style={{ background: swatch.card, border: `1px solid ${swatch.border}` }}
+                className="flex h-36 w-full gap-1.5 p-2.5"
+                style={{ background: swatch!.background }}
               >
-                <span
-                  className="h-2 w-1/2 rounded-full"
-                  style={{ background: swatch.foreground }}
-                />
-                <span className="h-1.5 w-full rounded-full" style={{ background: swatch.muted }} />
-                <span className="h-1.5 w-5/6 rounded-full" style={{ background: swatch.muted }} />
-                <span
-                  className="mt-auto h-2.5 w-1/3 rounded-full"
-                  style={{ background: swatch.primary }}
-                />
+                {/* Sidebar */}
+                <div
+                  className="flex w-1/3 flex-col gap-1 rounded-md p-1.5"
+                  style={{ background: swatch!.card, border: `1px solid ${swatch!.border}` }}
+                >
+                  <span className="h-1.5 w-3/4 rounded-full" style={{ background: swatch!.primary }} />
+                  <span className="h-1.5 w-full rounded-full" style={{ background: swatch!.muted }} />
+                  <span className="h-1.5 w-full rounded-full" style={{ background: swatch!.muted }} />
+                </div>
+                {/* Content */}
+                <div
+                  className="flex flex-1 flex-col gap-1.5 rounded-md p-1.5"
+                  style={{ background: swatch!.card, border: `1px solid ${swatch!.border}` }}
+                >
+                  <span
+                    className="h-2 w-1/2 rounded-full"
+                    style={{ background: swatch!.foreground }}
+                  />
+                  <span className="h-1.5 w-full rounded-full" style={{ background: swatch!.muted }} />
+                  <span className="h-1.5 w-5/6 rounded-full" style={{ background: swatch!.muted }} />
+                  <span
+                    className="mt-auto h-2.5 w-1/3 rounded-full"
+                    style={{ background: swatch!.primary }}
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Label + selected indicator */}
             <div className="bg-card border-border flex items-center justify-between border-t px-3 py-2">
