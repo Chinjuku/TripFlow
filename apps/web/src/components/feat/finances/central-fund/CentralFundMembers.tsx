@@ -111,15 +111,15 @@ export function CentralFundMembers({
             <div className="shrink-0 flex items-center pl-2">
               {member.status === 'treasurer' || member.status === 'paid' ? (
                 <div className="flex flex-col items-end gap-0.5">
-                  <CheckCircle2 className="w-5 h-5 text-primary" />
-                  <span className="text-[9px] font-bold text-primary uppercase tracking-wider">
+                  <CheckCircle2 className="w-5 h-5 text-success" />
+                  <span className="text-[9px] font-bold text-success uppercase tracking-wider">
                     {t('finances.centralFund.paid', 'Paid')}
                   </span>
                 </div>
               ) : member.status === 'pending' ? (
                 <div className="flex flex-col items-end gap-0.5">
-                  <Clock className="w-5 h-5 text-amber-500" />
-                  <span className="text-[9px] font-bold text-amber-600 uppercase tracking-wider">
+                  <Clock className="w-5 h-5 text-warning" />
+                  <span className="text-[9px] font-bold text-warning uppercase tracking-wider">
                     {t('finances.pending', 'Pending')}
                   </span>
                 </div>

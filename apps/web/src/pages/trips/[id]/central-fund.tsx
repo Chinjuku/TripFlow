@@ -231,7 +231,7 @@ function TripCentralFundContent() {
   return (
     <div className="flex flex-col flex-1 overflow-y-auto lg:overflow-hidden gap-6 h-full min-h-0">
       {hasCentralFund && (
-        <div className="shrink-0 flex items-center justify-between gap-3 bg-muted/40 p-4 rounded-2xl border border-border">
+        <div className="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/40 p-4 rounded-2xl border border-border">
           <div>
             <h3 className="text-sm font-bold text-foreground">
               {t('finances.centralFund.actionsTitle', 'Central Fund Actions')}
@@ -243,11 +243,11 @@ function TripCentralFundContent() {
               )}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 w-full sm:w-auto shrink-0">
             {isTreasurer ? (
               <Button
                 onClick={() => setIsPayModalOpen(true)}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-2 rounded-xl shadow-sm transition-colors"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-2 rounded-xl shadow-sm transition-colors w-full sm:w-auto"
               >
                 <Receipt className="w-4 h-4" />
                 {t('finances.centralFund.payAction', 'Pay from Central Fund')}
@@ -257,7 +257,7 @@ function TripCentralFundContent() {
                 variant="outline"
                 onClick={() => setIsRequestModalOpen(true)}
                 disabled={!summary.treasurerId}
-                className="gap-2 font-bold rounded-xl border border-border hover:bg-muted"
+                className="gap-2 font-bold rounded-xl border border-border hover:bg-muted w-full sm:w-auto"
               >
                 <HandCoins className="w-4 h-4" />
                 {t('finances.centralFund.requestAction', 'Request Reimbursement')}
@@ -282,7 +282,7 @@ function TripCentralFundContent() {
       {isTreasurer && pendingCentralSettlements.length > 0 && (
         <div className="shrink-0 bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
           <h3 className="text-sm font-bold text-foreground font-headline uppercase tracking-wider flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+            <span className="w-2.5 h-2.5 rounded-full bg-warning animate-pulse" />
             {t('finances.centralFund.pendingApprovals', 'Pending Approvals')}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -435,19 +435,19 @@ function TripCentralFundContent() {
                   </div>
                   <div className="shrink-0">
                     {myContribution.status === 'paid' ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-400 text-xs font-bold rounded-xl tracking-wider">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-success/10 text-success text-xs font-bold rounded-xl tracking-wider">
                         <CheckCircle2 className="w-4 h-4" />
-                        {t('finances.centralFund.paid', 'PAID')}
+                        <span className="hidden sm:inline">{t('finances.centralFund.paid', 'PAID')}</span>
                       </span>
                     ) : myContribution.status === 'pending' ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400 text-xs font-bold rounded-xl tracking-wider">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-warning/10 text-warning text-xs font-bold rounded-xl tracking-wider">
                         <Clock className="w-4 h-4 animate-pulse" />
-                        {t('finances.pending', 'PENDING')}
+                        <span className="hidden sm:inline">{t('finances.pending', 'PENDING')}</span>
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-muted text-muted-foreground text-xs font-bold rounded-xl tracking-wider">
                         <Circle className="w-4 h-4" />
-                        {t('finances.centralFund.unpaid', 'UNPAID')}
+                        <span className="hidden sm:inline">{t('finances.centralFund.unpaid', 'UNPAID')}</span>
                       </span>
                     )}
                   </div>
@@ -475,7 +475,7 @@ function TripCentralFundContent() {
                       <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
                         {t('finances.centralFund.yourSpending', 'Spent from Fund')}
                       </div>
-                      <div className="text-lg font-extrabold text-rose-500 font-headline mt-0.5">
+                      <div className="text-lg font-extrabold text-destructive font-headline mt-0.5">
                         ฿
                         {myContribution.spentAmount.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
@@ -515,7 +515,7 @@ function TripCentralFundContent() {
                   >
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${act.isNegative ? 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400' : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'}`}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${act.isNegative ? 'bg-destructive/10 text-destructive' : 'bg-success/10 text-success'}`}
                       >
                         {act.isNegative ? (
                           <TrendingDown className="w-5 h-5" />
@@ -558,7 +558,7 @@ function TripCentralFundContent() {
                             ).format(act.date)}
                           </span>
                           {act.type === 'settlement' && act.status === 'pending' && (
-                            <span className="ml-1 text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-bold tracking-wider shrink-0">
+                            <span className="ml-1 text-[9px] bg-warning/10 text-warning px-1.5 py-0.5 rounded font-bold tracking-wider shrink-0">
                               {t('finances.pending', 'PENDING').toUpperCase()}
                             </span>
                           )}
@@ -567,7 +567,7 @@ function TripCentralFundContent() {
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <div
-                        className={`font-bold text-right ${act.isNegative ? 'text-rose-600' : 'text-emerald-600'}`}
+                        className={`font-bold text-right ${act.isNegative ? 'text-destructive' : 'text-success'}`}
                       >
                         {act.isNegative ? '-' : '+'}฿
                         {act.amount.toLocaleString(undefined, {

@@ -376,7 +376,7 @@ export function PaymentDetailsModal({
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="bg-primary text-white hover:bg-primary/70 text-xs h-9 px-5 rounded-xl font-bold shadow-sm shadow-emerald-600/10 transition-colors"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs h-9 px-5 rounded-xl font-bold shadow-sm transition-colors"
           >
             {isSubmitting ? t('finances.saving') : t('finances.saveDetails')}
           </Button>

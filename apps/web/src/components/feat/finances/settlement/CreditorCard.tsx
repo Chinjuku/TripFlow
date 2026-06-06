@@ -89,7 +89,7 @@ export function CreditorCard({
 
         {/* Settle Up Button / Paid Status */}
         {creditor.hasPendingSettlement ? (
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-xs bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 cursor-default transition-all font-label dark:bg-emerald-500/20 dark:text-emerald-400">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-xs bg-success/10 text-success border border-success/20 cursor-default transition-all font-label">
             <Check className="w-3.5 h-3.5" />
             {t('finances.paid', 'จ่ายแล้ว')}
           </div>
