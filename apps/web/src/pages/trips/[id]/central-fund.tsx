@@ -198,7 +198,11 @@ function TripCentralFundContent() {
       await refreshFinances();
     } catch (err) {
       console.error('Failed to record central fund expense', err);
-      toast.error(err instanceof Error ? err.message : t('finances.errorFailedRecordExpense', 'Failed to record expense'));
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : t('finances.errorFailedRecordExpense', 'Failed to record expense'),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -218,7 +222,14 @@ function TripCentralFundContent() {
       await refreshFinances();
     } catch (err) {
       console.error('Failed to request reimbursement', err);
-      toast.error(err instanceof Error ? err.message : t('finances.centralFund.errorFailedRequestReimbursement', 'Failed to request reimbursement'));
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : t(
+              'finances.centralFund.errorFailedRequestReimbursement',
+              'Failed to request reimbursement',
+            ),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -437,7 +448,9 @@ function TripCentralFundContent() {
                     {myContribution.status === 'paid' ? (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-success/10 text-success text-xs font-bold rounded-xl tracking-wider">
                         <CheckCircle2 className="w-4 h-4" />
-                        <span className="hidden sm:inline">{t('finances.centralFund.paid', 'PAID')}</span>
+                        <span className="hidden sm:inline">
+                          {t('finances.centralFund.paid', 'PAID')}
+                        </span>
                       </span>
                     ) : myContribution.status === 'pending' ? (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-warning/10 text-warning text-xs font-bold rounded-xl tracking-wider">
@@ -447,7 +460,9 @@ function TripCentralFundContent() {
                     ) : (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-muted text-muted-foreground text-xs font-bold rounded-xl tracking-wider">
                         <Circle className="w-4 h-4" />
-                        <span className="hidden sm:inline">{t('finances.centralFund.unpaid', 'UNPAID')}</span>
+                        <span className="hidden sm:inline">
+                          {t('finances.centralFund.unpaid', 'UNPAID')}
+                        </span>
                       </span>
                     )}
                   </div>

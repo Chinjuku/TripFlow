@@ -1,4 +1,18 @@
-import { describe, expect, test, mock } from 'bun:test';
+import { describe, expect, test, mock, beforeAll } from 'bun:test';
+
+beforeAll(() => {
+  process.env.GOOGLE_CLIENT_ID = 'test';
+  process.env.GOOGLE_CLIENT_SECRET = 'test';
+  process.env.GOOGLE_REDIRECT_URI = 'test';
+  process.env.JWT_SECRET = 'test';
+  process.env.FRONTEND_URL = 'test';
+  process.env.SUPABASE_URL = 'http://localhost';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'test';
+  process.env.PORT = '3000';
+  process.env.WEB_URL = 'http://localhost';
+  process.env.TYPHOON_OCR_API_KEY = 'test';
+  process.env.DATABASE_URL = 'postgres://test';
+});
 
 // 1. Define mocked table objects
 const expensesTable = { name: 'expenses' };
@@ -58,10 +72,11 @@ mock.module('@trip-flow/db/server', () => ({
   userPaymentDetails: userPaymentDetailsTable,
   tripMembers: tripMembersTable,
   trips: tripsTable,
+  users: { name: 'users' },
 }));
 
-// 4. Mock the loadTripMembers from './trips'
-mock.module('./trips', () => ({
+// 4. Mock the loadTripMembers from '../services/trips'
+mock.module('../services/trips', () => ({
   loadTripMembers: async (tripId: string) => [
     { userId: 'user-a', name: 'Alice', avatarUrl: null },
     { userId: 'user-b', name: 'Bob', avatarUrl: null },
