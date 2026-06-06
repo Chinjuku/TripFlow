@@ -71,7 +71,7 @@ export function InviteModal({ open, onOpenChange, trip }: InviteModalProps) {
               size="sm"
               className={cn(
                 'h-10 min-w-[5.5rem] gap-2 rounded-xl font-semibold transition-all',
-                copied && 'bg-emerald-600 hover:bg-emerald-600',
+                copied && 'bg-success hover:bg-success/90 text-success-foreground border-transparent',
               )}
             >
               {copied ? (

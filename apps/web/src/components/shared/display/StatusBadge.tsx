@@ -6,16 +6,16 @@ import type { TripStatus } from '@/utils/trips';
 const STYLES: Record<TripStatus, string> = {
   draft: 'bg-muted text-muted-foreground',
   planning: 'bg-sky-500/15 text-sky-600 dark:text-sky-400',
-  upcoming: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
-  active: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
+  upcoming: 'bg-warning/10 text-warning',
+  active: 'bg-success/10 text-success',
   past: 'bg-muted text-muted-foreground',
 };
 
 const DOT: Record<TripStatus, string> = {
   draft: 'bg-muted-foreground/50',
   planning: 'bg-sky-500',
-  upcoming: 'bg-amber-500',
-  active: 'bg-emerald-500',
+  upcoming: 'bg-warning',
+  active: 'bg-success',
   past: 'bg-muted-foreground/50',
 };
 

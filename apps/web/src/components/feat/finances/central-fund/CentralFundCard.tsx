@@ -131,7 +131,7 @@ export function CentralFundCard({
                     {t('finances.centralFund.remaining', 'Remaining')}
                   </div>
                   <div
-                    className={`text-2xl font-bold ${remaining < 0 ? 'text-destructive' : 'text-emerald-500'}`}
+                    className={`text-2xl font-bold ${remaining < 0 ? 'text-destructive' : 'text-success'}`}
                   >
                     ฿
                     {remaining.toLocaleString(undefined, {

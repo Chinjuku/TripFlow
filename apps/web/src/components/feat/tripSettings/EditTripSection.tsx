@@ -170,7 +170,7 @@ export function EditTripSection({ tripId, trip, onSaved }: EditTripSectionProps)
             {t('trips.settings.saveChanges')}
           </Button>
           {status === 'ok' && (
-            <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+            <span className="text-sm font-medium text-success">
               {t('trips.settings.saved')}
             </span>
           )}

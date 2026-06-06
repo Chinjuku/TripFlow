@@ -111,7 +111,7 @@ export function PaymentDetailsCard() {
         ) : (
           <form onSubmit={handleSave} className="space-y-6">
             {saveSuccess && (
-              <div className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400 animate-in fade-in slide-in-from-top-2 flex items-center gap-2 rounded-lg border p-4 text-sm duration-300">
+              <div className="border-success/30 bg-success/10 text-success animate-in fade-in slide-in-from-top-2 flex items-center gap-2 rounded-lg border p-4 text-sm duration-300">
                 <CheckCircle className="h-5 w-5 shrink-0" />
                 <span>{t('settings.savedSuccess')}</span>
               </div>

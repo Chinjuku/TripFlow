@@ -51,13 +51,73 @@ export function Modal({
   className,
 }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
+  const touchStartRef = useRef<{ y: number; time: number } | null>(null);
+  const currentDeltaRef = useRef<number>(0);
 
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
-    if (open && !node.open) node.showModal();
-    if (!open && node.open) node.close();
+    if (open) {
+      if (!node.open) {
+        node.showModal();
+        node.style.transform = '';
+        node.style.transition = '';
+      }
+    } else {
+      if (node.open) node.close();
+    }
   }, [open]);
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    const touch = e.touches[0];
+    if (!touch || !ref.current) return;
+    touchStartRef.current = { y: touch.clientY, time: Date.now() };
+    currentDeltaRef.current = 0;
+    ref.current.style.transition = 'none';
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!touchStartRef.current || !ref.current) return;
+    const touch = e.touches[0];
+    if (!touch) return;
+    const deltaY = touch.clientY - touchStartRef.current.y;
+
+    if (deltaY > 0) {
+      currentDeltaRef.current = deltaY;
+      ref.current.style.transform = `translateY(${deltaY}px)`;
+    } else {
+      currentDeltaRef.current = 0;
+      ref.current.style.transform = '';
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartRef.current || !ref.current) return;
+
+    const deltaY = currentDeltaRef.current;
+    const dragDuration = Date.now() - touchStartRef.current.time;
+    const velocity = deltaY / dragDuration;
+
+    const node = ref.current;
+    touchStartRef.current = null;
+    currentDeltaRef.current = 0;
+
+    if (deltaY > 120 || (velocity > 0.5 && deltaY > 30)) {
+      node.style.transition = 'transform 0.2s cubic-bezier(0.32, 0.94, 0.6, 1)';
+      node.style.transform = 'translateY(100%)';
+      setTimeout(() => {
+        onOpenChange(false);
+        node.style.transform = '';
+        node.style.transition = '';
+      }, 200);
+    } else {
+      node.style.transition = 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)';
+      node.style.transform = '';
+      setTimeout(() => {
+        if (node) node.style.transition = '';
+      }, 200);
+    }
+  };
 
   return (
     <dialog
@@ -91,8 +151,14 @@ export function Modal({
     >
       <div className="flex max-h-[85dvh] flex-col sm:max-h-[calc(100dvh-3rem)]">
         {/* Drag handle - visual affordance for mobile bottom sheet, hidden on desktop. */}
-        <div className="flex justify-center pt-2 sm:hidden" aria-hidden>
-          <span className="bg-muted-foreground/30 h-1 w-10 rounded-full" />
+        <div
+          className="flex justify-center pt-2 pb-3 cursor-grab active:cursor-grabbing sm:hidden select-none touch-none"
+          aria-hidden
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          <span className="bg-muted-foreground/30 h-1.5 w-12 rounded-full" />
         </div>
 
         {hideHeader ? (

@@ -221,8 +221,8 @@ export function SettleUpModal({
               name={payee.name}
               src={payee.avatarUrl}
               size="w-10 h-10"
-              className="text-sm shadow-sm ring-2 ring-emerald-100 dark:ring-emerald-900"
-              fallbackClassName="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+              className="text-sm shadow-sm ring-2 ring-success/20"
+              fallbackClassName="bg-success/10 text-success"
             />
             <div>
               <span className="text-muted-foreground text-xs block">
@@ -455,8 +455,8 @@ export function SettleUpModal({
 
         {/* No payment details available */}
         {activeMethods.length === 0 && (
-          <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl text-xs space-y-1.5 dark:bg-amber-950/20 dark:border-amber-900/30 dark:text-amber-300 animate-in fade-in duration-300">
-            <h4 className="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-200">
+          <div className="bg-warning/10 border border-warning/20 text-warning p-4 rounded-xl text-xs space-y-1.5 animate-in fade-in duration-300">
+            <h4 className="font-bold flex items-center gap-1.5 text-warning">
               {t('finances.noPaymentDetails', 'No Payment Info')}
             </h4>
             <p className="leading-relaxed">
@@ -497,7 +497,7 @@ export function SettleUpModal({
           <div className="border-t border-border pt-4">
             {scanError ? (
               <div className="space-y-3">
-                <div className="border-rose-100 bg-rose-50 text-rose-800 p-3 rounded-xl border text-xs flex items-center gap-2 dark:bg-rose-950/20 dark:border-rose-950/30 dark:text-rose-400 animate-in fade-in duration-200">
+                <div className="border-destructive/20 bg-destructive/10 text-destructive p-3 rounded-xl border text-xs flex items-center gap-2 animate-in fade-in duration-200">
                   <AlertCircle className="w-5 h-5 shrink-0" />
                   <span>{scanError}</span>
                 </div>

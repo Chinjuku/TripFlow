@@ -385,7 +385,7 @@ export function ExpenseList({
                             {exp.description}
                           </h4>
                           {exp.is_central_fund && (
-                            <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border border-primary/20 shrink-0">
+                            <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border border-primary/20 shrink-0 hidden sm:inline-block">
                               {t('finances.centralFund.title', 'Central Fund')}
                             </span>
                           )}
@@ -458,35 +458,37 @@ export function ExpenseList({
                                   : 'bg-muted/30 border-border'
                               }`}
                             >
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2.5 min-w-0 flex-1 mr-3">
                                 {split.avatarUrl ? (
                                   <img
                                     src={split.avatarUrl}
                                     alt={split.userName}
-                                    className={`w-8 h-8 rounded-full object-cover border ${isPayer ? 'border-primary ring-2 ring-primary/20' : 'border-border'}`}
+                                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border ${isPayer ? 'border-primary ring-2 ring-primary/20' : 'border-border'} shrink-0`}
                                   />
                                 ) : (
                                   <div
-                                    className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold shadow-inner ${
+                                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[9px] sm:text-[10px] font-bold shadow-inner ${
                                       isPayer
                                         ? 'bg-primary text-primary-foreground'
                                         : 'bg-muted-foreground text-white'
-                                    }`}
+                                    } shrink-0`}
                                   >
                                     {initials}
                                   </div>
                                 )}
-                                <div className="flex flex-col">
-                                  <span
-                                    className={`font-medium ${isSplitMe ? 'text-primary font-semibold' : 'text-foreground'}`}
-                                  >
-                                    {isSplitMe ? t('common.you') : split.userName}
+                                <div className="flex flex-col min-w-0 flex-1">
+                                  <div className="flex items-center gap-1.5 min-w-0">
+                                    <span
+                                      className={`font-medium truncate ${isSplitMe ? 'text-primary font-semibold' : 'text-foreground'} text-xs sm:text-sm`}
+                                    >
+                                      {isSplitMe ? t('common.you') : split.userName}
+                                    </span>
                                     {isPayer && (
-                                      <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border border-primary/20 ml-2">
+                                      <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-bold uppercase tracking-wider border border-primary/20 shrink-0">
                                         {t('finances.payer', 'Payer')}
                                       </span>
                                     )}
-                                  </span>
+                                  </div>
                                   {exp.split_method === 'exact_amount' && split.item_paid && (
                                     <div className="flex flex-wrap gap-1 mt-1">
                                       {split.item_paid
@@ -494,7 +496,7 @@ export function ExpenseList({
                                         .map((item: string, idx: number) => (
                                           <span
                                             key={idx}
-                                            className="bg-background text-muted-foreground border border-border px-2 py-0.5 rounded-md text-[10px] font-medium shadow-sm"
+                                            className="bg-background text-muted-foreground border border-border px-2 py-0.5 rounded-md text-[9px] font-medium shadow-sm truncate max-w-[80px]"
                                           >
                                             {item.trim()}
                                           </span>
@@ -503,7 +505,7 @@ export function ExpenseList({
                                   )}
                                 </div>
                               </div>
-                              <span className="font-headline font-bold">
+                              <span className="font-headline font-bold text-xs sm:text-sm shrink-0">
                                 ฿{split.amount.toFixed(2)}
                               </span>
                             </div>
@@ -555,7 +557,7 @@ export function ExpenseList({
                           {isPayeeMe ? t('common.you') : set.payeeName}
                         </span>
                         {set.is_central_fund && (
-                          <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border border-primary/20 shrink-0">
+                          <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border border-primary/20 shrink-0 hidden sm:inline-block">
                             {t('finances.centralFund.title', 'Central Fund')}
                           </span>
                         )}
