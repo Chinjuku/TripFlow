@@ -467,7 +467,7 @@ export function TripFinancesLayout({ activeTab, children }: TripFinancesLayoutPr
 
   return (
     <TripFinancesContext.Provider value={contextValue}>
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 h-full lg:h-[calc(100vh-5.5rem)] lg:overflow-hidden animate-in fade-in duration-300">
+      <div className="mx-auto flex max-w-6xl flex-col gap-8 h-full overflow-hidden animate-in fade-in duration-300">
         <PageHeader
           backTo={`/trips/${id}`}
           backLabel={t('overview.tripOverview')}

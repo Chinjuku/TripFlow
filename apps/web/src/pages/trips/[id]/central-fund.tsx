@@ -198,7 +198,7 @@ function TripCentralFundContent() {
       await refreshFinances();
     } catch (err) {
       console.error('Failed to record central fund expense', err);
-      toast.error(err instanceof Error ? err.message : 'Failed to record expense');
+      toast.error(err instanceof Error ? err.message : t('finances.errorFailedRecordExpense', 'Failed to record expense'));
     } finally {
       setIsSubmitting(false);
     }
@@ -218,7 +218,7 @@ function TripCentralFundContent() {
       await refreshFinances();
     } catch (err) {
       console.error('Failed to request reimbursement', err);
-      toast.error(err instanceof Error ? err.message : 'Failed to request reimbursement');
+      toast.error(err instanceof Error ? err.message : t('finances.centralFund.errorFailedRequestReimbursement', 'Failed to request reimbursement'));
     } finally {
       setIsSubmitting(false);
     }

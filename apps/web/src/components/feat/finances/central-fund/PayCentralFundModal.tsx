@@ -52,16 +52,18 @@ export function PayCentralFundModal({
   const localISOTime = new Date(Date.now() - tzOffset).toISOString().substring(0, 16);
 
   const schema = z.object({
-    description: z.string().min(1, 'Description is required').max(120),
+    description: z.string().min(1, t('finances.errorDescriptionRequired', 'Description is required')).max(120),
     amount: z
       .number()
-      .min(0.01)
+      .min(0.01, t('finances.errorAmountMin', 'Amount must be greater than 0'))
       .max(
         remainingCentralFund,
-        `Cannot exceed remaining central fund (฿${remainingCentralFund.toLocaleString()})`,
+        t('finances.centralFund.errorExceedRemaining', 'Cannot exceed remaining central fund (฿{{amount}})', {
+          amount: remainingCentralFund.toLocaleString(),
+        }),
       ),
     category: z.enum(['food', 'transport', 'activity', 'lodging', 'other']),
-    expenseDate: z.string().min(1),
+    expenseDate: z.string().min(1, t('finances.errorDateRequired', 'Date is required')),
   });
 
   type FormValues = z.infer<typeof schema>;
@@ -121,7 +123,7 @@ export function PayCentralFundModal({
       if (result.amount) setValue('amount', result.amount);
       if (result.datetime) setValue('expenseDate', result.datetime);
     } catch (err) {
-      setScanError(err instanceof Error ? err.message : 'Failed to extract receipt data');
+      setScanError(err instanceof Error ? err.message : t('finances.errorExtractReceipt', 'Failed to extract receipt data'));
     } finally {
       setIsScanning(false);
     }
@@ -240,7 +242,7 @@ export function PayCentralFundModal({
             <div className="relative">
               <Input
                 id="description"
-                placeholder="e.g. Nara Thai Cuisine"
+                placeholder={t('finances.merchantPlaceholder', 'e.g. Nara Thai Cuisine')}
                 className={`pl-9 h-11 border-input bg-background rounded-xl focus-visible:ring-primary text-sm ${
                   errors.description ? 'border-destructive' : ''
                 }`}

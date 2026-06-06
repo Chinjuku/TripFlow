@@ -5,7 +5,7 @@ import trips from './trips.json';
 import overview from './overview.json';
 import plan from './plan.json';
 import schedule from './schedule.json';
-import finances from './finances.json';
+import finances from './finances';
 import settings from './settings.json';
 import notFound from './notFound.json';
 
