@@ -61,7 +61,6 @@ export function Modal({
       if (!node.open) {
         node.showModal();
         node.style.transform = '';
-        node.style.transition = '';
       }
     } else {
       if (node.open) node.close();
@@ -73,7 +72,7 @@ export function Modal({
     if (!touch || !ref.current) return;
     touchStartRef.current = { y: touch.clientY, time: Date.now() };
     currentDeltaRef.current = 0;
-    ref.current.style.transition = 'none';
+    ref.current.classList.add('is-dragging');
   };
 
   const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
@@ -102,20 +101,17 @@ export function Modal({
     touchStartRef.current = null;
     currentDeltaRef.current = 0;
 
+    // Remove the dragging class so CSS transitions resume
+    node.classList.remove('is-dragging');
+
     if (deltaY > 120 || (velocity > 0.5 && deltaY > 30)) {
-      node.style.transition = 'transform 0.2s cubic-bezier(0.32, 0.94, 0.6, 1)';
       node.style.transform = 'translateY(100%)';
       setTimeout(() => {
         onOpenChange(false);
         node.style.transform = '';
-        node.style.transition = '';
       }, 200);
     } else {
-      node.style.transition = 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)';
       node.style.transform = '';
-      setTimeout(() => {
-        if (node) node.style.transition = '';
-      }, 200);
     }
   };
 

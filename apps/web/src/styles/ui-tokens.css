@@ -138,6 +138,11 @@
     }
   }
 
+  /* Disable transitions while user is dragging the bottom sheet */
+  .tf-modal.is-dragging {
+    transition: none !important;
+  }
+
   .tf-modal::backdrop {
     transition:
       opacity 0.2s ease,
