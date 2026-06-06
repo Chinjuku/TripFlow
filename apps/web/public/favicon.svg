@@ -1,5 +1,40 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#0f172a"/>
-  <path d="M16 40 L32 16 L48 40 Z" fill="#3b82f6"/>
-  <circle cx="32" cy="44" r="4" fill="#fbbf24"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --ring: #0f172a;
+      --needle-n: #059669;
+      --needle-s: #94a3b8;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --ring: #f8fafc;
+        --needle-n: #34d399;
+        --needle-s: #475569;
+      }
+    }
+    .bg-rect {
+      fill: var(--bg);
+    }
+    .compass-ring {
+      stroke: var(--ring);
+    }
+    .needle-n {
+      fill: var(--needle-n);
+      stroke: var(--needle-n);
+    }
+    .needle-s {
+      fill: var(--needle-s);
+      stroke: var(--needle-s);
+    }
+    .compass-pivot {
+      fill: var(--bg);
+    }
+  </style>
+  <rect class="bg-rect" width="24" height="24" rx="5.5"/>
+  <circle class="compass-ring" cx="12" cy="12" r="8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="needle-n" d="M 13.5 13.5 L 15.5 8.5 L 10.5 10.5 Z" stroke-width="0.5" stroke-linejoin="round"/>
+  <path class="needle-s" d="M 13.5 13.5 L 8.5 15.5 L 10.5 10.5 Z" stroke-width="0.5" stroke-linejoin="round"/>
+  <circle class="compass-pivot" cx="12" cy="12" r="0.75"/>
 </svg>
