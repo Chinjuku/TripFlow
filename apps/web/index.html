@@ -34,6 +34,16 @@
           root.style.backgroundColor = 'hsl(222, 47%, 11%)';
         }
         root.style.colorScheme = dark ? 'dark' : 'light';
+
+        var manifestEl = document.querySelector('link[rel="manifest"]');
+        if (manifestEl) {
+          manifestEl.setAttribute('href', dark ? '/manifest.json' : '/manifest-light.json');
+        }
+
+        var themeColorEl = document.querySelector('meta[name="theme-color"]');
+        if (themeColorEl) {
+          themeColorEl.setAttribute('content', dark ? '#0f172a' : '#ffffff');
+        }
       } catch (_) {
         /* storage disabled - fall through with light theme */
       }

@@ -24,6 +24,17 @@ function applyTheme(theme: Theme): void {
   root.classList.toggle('dark', theme === 'dark');
 
   root.style.colorScheme = theme;
+
+  const manifestEl = document.querySelector('link[rel="manifest"]');
+  if (manifestEl) {
+    manifestEl.setAttribute('href', theme === 'dark' ? '/manifest.json' : '/manifest-light.json');
+  }
+
+  const themeColorEl = document.querySelector('meta[name="theme-color"]');
+  if (themeColorEl) {
+    themeColorEl.setAttribute('content', theme === 'dark' ? '#0f172a' : '#ffffff');
+  }
+  
   window.requestAnimationFrame(() => {
     window.requestAnimationFrame(() => {
       root.classList.remove('theme-switching');
