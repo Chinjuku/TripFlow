@@ -29,10 +29,12 @@ export function RequestReimbursementModal({
   const schema = z.object({
     amount: z
       .number()
-      .min(0.01)
+      .min(0.01, t('finances.errorAmountMin', 'Amount must be greater than 0'))
       .max(
         remainingCentralFund,
-        `Cannot exceed remaining central fund (฿${remainingCentralFund.toLocaleString()})`,
+        t('finances.centralFund.errorExceedRemaining', 'Cannot exceed remaining central fund (฿{{amount}})', {
+          amount: remainingCentralFund.toLocaleString(),
+        }),
       ),
   });
 
